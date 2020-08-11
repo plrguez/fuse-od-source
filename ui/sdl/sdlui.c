@@ -37,6 +37,13 @@
 #include "sdlkeyboard.h"
 #include "ui/scaler/scaler.h"
 #include "menu.h"
+#if VKEYBOARD
+#include "ui/vkeyboard.h"
+#endif
+
+#ifdef GCWZERO
+static Uint8 *keys_state;
+#endif
 
 static void
 atexit_proc( void )
@@ -68,6 +75,10 @@ ui_init( int *argc, char ***argv )
 
   ui_mouse_present = 1;
 
+#ifdef GCWZERO
+  keys_state = SDL_GetKeyState(NULL);
+#endif
+
   return 0;
 }
 
@@ -75,6 +86,17 @@ int
 ui_event( void )
 {
   SDL_Event event;
+#if VKEYBOARD
+  int vkeyboard_enabled_old = vkeyboard_enabled;
+#endif
+#ifdef GCWZERO
+  SDL_PumpEvents();
+  /* L1 + R1 + X: Toggle triple buffer */
+  if ( keys_state[SDLK_BACKSPACE] && keys_state[SDLK_TAB] && keys_state[SDLK_SPACE] ) {
+    settings_current.triple_buffer = !settings_current.triple_buffer;
+    return 0;
+  }
+#endif
 
   while ( SDL_PollEvent( &event ) ) {
     switch ( event.type ) {
@@ -134,6 +156,11 @@ ui_event( void )
     }
   }
 
+#if VKEYBOARD
+  if ( vkeyboard_enabled_old && !vkeyboard_enabled )
+    uidisplay_vkeyboard_end();
+#endif
+
   return 0;
 }
 
@@ -163,6 +190,10 @@ ui_statusbar_update_speed( float speed )
 
   snprintf( buffer, 15, "%s - %3.0f%%", fuse, speed );
 
+#ifdef GCWZERO
+  if ( settings_current.statusbar )
+    ui_widget_statusbar_update_info( speed );
+#endif
   /* FIXME: Icon caption should be snapshot name? */
   SDL_WM_SetCaption( buffer, fuse );
 

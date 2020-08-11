@@ -250,12 +250,25 @@ widget_pokemem_keyhandler( input_key key )
   new_selected = selected;
 
   switch ( key ) {
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return: /* Do pokes */
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:
     widget_end_all( WIDGET_FINISHED_OK );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape: /* Close widget */
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
@@ -265,19 +278,35 @@ widget_pokemem_keyhandler( input_key key )
     if( !widget_pokemem_add_custom_poke() ) new_selected = pokemem_count - 1;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Up:
+#else
   case INPUT_KEY_Home:
+#endif
     new_selected = 0;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Down:
+#else
   case INPUT_KEY_End:
+#endif
     new_selected = pokemem_count - 1;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Tab:
+#else
   case INPUT_KEY_Page_Up:
+#endif
     new_selected = ( selected > page_size )? selected - page_size : 0;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace:
+#else
   case INPUT_KEY_Page_Down:
+#endif
     new_selected = selected + page_size;
     if( new_selected >= pokemem_count ) new_selected = pokemem_count - 1;
     break;

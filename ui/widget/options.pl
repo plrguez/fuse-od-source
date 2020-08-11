@@ -580,7 +580,10 @@ widget_$_->{name}_keyhandler( input_key key )
     widget_$_->{name}_show_all( &widget_options_settings );
     break;
 #endif
-    
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape:
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
@@ -605,14 +608,22 @@ widget_$_->{name}_keyhandler( input_key key )
     }
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Tab:
+#else
   case INPUT_KEY_Home:
+#endif
     if ( highlight_line ) {
       new_highlight_line = 0;
       cursor_pressed = 1;
     }
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace:
+#else
   case INPUT_KEY_End:
+#endif
     if ( highlight_line + 2 < $count ) {
       new_highlight_line = $count - 1;
       cursor_pressed = 1;
@@ -626,6 +637,9 @@ widget_$_->{name}_keyhandler( input_key key )
     options_$_->{name}\[highlight_line+1\].draw( menu_left_edge_x, menu_width, options_$_->{name} + highlight_line + 1, &widget_options_settings );
     return;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:

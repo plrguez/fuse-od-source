@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Fuse 1.5.7
+Comment=Fuse ZX Spectrum emulator 1.5.7
+Exec=fuse-retrofw %f
+Icon=fuse
+Type=Application
+Categories=emulators;
+X-OD-Manual=readme.txt

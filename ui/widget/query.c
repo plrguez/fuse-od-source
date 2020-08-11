@@ -232,7 +232,17 @@ widget_query_generic_keyhandler( widget_query_entry *query, int num_entries,
     widget_general_show_all( &widget_options_settings );
     break;
 #endif
-    
+
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape:
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
@@ -256,6 +266,9 @@ widget_query_generic_keyhandler( widget_query_entry *query, int num_entries,
     }
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:

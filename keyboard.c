@@ -133,6 +133,9 @@ static struct spectrum_keys_wrapper spectrum_keys_table[] = {
 
   { INPUT_KEY_KP_Enter,    { KEYBOARD_Enter, KEYBOARD_NONE   } },
 
+  { INPUT_KEY_KP_Divide,   { KEYBOARD_v,     KEYBOARD_Symbol } },
+  { INPUT_KEY_KP_Period,   { KEYBOARD_m,     KEYBOARD_Symbol } },
+
   { INPUT_KEY_NONE, { KEYBOARD_NONE, KEYBOARD_NONE } } /* End marker */
 
 };

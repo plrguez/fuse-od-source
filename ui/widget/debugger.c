@@ -88,6 +88,9 @@ int ui_debugger_activate( void )
 
 int ui_debugger_deactivate( int interruptible GCC_UNUSED )
 {
+#if VKEYBOARD
+  vkeyboard_enabled = 0;
+#endif
   /* Refresh the Spectrum's display, including the border */
   display_refresh_all();
   return widget_end_all( WIDGET_FINISHED_OK );
@@ -117,7 +120,9 @@ int widget_debugger_draw( void *data )
   };
   int x;
   char pbuf[8];
-
+#if VKEYBOARD
+  vkeyboard_enabled = 1;
+#endif
   widget_rectangle( LC(0), LR(0), 40 * 8, 17 * 8 + 4, 1 );
   widget_rectangle( LC(0), LR(17) + 2, 320, 1, 7 );
 
@@ -163,11 +168,24 @@ void widget_debugger_keyhandler( input_key key )
 {
   /* Display mode */
   switch ( key ) {
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_OK );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L: /* B */
+#endif
   case INPUT_KEY_Escape:	/* Close widget */
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     debugger_run();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L: /* A */
+#endif
   case INPUT_KEY_c:
   case INPUT_KEY_Return:	/* Close widget */
   case INPUT_KEY_KP_Enter:
@@ -231,20 +249,36 @@ void widget_debugger_keyhandler( input_key key )
     scroll( 1 );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Tab:
+#else
   case INPUT_KEY_Page_Up:	/* Back eight lines */
+#endif
     scroll( -8 );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace:
+#else
   case INPUT_KEY_Page_Down:	/* Forward eight lines */
+#endif
     scroll( 8 );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Up:
+#else
   case INPUT_KEY_Home:		/* To start of memory */
+#endif
     debugger_memaddr = 0;
     scroll( 0 );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Down:
+#else
   case INPUT_KEY_End:		/* To end of RAM */
+#endif
     debugger_memaddr = 0;
     scroll( -8 );
     break;

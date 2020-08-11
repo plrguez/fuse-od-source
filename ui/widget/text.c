@@ -46,7 +46,9 @@ int
 widget_text_draw( void *data )
 {
   widget_text_t* text_data = data;
-
+#if VKEYBOARD
+  vkeyboard_enabled = 1;
+#endif
   if( data ) {
     title = text_data->title;
     allow = text_data->allow;
@@ -93,14 +95,29 @@ widget_text_keyhandler( input_key key )
 {
   switch( key ) {
 
+#ifdef GCWZERO
+  case INPUT_KEY_Shift_L: /* Y */
+#endif
   case INPUT_KEY_BackSpace:	/* Backspace generates DEL which is Caps + 0 */
     delete_character(); widget_text_draw_text();
     return;
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
 
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L: /* B */
+#endif
   case INPUT_KEY_Escape:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L: /* A */
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
     widget_end_widget( WIDGET_FINISHED_OK );
@@ -162,6 +179,9 @@ append_character( char c )
 int
 widget_text_finish( widget_finish_state finished )
 {
+#if VKEYBOARD
+  vkeyboard_enabled = 0;
+#endif
   if( finished == WIDGET_FINISHED_OK ) {
 
     widget_text_text =
@@ -172,6 +192,5 @@ widget_text_finish( widget_finish_state finished )
     free( widget_text_text );
     widget_text_text = NULL;
   }
-
   return 0;
 }

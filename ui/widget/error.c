@@ -166,10 +166,16 @@ widget_error_keyhandler( input_key key )
 {
   switch( key ) {
 
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
     widget_end_widget( WIDGET_FINISHED_OK );

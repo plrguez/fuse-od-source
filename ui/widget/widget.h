@@ -32,6 +32,21 @@
 /* Code called at start and end of emulation */
 int widget_init( void );
 int widget_end( void );
+#ifdef GCWZERO
+void widget_statusbar_update_info( float speed );
+void widget_statusbar_print_info( void );
+#endif
+
+#ifdef VKEYBOARD
+/*
+ See widgent_internals.h for other widget virtual keyboard functions.
+ The function defined here are to avoid implicit definition at calls in
+ ui.c functions.
+*/
+int widget_vkeyboard_draw( void *data );
+void widget_vkeyboard_keyhandler( input_key key );
+void widget_vkeyboard_keyrelease( input_key key );
+#endif
 
 /* The various widgets which are available */
 typedef enum widget_type {
@@ -61,6 +76,9 @@ typedef enum widget_type {
   WIDGET_TYPE_QUERY_SAVE,	/* Query (save/don't save/cancel) */
   WIDGET_TYPE_DISKOPTIONS,	/* Disk options widget */
   WIDGET_TYPE_BINARY,		/* Binary load/save */
+#ifdef VKEYBOARD
+  WIDGET_TYPE_VKEYBOARD,	/* Virtual Keyboard */
+#endif
 } widget_type;
 
 /* Activate a widget */
@@ -153,6 +171,14 @@ static inline int widget_do_about( void )
 {
   return widget_do( WIDGET_TYPE_ABOUT, NULL );
 }
+
+#ifdef VKEYBOARD
+/* Virtual Keyboard widget */
+static inline int widget_do_vkeyboard( void )
+{
+  return widget_do( WIDGET_TYPE_VKEYBOARD, NULL );
+}
+#endif
 
 /* General menu */
 static inline int widget_do_menu( widget_menu_entry *data )

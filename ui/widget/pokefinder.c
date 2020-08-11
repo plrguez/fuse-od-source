@@ -163,10 +163,23 @@ void
 widget_pokefinder_keyhandler( input_key key )
 {
   switch ( key ) {
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape:	/* Close widget */
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Shift_L:
+#endif
   case INPUT_KEY_c:		/* Close widget */
     widget_end_all( WIDGET_FINISHED_OK );
     break;
@@ -183,6 +196,9 @@ widget_pokefinder_keyhandler( input_key key )
     display_possible();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_KEY_s:		/* Search */
@@ -223,8 +239,13 @@ widget_pokefinder_keyhandler( input_key key )
   case INPUT_KEY_Down:	scroll(   1 ); break;
   case INPUT_KEY_Left:	scroll(  -4 ); break;
   case INPUT_KEY_Right:	scroll(   4 ); break;
+#ifdef GCWZERO
+  case INPUT_KEY_Tab:	    scroll( -20 ); break;
+  case INPUT_KEY_BackSpace: scroll(  20 ); break;
+#else
   case INPUT_KEY_Home:	scroll( -20 ); break;
   case INPUT_KEY_End:	scroll(  20 ); break;
+#endif
 
   /* Value alteration */
   case INPUT_KEY_0:
@@ -241,7 +262,11 @@ widget_pokefinder_keyhandler( input_key key )
     display_value();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_space:
+#else
   case INPUT_KEY_BackSpace:	/* Value alteration */
+#endif
     value /= 10;
     display_value();
     break;

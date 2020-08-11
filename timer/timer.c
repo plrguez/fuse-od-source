@@ -66,6 +66,12 @@ int
 timer_estimate_speed( void )
 {
   double current_time;
+#ifdef GCWZERO
+  static int frame_count = 0;
+  static float frames_per_second = 50;
+
+  frame_count++;
+#endif
 
   if( frames_until_update-- ) return 0;
 
@@ -77,14 +83,25 @@ timer_estimate_speed( void )
     /* If we don't have enough data, assume we're running at the desired
        speed :-) */
     current_speed = settings_current.emulation_speed;
-
+#ifdef GCWZERO
+    frames_per_second = frame_count;
+#endif
   } else {
     current_speed = 10 * 100 /
                       ( current_time - stored_times[ next_stored_time ] );
+#ifdef GCWZERO
+    /* Each 10 seconds */
+    frames_per_second = 10 * frame_count /
+                      ( current_time - stored_times[ next_stored_time ] );
+#endif
   }
 
+#ifdef GCWZERO
+  ui_statusbar_update_speed( frames_per_second );
+  frame_count = 0;
+#else
   ui_statusbar_update_speed( current_speed );
-
+#endif
   stored_times[ next_stored_time ] = current_time;
 
   next_stored_time = ( next_stored_time + 1 ) % 10;

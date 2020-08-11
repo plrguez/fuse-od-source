@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Fuse 1.5.7
+Comment=Fuse ZX Spectrum emulator 1.5.7 (no file selector)
+Exec=fuse-gcw0
+Icon=fuse
+Type=Application
+Categories=emulators;
+MimeType=application/zx-snapshot;application/zx-disk;application/zx-tape;
+X-OD-NeedsDownscaling=true
+X-OD-Manual=readme.txt

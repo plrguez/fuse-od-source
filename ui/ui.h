@@ -302,6 +302,15 @@ int ui_query( const char *message );
 /* Code called at start and end of emulation if widget system is used */
 int ui_widget_init( void );
 int ui_widget_end( void );
+#ifdef GCWZERO
+void ui_widget_statusbar_update_info( float speed );
+void ui_widget_statusbar_print_info( void );
+#endif
+#if VKEYBOARD
+extern int vkeyboard_enabled;
+void ui_widget_print_vkeyboard( void );
+void ui_widget_input_vkeyboard( int native_key, int press );
+#endif
 
 /* How many levels deep have we recursed through widgets; -1 => none */
 extern int ui_widget_level;

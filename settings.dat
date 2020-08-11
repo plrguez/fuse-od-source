@@ -43,6 +43,7 @@ detect_loader, boolean, 1
 accelerate_loader, boolean, 1
 slt_traps, boolean, 1,, slt, slttraps
 double_screen, null, 0
+triple_buffer, boolean, 0
 full_screen, boolean, 0
 writable_roms, boolean, 0
 autosave_settings, boolean, 0
@@ -143,6 +144,23 @@ joystick_keyboard_down, numeric, 97
 joystick_keyboard_left, numeric, 111
 joystick_keyboard_right, numeric, 112
 joystick_keyboard_fire, numeric, 32
+joystick_gcw0_output, numeric, 0
+joystick_gcw0_up, numeric, 0
+joystick_gcw0_down, numeric, 0
+joystick_gcw0_left, numeric, 0
+joystick_gcw0_right, numeric, 0
+joystick_gcw0_a, numeric, 0
+joystick_gcw0_b, numeric, 0
+joystick_gcw0_x, numeric, 0
+joystick_gcw0_y, numeric, 0
+joystick_gcw0_l1, numeric, 0
+joystick_gcw0_r1, numeric, 0
+joystick_gcw0_l2, numeric, 0
+joystick_gcw0_r2, numeric, 0
+joystick_gcw0_start, numeric, 0
+joystick_gcw0_select, numeric, 0
+joystick_gcw0_l3, numeric, 0
+joystick_gcw0_r3, numeric, 0
 
 keyboard_arrows_shifted, boolean, 1
 

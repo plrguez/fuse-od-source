@@ -93,7 +93,7 @@ sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
      speed to about 2000% on my Mac, 100Hz allows up to 5000% for me) */
   if( hz > 100.0 ) hz = 100.0;
   sound_framesiz = *freqptr / hz;
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(GCWZERO)
   requested.samples = pow( 2.0, floor( log2( sound_framesiz ) ) );
 #else			/* #ifdef __FreeBSD__ */
   requested.samples = sound_framesiz;

@@ -138,7 +138,10 @@ widget_get_filename( const char *title, int saving )
   }
   if( widget_filesel_name )
     filename = utils_safe_strdup( widget_filesel_name );
-
+#ifdef GCWZERO
+  if ( filename )
+    last_filename = utils_last_filename( filename );
+#endif
   return filename;
   
 }
@@ -607,6 +610,10 @@ static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
     widget_print_title( 24, WIDGET_COLOUR_FOREGROUND, dir );
   }
 
+#ifdef GCWZERO
+  widget_print_filetitle( 32, widget_filenames[ current ], is_saving );
+#endif
+
   if( top_left ) widget_up_arrow( 1, 5, WIDGET_COLOUR_FOREGROUND );
 
   /* Print the filenames, mostly normally, but with the currently
@@ -622,9 +629,17 @@ static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
   if( is_saving )
   {
     widget_printstring( 12, 22 * 8, WIDGET_COLOUR_FOREGROUND,
+#ifdef GCWZERO
+				     "\012A\001 = select" );
+#else
 				     "\012RETURN\001 = select" );
+#endif
     widget_printstring_right( 244, 22 * 8, WIDGET_COLOUR_FOREGROUND,
+#ifdef GCWZERO
+					   "\012X\001 = enter name" );
+#else
 					   "\012TAB\001 = enter name" );
+#endif
   }
 
   if( i < n )
@@ -844,7 +859,17 @@ widget_filesel_keyhandler( input_key key )
 				top_left_file, current_file        );
     break;
 #endif
-    
+
+#ifdef GCWZERO
+  case INPUT_KEY_Home: /* Power   */
+  case INPUT_KEY_End:  /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L: /* B */
+#endif
   case INPUT_KEY_Escape:
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
@@ -878,32 +903,57 @@ widget_filesel_keyhandler( input_key key )
     if( current_file < widget_numfiles-1 ) new_current_file++;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Tab: /* L1 */
+#else
   case INPUT_KEY_Page_Up:
+#endif
     new_current_file = ( current_file > ENTRIES_PER_SCREEN ) ?
                        current_file - ENTRIES_PER_SCREEN     :
                        0;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace: /* R1 */
+#else
   case INPUT_KEY_Page_Down:
+#endif
     new_current_file = current_file + ENTRIES_PER_SCREEN;
     if( new_current_file >= widget_numfiles )
       new_current_file = widget_numfiles - 1;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Up:  /* L2 */
+#else
   case INPUT_KEY_Home:
+#endif
     new_current_file = 0;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Down: /* R2 */
+#else
   case INPUT_KEY_End:
+#endif
     new_current_file = widget_numfiles - 1;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_space: /* X */
+#else
   case INPUT_KEY_Tab:
+#endif
     if( is_saving ) {
       widget_text_t text_data;
       text_data.title = title;
       text_data.allow = WIDGET_INPUT_ASCII;
       text_data.max_length = 30;
+#ifdef GCWZERO
+      if (last_filename)
+        snprintf( text_data.text, 30, "%s", last_filename );
+      else
+#endif
       text_data.text[0] = 0;
       if( widget_do_text( &text_data ) ||
 	  !widget_text_text || !*widget_text_text      )
@@ -935,6 +985,9 @@ widget_filesel_keyhandler( input_key key )
     }
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:
@@ -990,6 +1043,10 @@ widget_filesel_keyhandler( input_key key )
 
       /* Otherwise, print the current file uninverted and the
 	 new current file inverted */
+
+#ifdef GCWZERO
+      widget_print_filetitle( 32, widget_filenames[ new_current_file ], is_saving );
+#endif
 
       widget_print_filename( widget_filenames[ current_file ],
 			     current_file - top_left_file, 0 );

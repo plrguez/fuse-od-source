@@ -147,7 +147,20 @@ EXTRA_DIST = AUTHORS \
 	     menu_data.pl \
 	     settings.dat \
 	     settings.pl \
-	     settings-header.pl
+	     settings-header.pl \
+	     Platform/readme.txt \
+	     Platform/roms/read.me \
+	     Platform/GCW0/Makefile \
+	     Platform/GCW0/default.gcw0.desktop \
+	     Platform/GCW0/system.gcw0.desktop \
+	     Platform/RETROFW2.0/Makefile \
+	     Platform/RETROFW2.0/default.retrofw.desktop \
+	     Platform/RETROFW2.0/system.retrofw.desktop \
+	     Platform/RETROFW1.0/Makefile \
+	     Platform/RETROFW1.0/conffiles \
+	     Platform/RETROFW1.0/control \
+	     Platform/RETROFW1.0/fuse.lnk \
+	     Platform/RETROFW1.0/postinst
 
 CLEANFILES = options.h \
 	     settings.c \

@@ -142,6 +142,16 @@ widget_browse_keyhandler( input_key key )
     break;
 #endif
 
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_OK );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape:
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
@@ -173,13 +183,21 @@ widget_browse_keyhandler( input_key key )
     }
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Tab:
+#else
   case INPUT_KEY_Page_Up:
+#endif
     highlight -= 18; if( highlight < 0 ) highlight = 0;
     top_line  -= 18; if( top_line  < 0 ) top_line = 0;
     show_blocks();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace:
+#else
   case INPUT_KEY_Page_Down:
+#endif
     highlight += 18;
     if( highlight >= block_count ) highlight = block_count - 1;
     top_line += 18;
@@ -190,17 +208,28 @@ widget_browse_keyhandler( input_key key )
     show_blocks();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Up:
+#else
   case INPUT_KEY_Home:
+#endif
     highlight = top_line = 0;
     show_blocks();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Down:
+#else
   case INPUT_KEY_End:
+#endif
     highlight = block_count - 1;
     top_line = block_count - 18; if( top_line < 0 ) top_line = 0;
     show_blocks();
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:

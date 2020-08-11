@@ -742,6 +742,13 @@ ui_tape_write( void )
   filename = ui_get_save_filename( "Fuse - Write Tape" );
   if( !filename ) { fuse_emulation_unpause(); return 1; }
 
+#ifdef GCWZERO
+  /* Add the extension .TZX */
+  filename = realloc( filename, strlen( filename ) + 4 );
+  if( !filename ) { fuse_emulation_unpause(); return 1; }
+  strcat( filename, ".tzx" );
+#endif
+
   tape_write( filename );
 
   libspectrum_free( filename );
@@ -764,6 +771,13 @@ ui_mdr_write( int which, int saveas )
   if( saveas ) {
     filename = ui_get_save_filename( title );
     if( !filename ) { fuse_emulation_unpause(); return 1; }
+
+#ifdef GCWZERO
+    /* Add the extension .MDR */
+    filename = realloc( filename, strlen( filename ) + 4 );
+    if( !filename ) { fuse_emulation_unpause(); return 1; }
+    strcat( filename, ".mdr" );
+#endif
   }
 
   err = if1_mdr_write( which, filename );
@@ -787,6 +801,29 @@ ui_widget_end( void )
 {
   return widget_end();
 }
+
+#ifdef GCWZERO
+void ui_widget_statusbar_update_info( float speed ) {
+  widget_statusbar_update_info( speed );
+}
+
+void ui_widget_statusbar_print_info( void ) {
+  widget_statusbar_print_info();
+}
+#endif
+
+#if VKEYBOARD
+void ui_widget_print_vkeyboard( void ) {
+  widget_vkeyboard_draw( NULL );
+}
+
+void ui_widget_input_vkeyboard( int native_key, int press ) {
+  if (press)
+    widget_vkeyboard_keyhandler( native_key );
+  else
+    widget_vkeyboard_keyrelease( native_key );
+}
+#endif
 #else
 int
 ui_widget_init( void )

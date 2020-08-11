@@ -34,7 +34,11 @@
 #ifndef FUSE_UI_UIJOYSTICK_H
 #define FUSE_UI_UIJOYSTICK_H
 
+#ifdef GCWZERO
+#define NUM_JOY_BUTTONS 16
+#else
 #define NUM_JOY_BUTTONS 15
+#endif
 
 int ui_joystick_init( void ); /* returns no. of joysticks initialised */
 void ui_joystick_end( void );

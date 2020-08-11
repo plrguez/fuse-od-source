@@ -300,6 +300,54 @@ if test -z "$UI"; then
   fi
 fi
 
+dnl Look for GCW ZERO (default=no)
+gcw0=no
+if test -z "$UI"; then
+  AC_MSG_CHECKING(whether GCW ZERO requested)
+  AC_ARG_WITH(gcw0,
+  [  --with-gcw0             Build for GCW ZERO (--with-sdl)],
+  if test "$withval" = no; then gcw0=no; else gcw0=yes; fi,
+  gcw0=no)
+  AC_MSG_RESULT($gcw0)
+  if test "$gcw0" = yes; then
+    if test "$sdl_available" = yes; then
+      AC_DEFINE([GCWZERO], 1, [Defined if GCW ZERO is in use])
+      AC_DEFINE([VKEYBOARD], 1, [Virtual Keyboard defined if GCW ZERO is in use])
+      AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
+      AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+      UI=sdl
+      WIDGET=widget
+      use_sdl=yes
+    else
+      AC_MSG_ERROR([SDL version $SDL_VERSION not found])
+    fi
+  fi
+fi
+
+dnl Look for RetroFW 2 (default=no)
+retrofw=no
+if test -z "$UI"; then
+  AC_MSG_CHECKING(whether RetroFW 2 requested)
+  AC_ARG_WITH(retrofw,
+  [  --with-retrofw          Build for RetroFW 2 (--with-sdl)],
+  if test "$withval" = no; then retrofw=no; else retrofw=yes; fi,
+  retrofw=no)
+  AC_MSG_RESULT($retrofw)
+  if test "$retrofw" = yes; then
+    if test "$sdl_available" = yes; then
+      AC_DEFINE([GCWZERO], 1, [Defined if RetroFW 2 is in use])
+      AC_DEFINE([VKEYBOARD], 1, [Virtual Keyboard defined if RetroFW 2 is in use])
+      AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
+      AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+      UI=sdl
+      WIDGET=widget
+      use_sdl=yes
+    else
+      AC_MSG_ERROR([SDL version $SDL_VERSION not found])
+    fi
+  fi
+fi
+
 dnl Look for null UI (default=no)
 if test -z "$UI"; then
   AC_MSG_CHECKING(whether null UI requested)
@@ -505,6 +553,15 @@ if test "$withval" = no; then libpng=no; else libpng=yes; fi,
 libpng=yes)
 AC_MSG_RESULT($libpng)
 if test "$libpng" = yes; then
+  if test "$gcw0" = yes; then
+  PKG_CHECK_MODULES(
+    [PNG],
+    [libpng14],
+    [AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng])],
+    [AC_MSG_WARN([libpng not found - saving screenshots disabled])
+     libpng=no]
+  )
+  else
   PKG_CHECK_MODULES(
     [PNG],
     [libpng],
@@ -512,6 +569,7 @@ if test "$libpng" = yes; then
     [AC_MSG_WARN([libpng not found - saving screenshots disabled])
      libpng=no]
   )
+  fi
 fi
 
 AC_SUBST(PNG_CFLAGS)
@@ -1054,6 +1112,8 @@ echo "Spectranet support: ${build_spectranet}"
 echo "SpeccyBoot support: ${linux_tap:-no}"
 echo "TTX2000 S support: ${build_ttx2000s}"
 echo "Desktop integration: ${desktopintegration}"
+echo "GCW ZERO: ${gcw0}"
+echo "RetroFW 2: ${retrofw}"
 echo ""
 echo "Type 'make' to compile Fuse"
 echo ""

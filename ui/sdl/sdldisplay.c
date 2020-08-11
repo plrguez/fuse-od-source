@@ -41,9 +41,28 @@
 #include "ui/scaler/scaler.h"
 #include "ui/uidisplay.h"
 #include "utils.h"
+#if VKEYBOARD
+#include "ui/vkeyboard.h"
+#endif
 
 SDL_Surface *sdldisplay_gc = NULL;   /* Hardware screen */
 static SDL_Surface *tmp_screen=NULL; /* Temporary screen for scalers */
+
+#if VKEYBOARD
+static SDL_Surface *keyb_screen = NULL;
+static SDL_Surface *keyb_screen_save = NULL;
+static int init_vkeyboard_canvas = 0;
+static SDL_Rect vkeyboard_position[6] = {
+  {16,   16,  0, 0},
+  {144,  16,  0, 0},
+  {16,   172, 0, 0},
+  {144,  172, 0, 0},
+  {80,   138,  0, 0},
+  {80,   64,  0, 0},
+};
+#define VKEYB_WIDTH  168
+#define VKEYB_HEIGHT 56
+#endif /* VKEYBOARD */
 
 static SDL_Surface *red_cassette[2], *green_cassette[2];
 static SDL_Surface *red_mdr[2], *green_mdr[2];
@@ -77,6 +96,12 @@ static SDL_Color colour_palette[] = {
 
 static Uint32 bw_values[16];
 
+#if VKEYBOARD
+static Uint32 colour_values_a[17];
+static Uint32 bw_values_a[17];
+static int use_alpha_values = 0;
+#endif
+
 /* This is a rule of thumb for the maximum number of rects that can be updated
    each frame. If more are generated we just update the whole screen */
 #define MAX_UPDATE_RECT 300
@@ -95,6 +120,11 @@ static float sdldisplay_current_size = 1;
 
 static libspectrum_byte sdldisplay_is_full_screen = 0;
 
+#ifdef GCWZERO
+static libspectrum_byte sdldisplay_is_triple_buffer = 0;
+static libspectrum_byte sdldisplay_change_triple_buffer = 0;
+#endif
+
 static int image_width;
 static int image_height;
 
@@ -103,6 +133,10 @@ static int timex;
 static void init_scalers( void );
 static int sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
                                         Uint32 *bw_values );
+#if VKEYBOARD
+static int sdldisplay_allocate_colours_alpha( int numColours, Uint32 *colour_values,
+                                             Uint32 *bw_values );
+#endif
 
 static int sdldisplay_load_gfx_mode( void );
 
@@ -116,7 +150,9 @@ init_scalers( void )
   scaler_register( SCALER_SUPER2XSAI );
   scaler_register( SCALER_SUPEREAGLE );
   scaler_register( SCALER_ADVMAME2X );
+#ifndef GCWZERO
   scaler_register( SCALER_ADVMAME3X );
+#endif
   scaler_register( SCALER_DOTMATRIX );
   scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
@@ -124,9 +160,16 @@ init_scalers( void )
     scaler_register( SCALER_HALF ); 
     scaler_register( SCALER_HALFSKIP );
     scaler_register( SCALER_TIMEXTV );
+#ifndef GCWZERO
     scaler_register( SCALER_TIMEX1_5X );
     scaler_register( SCALER_TIMEX2X );
+#endif
   } else {
+#ifdef GCWZERO
+    scaler_register( SCALER_DOUBLESIZE );
+    scaler_register( SCALER_TV2X );
+    scaler_register( SCALER_PALTV2X );
+#else
     scaler_register( SCALER_DOUBLESIZE );
     scaler_register( SCALER_TRIPLESIZE );
     scaler_register( SCALER_QUADSIZE );
@@ -137,6 +180,7 @@ init_scalers( void )
     scaler_register( SCALER_PALTV3X );
     scaler_register( SCALER_HQ3X );
     scaler_register( SCALER_HQ4X );
+#endif
   }
   
   if( scaler_is_supported( current_scaler ) ) {
@@ -225,9 +269,44 @@ uidisplay_init( int width, int height )
   int i = 0, mw = 0, mh = 0, mn = 0;
 
   /* Get available fullscreen/software modes */
+#ifdef GCWZERO
+  modes=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+#else
   modes=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_SWSURFACE);
+#endif
 
   no_modes = ( modes == (SDL_Rect **) 0 || modes == (SDL_Rect **) -1 ) ? 1 : 0;
+
+#ifdef GCWZERO
+  settings_current.full_screen = 1;
+  sdldisplay_change_triple_buffer = settings_current.triple_buffer;
+  settings_current.sdl_fullscreen_mode = utils_safe_strdup( '\0' );
+/*
+ * Dirty hack. There should be a better solution.
+ * In RetroFW 1 the video driver don't downscale correctly. This is problematic
+ * with filters higher than 1x, the can be choosed but the image is not correct.
+ * This should prevent to use any filter that will be problematic.
+ * Also for Timex Machines this will force to use the Timex Half filters...
+ */
+  FILE* allow_downscaling = fopen("/sys/devices/platform/jz-lcd.0/allow_downscaling","r");
+  if (!allow_downscaling) {
+    FILE* os_release = fopen("/etc/os-release", "r");
+    if (os_release) {
+      char line[100];
+      char* ptok;
+      while ( fgets(line,sizeof(line),os_release) != NULL ) {
+        ptok = strtok(line,"=");
+        if (strcmp(ptok,"NAME") == 0) {
+          ptok = strtok(NULL,"=");
+          if (strcmp(ptok,"Buildroot\n") == 0)
+            settings_current.sdl_fullscreen_mode = utils_safe_strdup( "320x240" );
+          break;
+        }
+      }
+      fclose(os_release);
+    }
+  } else fclose(allow_downscaling);
+#endif
 
   if( settings_current.sdl_fullscreen_mode &&
       strcmp( settings_current.sdl_fullscreen_mode, "list" ) == 0 ) {
@@ -334,6 +413,37 @@ sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
   return 0;
 }
 
+#if VKEYBOARD
+static int
+sdldisplay_allocate_colours_alpha( int numColours, Uint32 *colour_values,
+                                  Uint32 *bw_values ) {
+  int i;
+  Uint8 red, green, blue, grey;
+
+  for ( i = 0; i < numColours; i++ ) {
+
+      red = colour_palette[i].r;
+    green = colour_palette[i].g;
+     blue = colour_palette[i].b;
+
+    /* Addition of 0.5 is to avoid rounding errors */
+    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+
+    colour_values[i] = SDL_MapRGBA( keyb_screen->format,  red, green, blue, 0xf0 );
+    bw_values[i]     = SDL_MapRGBA( keyb_screen->format, grey,  grey, grey, 0xf0 );
+  }
+
+    red = 0x60;
+  green = 0x60;
+   blue = 0x7a;
+   grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+  colour_values[16] = SDL_MapRGBA( keyb_screen->format,  red, green, blue, 0x50 );
+  bw_values[16]     = SDL_MapRGBA( keyb_screen->format, grey,  grey, grey, 0x50 );
+
+  return 0;
+}
+#endif /* VKEYBOARD */
+
 static void
 sdldisplay_find_best_fullscreen_scaler( void )
 {
@@ -387,6 +497,13 @@ sdldisplay_load_gfx_mode( void )
     tmp_screen = NULL;
   }
 
+#if VKEYBOARD
+  if ( keyb_screen ) {
+    SDL_FreeSurface( keyb_screen );
+    keyb_screen = NULL;
+  }
+#endif
+
   tmp_screen_width = (image_width + 3);
 
   sdldisplay_current_size = scaler_get_scaling_factor( current_scaler );
@@ -394,14 +511,33 @@ sdldisplay_load_gfx_mode( void )
   sdldisplay_find_best_fullscreen_scaler();
 
   /* Create the surface that contains the scaled graphics in 16 bit mode */
+#ifdef GCWZERO
+  Uint32 flags;
+  if (sdldisplay_change_triple_buffer)
+    flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
+    : (SDL_HWSURFACE | SDL_TRIPLEBUF);
+  else {
+    if (sdldisplay_is_triple_buffer) {
+      SDL_Flip( sdldisplay_gc );
+      uidisplay_frame_restore();
+      sdldisplay_force_full_refresh = 1;
+    }
+    flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
+    : SDL_HWSURFACE;
+  }
+#endif
   sdldisplay_gc = SDL_SetVideoMode(
     settings_current.full_screen && fullscreen_width ? fullscreen_width :
       image_width * sdldisplay_current_size,
     settings_current.full_screen && fullscreen_width ? max_fullscreen_height :
       image_height * sdldisplay_current_size,
     16,
+#ifdef GCWZERO
+    flags
+#else
     settings_current.full_screen ? (SDL_FULLSCREEN|SDL_SWSURFACE)
                                  : SDL_SWSURFACE
+#endif
   );
   if( !sdldisplay_gc ) {
     fprintf( stderr, "%s: couldn't create SDL graphics context\n", fuse_progname );
@@ -411,6 +547,11 @@ sdldisplay_load_gfx_mode( void )
   settings_current.full_screen =
       !!( sdldisplay_gc->flags & ( SDL_FULLSCREEN | SDL_NOFRAME ) );
   sdldisplay_is_full_screen = settings_current.full_screen;
+
+#ifdef GCWZERO
+  sdldisplay_change_triple_buffer = !!( sdldisplay_gc->flags & SDL_TRIPLEBUF );
+  sdldisplay_is_triple_buffer = sdldisplay_change_triple_buffer;
+#endif
 
   /* Distinguish 555 and 565 mode */
   if( sdldisplay_gc->format->Gmask >> sdldisplay_gc->format->Gshift == 0x1f )
@@ -436,12 +577,34 @@ sdldisplay_load_gfx_mode( void )
     fuse_abort();
   }
 
+#if VKEYBOARD
+  /* Create the surface that contains the keyboard graphics in 32 bit mode */
+  SDL_Surface *swap_screen;
+  swap_screen = SDL_CreateRGBSurface(SDL_HWSURFACE,
+                                     machine_current->timex ? VKEYB_WIDTH * 2  : VKEYB_WIDTH,
+                                     machine_current->timex ? VKEYB_HEIGHT * 2 : VKEYB_HEIGHT,
+                                     16,
+                                     sdldisplay_gc->format->Rmask,
+                                     sdldisplay_gc->format->Gmask,
+                                     sdldisplay_gc->format->Bmask,
+                                     ( SDL_BYTEORDER == SDL_BIG_ENDIAN ? 0x000000ff : 0xff000000 ) );
+  if ( !swap_screen ) {
+    fprintf( stderr, "%s: couldn't create keyb_screen\n", fuse_progname );
+    fuse_abort();
+  }
+  keyb_screen = SDL_DisplayFormatAlpha( swap_screen );
+  SDL_FreeSurface( swap_screen );
+#endif
+
   fullscreen_x_off = ( sdldisplay_gc->w - image_width * sdldisplay_current_size ) *
                      sdldisplay_is_full_screen  / 2;
   fullscreen_y_off = ( sdldisplay_gc->h - image_height * sdldisplay_current_size ) *
                      sdldisplay_is_full_screen / 2;
 
   sdldisplay_allocate_colours( 16, colour_values, bw_values );
+#if VKEYBOARD
+  sdldisplay_allocate_colours_alpha( 16, colour_values_a, bw_values_a );
+#endif
 
   /* Redraw the entire screen... */
   display_refresh_all();
@@ -459,6 +622,13 @@ uidisplay_hotswap_gfx_mode( void )
     free( tmp_screen->pixels );
     SDL_FreeSurface( tmp_screen ); tmp_screen = NULL;
   }
+
+#if VKEYBOARD
+  if ( keyb_screen ) {
+    SDL_FreeSurface( keyb_screen );
+    keyb_screen = NULL;
+  }
+#endif
 
   /* Setup the new GFX mode */
   if( sdldisplay_load_gfx_mode() ) return 1;
@@ -615,6 +785,15 @@ void
 uidisplay_putpixel( int x, int y, int colour )
 {
   libspectrum_word *dest_base, *dest;
+
+#if VKEYBOARD
+  if (use_alpha_values) {
+    uidisplay_putpixel_alpha(x - DISPLAY_BORDER_ASPECT_WIDTH, y - DISPLAY_BORDER_HEIGHT,
+                             colour);
+    return;
+  }
+#endif
+
   Uint32 *palette_values = settings_current.bw_tv ? bw_values :
                            colour_values;
 
@@ -642,6 +821,122 @@ uidisplay_putpixel( int x, int y, int colour )
     *dest = palette_colour;
   }
 }
+
+#if VKEYBOARD
+/* Set one pixel in the display */
+void
+uidisplay_putpixel_alpha( int x, int y, int colour ) {
+  libspectrum_dword *dest_base, *dest;
+  Uint32 *palette_values = settings_current.bw_tv ? bw_values_a :
+      colour_values_a;
+  Uint32 palette_colour = palette_values[ colour ];
+
+  if ( machine_current->timex ) {
+    x <<= 1;
+    y <<= 1;
+    dest_base = dest =
+        (libspectrum_dword*) ( (libspectrum_byte*) keyb_screen->pixels +
+        (x) * keyb_screen->format->BytesPerPixel +
+        (y) * keyb_screen->pitch);
+
+    *(dest++) = palette_colour;
+    *(dest++) = palette_colour;
+    dest = (libspectrum_dword*)
+        ( (libspectrum_byte*) dest_base + keyb_screen->pitch);
+    *(dest++) = palette_colour;
+    *(dest++) = palette_colour;
+  } else {
+    dest =
+        (libspectrum_dword*) ( (libspectrum_byte*) keyb_screen->pixels +
+        (x) * keyb_screen->format->BytesPerPixel +
+        (y) * keyb_screen->pitch);
+
+    *dest = palette_colour;
+  }
+}
+
+void
+uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
+  static int old_position = -1;
+  int current_position;
+
+  if (ui_widget_level >= 0)
+    current_position = 4;
+  else
+    current_position = position;
+
+  SDL_Rect r1 = { machine_current->timex ? vkeyboard_position[current_position].x * 2 : vkeyboard_position[current_position].x,
+                  machine_current->timex ? vkeyboard_position[current_position].y * 2 : vkeyboard_position[current_position].y,
+                  machine_current->timex ? VKEYB_WIDTH * 2  : VKEYB_WIDTH,
+                  machine_current->timex ? VKEYB_HEIGHT * 2 : VKEYB_HEIGHT };
+
+#ifdef GCWZERO
+  if ( !init_vkeyboard_canvas ) {
+    SDL_FillRect(keyb_screen, NULL, settings_current.bw_tv ? bw_values_a[16] : colour_values_a[16]);
+    init_vkeyboard_canvas = 1;
+  }
+#endif
+
+  if (ui_widget_level >= 0) {
+    if (!keyb_screen_save) {
+      keyb_screen_save = SDL_CreateRGBSurface(tmp_screen->flags, r1.w, r1.h,
+                                              tmp_screen->format->BitsPerPixel,
+                                              tmp_screen->format->Rmask,
+                                              tmp_screen->format->Gmask,
+                                              tmp_screen->format->Bmask,
+                                              tmp_screen->format->Amask);
+      SDL_BlitSurface(tmp_screen, &r1, keyb_screen_save, NULL);
+    } else
+      SDL_BlitSurface(keyb_screen_save, NULL, tmp_screen, &r1);
+  }
+
+  use_alpha_values = 1;
+  print_fn();
+  use_alpha_values = 0;
+
+  SDL_BlitSurface(keyb_screen, NULL, tmp_screen, &r1);
+
+  updated_rects[num_rects].x = r1.x;
+  updated_rects[num_rects].y = r1.y;
+  updated_rects[num_rects].w = r1.w;
+  updated_rects[num_rects].h = r1.h;
+  num_rects++;
+
+  if (ui_widget_level == -1) {
+    if (old_position != position)
+      display_refresh_all();
+    else
+      display_refresh_rect(r1.x, r1.y, r1.w, r1.h );
+    old_position = position;
+  }
+}
+
+void
+uidisplay_vkeyboard_input( void (*input_fn)(input_key key), input_key key ) {
+  input_fn(key);
+}
+
+void
+uidisplay_vkeyboard_release( void (*release_fn)(input_key key), input_key key ) {
+  release_fn(key);
+}
+
+void
+uidisplay_vkeyboard_end( void ) {
+  init_vkeyboard_canvas = 0;
+  if (keyb_screen_save) {
+    SDL_FreeSurface(keyb_screen_save);
+    keyb_screen_save = NULL;
+  }
+  /*
+     Don't refresh display from the use of keyboard in other Widgets
+     The function widget_do already do a display_refresh_call at his end
+     And the call here will affect to some operations like save screens
+   */
+  if (ui_widget_level == -1)
+    display_refresh_all();
+}
+#endif /* VKEYBOARD */
 
 /* Print the 8 pixels in `data' using ink colour `ink' and paper
    colour `paper' to the screen at ( (8*x) , y ) */
@@ -763,14 +1058,38 @@ uidisplay_frame_end( void )
   /* We check for a switch to fullscreen here to give systems with a
      windowed-only UI a chance to free menu etc. resources before
      the switch to fullscreen (e.g. Mac OS X) */
+#ifdef GCWZERO
+  sdldisplay_change_triple_buffer = settings_current.triple_buffer;
+  if ( ( sdldisplay_is_full_screen != settings_current.full_screen  ||
+      sdldisplay_is_triple_buffer != sdldisplay_change_triple_buffer ) &&
+#else
   if( sdldisplay_is_full_screen != settings_current.full_screen &&
+#endif
       uidisplay_hotswap_gfx_mode() ) {
     fprintf( stderr, "%s: Error switching to fullscreen\n", fuse_progname );
     fuse_abort();
   }
 
+#ifdef GCWZERO
+  settings_current.triple_buffer = sdldisplay_change_triple_buffer;
+ #endif
+
+#if VKEYBOARD
+  if ( vkeyboard_enabled )
+    ui_widget_print_vkeyboard();
+#endif
+
+#ifdef GCWZERO
+  if ( settings_current.statusbar )
+    ui_widget_statusbar_print_info();
+#endif
+
   /* Force a full redraw if requested */
+#ifdef GCWZERO
+  if ( sdldisplay_force_full_refresh || sdldisplay_is_triple_buffer ) {
+#else
   if ( sdldisplay_force_full_refresh ) {
+#endif
     num_rects = 1;
 
     updated_rects[0].x = 0;
@@ -820,6 +1139,11 @@ uidisplay_frame_end( void )
   if( SDL_MUSTLOCK( sdldisplay_gc ) ) SDL_UnlockSurface( sdldisplay_gc );
 
   /* Finally, blit all our changes to the screen */
+#ifdef GCWZERO
+  if ( sdldisplay_is_triple_buffer )
+    SDL_Flip( sdldisplay_gc );
+  else
+#endif
   SDL_UpdateRects( sdldisplay_gc, num_rects, updated_rects );
 
   num_rects = 0;
@@ -865,6 +1189,13 @@ uidisplay_end( void )
   if( saved ) {
     SDL_FreeSurface( saved ); saved = NULL;
   }
+
+#if VKEYBOARD
+  if ( keyb_screen ) {
+    SDL_FreeSurface( keyb_screen );
+    keyb_screen = NULL;
+  }
+#endif
 
   for( i=0; i<2; i++ ) {
     if ( red_cassette[i] ) {

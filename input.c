@@ -37,10 +37,210 @@ static int keypress( const input_event_key_t *event );
 static int keyrelease( const input_event_key_t *event );
 static int do_joystick( const input_event_joystick_t *joystick_event,
 			int press );
+#ifdef GCWZERO
+static int input_event_gcw0( const input_event_t *event );
+
+int
+input_event_gcw0( const input_event_t *event ) {
+  if (ui_widget_level == -1 && !vkeyboard_enabled ) {
+    input_event_t nevent;
+    if (settings_current.joystick_1_output) {
+      nevent.types.joystick.button = 0;
+      switch (event->types.key.native_key) {
+      case INPUT_KEY_Up:
+        nevent.types.joystick.button = INPUT_JOYSTICK_UP;
+        break;
+
+      case INPUT_KEY_Down:
+        nevent.types.joystick.button = INPUT_JOYSTICK_DOWN;
+        break;
+
+      case INPUT_KEY_Left:
+        nevent.types.joystick.button = INPUT_JOYSTICK_LEFT;
+        break;
+
+      case INPUT_KEY_Right:
+        nevent.types.joystick.button = INPUT_JOYSTICK_RIGHT;
+        break;
+
+      case INPUT_KEY_Control_L:
+        if (settings_current.joystick_1_fire_1)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_1;
+        break; /* A */
+
+      case INPUT_KEY_Alt_L:
+        if (settings_current.joystick_1_fire_2)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_2;
+        break; /* B */
+
+      case INPUT_KEY_space:
+        if (settings_current.joystick_1_fire_3)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_3;
+        break; /* X */
+
+      case INPUT_KEY_Shift_L:
+        if (settings_current.joystick_1_fire_4)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_4;
+        break; /* Y */
+
+      case INPUT_KEY_Tab:
+        if (settings_current.joystick_1_fire_5)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_5;
+        break; /* L1 */
+
+      case INPUT_KEY_BackSpace:
+        if (settings_current.joystick_1_fire_6)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_6;
+        break; /* R1 */
+
+      case INPUT_KEY_Page_Up:
+        if (settings_current.joystick_1_fire_7)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_7;
+        break; /* L2 */
+
+      case INPUT_KEY_Page_Down:
+        if (settings_current.joystick_1_fire_8)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_8;
+        break; /* R2 */
+
+      case INPUT_KEY_Return:
+        if (settings_current.joystick_1_fire_9)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_9;
+        break; /* Start */
+
+      case INPUT_KEY_Escape:
+        if (settings_current.joystick_1_fire_10)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_10;
+        break; /* Select */
+
+      case INPUT_KEY_slash: /* Translated unicode key */
+        if (settings_current.joystick_1_fire_11)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_11;
+        break; /* L3 */
+
+      case INPUT_KEY_period: /* Translated unicode key */
+        if (settings_current.joystick_1_fire_12)
+          nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_12;
+        break; /* R3 */
+
+      default:
+        break;
+      }
+      if (nevent.types.joystick.button) {
+        nevent.types.joystick.which = 0; /*Joystick 0*/
+        switch (event->type) {
+
+        case INPUT_EVENT_KEYPRESS:
+          nevent.type = INPUT_EVENT_JOYSTICK_PRESS;
+          return do_joystick(&(nevent.types.joystick), 1);
+
+        case INPUT_EVENT_KEYRELEASE:
+          nevent.type = INPUT_EVENT_JOYSTICK_RELEASE;
+          return do_joystick(&(nevent.types.joystick), 0);
+
+        default: break;
+        }
+      }
+    } else if (settings_current.joystick_gcw0_output) {
+      keyboard_key_name key = 0;
+      nevent.types.key.spectrum_key = 0;
+      switch (event->types.key.native_key) {
+      case INPUT_KEY_Up:
+        key = settings_current.joystick_gcw0_up;
+        break;
+
+      case INPUT_KEY_Down:
+        key = settings_current.joystick_gcw0_down;
+        break;
+
+      case INPUT_KEY_Left:
+        key = settings_current.joystick_gcw0_left;
+        break;
+
+      case INPUT_KEY_Right:
+        key = settings_current.joystick_gcw0_right;
+        break;
+
+      case INPUT_KEY_Control_L:
+        key = settings_current.joystick_gcw0_a;
+        break; /* A */
+
+      case INPUT_KEY_Alt_L:
+        key = settings_current.joystick_gcw0_b;
+        break; /* B */
+
+      case INPUT_KEY_space:
+        key = settings_current.joystick_gcw0_x;
+        break; /* X */
+
+      case INPUT_KEY_Shift_L:
+        key = settings_current.joystick_gcw0_y;
+        break; /* Y */
+
+      case INPUT_KEY_Tab:
+        key = settings_current.joystick_gcw0_l1;
+        break; /* L1 */
+
+      case INPUT_KEY_BackSpace:
+        key = settings_current.joystick_gcw0_r1;
+        break; /* R1 */
+
+      case INPUT_KEY_Page_Up:
+        key = settings_current.joystick_gcw0_l2;
+        break; /* L2 */
+
+      case INPUT_KEY_Page_Down:
+        key = settings_current.joystick_gcw0_r2;
+        break; /* R2 */
+
+      case INPUT_KEY_Return:
+        key = settings_current.joystick_gcw0_start;
+        break; /* Start */
+
+      case INPUT_KEY_Escape:
+        key = settings_current.joystick_gcw0_select;
+        break; /* Select */
+
+      case INPUT_KEY_slash: /* Translated unicode key */
+        key = settings_current.joystick_gcw0_l3;
+        break; /* L3 */
+
+      case INPUT_KEY_period: /* Translated unicode key */
+        key = settings_current.joystick_gcw0_r3;
+        break; /* R3 */
+
+      default:
+        break;
+      }
+      if (key) {
+        switch (event->type) {
+        case INPUT_EVENT_KEYPRESS: keyboard_press(key);
+          return 0;
+        case INPUT_EVENT_KEYRELEASE: keyboard_release(key);
+          return 0;
+        default: break;
+        }
+      }
+    }
+
+    /* Virtual Keyboard toggle with Start key */
+    if ( event->type == INPUT_EVENT_KEYPRESS && event->types.key.native_key == INPUT_KEY_Return ) {
+      vkeyboard_enabled = !vkeyboard_enabled;
+      return 0;
+    }
+  }
+
+  return 1;
+}
+#endif
 
 int
 input_event( const input_event_t *event )
 {
+
+#ifdef GCWZERO
+  if ( !input_event_gcw0(event) ) return 0;
+#endif
 
   switch( event->type ) {
 
@@ -236,10 +436,18 @@ keypress( const input_event_key_t *event )
 {
   int swallow;
 
+#if VKEYBOARD
+  if ( vkeyboard_enabled ) {
+    ui_widget_input_vkeyboard( event->native_key, 1 );
+    return 0;
+  }
+#endif
+#ifdef USE_WIDGET
   if( ui_widget_level >= 0 ) {
     ui_widget_keyhandler( event->native_key );
     return 0;
   }
+#endif
 
   /* Escape => ask UI to end mouse grab, return if grab ended */
   if( event->native_key == INPUT_KEY_Escape && ui_mouse_grabbed ) {
@@ -281,6 +489,12 @@ keypress( const input_event_key_t *event )
 static int
 keyrelease( const input_event_key_t *event )
 {
+#if VKEYBOARD
+  if ( vkeyboard_enabled ) {
+    ui_widget_input_vkeyboard( event->native_key, 0 );
+    return 0;
+  }
+#endif
   if( !settings_current.recreated_spectrum ) {
     send_keyboard_release( event->spectrum_key );
   }
@@ -364,12 +578,19 @@ do_joystick( const input_event_joystick_t *joystick_event, int press )
 {
   int which;
 
+#if VKEYBOARD
+  if ( vkeyboard_enabled ) {
+    ui_widget_input_vkeyboard( joystick_event->button, press );
+    return 0;
+  }
+#endif
 #ifdef USE_WIDGET
   if( ui_widget_level >= 0 ) {
     if( press ) ui_widget_keyhandler( joystick_event->button );
     return 0;
   }
 
+#ifndef GCWZERO
 #ifndef GEKKO /* Home button opens the menu on Wii */
   switch( joystick_event->button ) {
   case INPUT_JOYSTICK_FIRE_2:
@@ -380,6 +601,7 @@ do_joystick( const input_event_joystick_t *joystick_event, int press )
 
   }
 #endif  /* #ifndef GEKKO */
+#endif  /* #ifndef GCWZERO */
 
 #endif				/* #ifdef USE_WIDGET */
 

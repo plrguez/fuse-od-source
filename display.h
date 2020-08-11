@@ -115,6 +115,10 @@ int display_dirty_border(void);
 int display_frame(void);
 void display_refresh_main_screen(void);
 void display_refresh_all(void);
+#if VKEYBOARD
+void display_refresh_main_screen_rect( int x, int y, int w, int h );
+void display_refresh_rect( int x, int y, int w, int h );
+#endif
 
 #define display_get_offset( x, y ) display_line_start[(y)]+(x)
 

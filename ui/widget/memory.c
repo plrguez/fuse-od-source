@@ -71,10 +71,23 @@ void
 widget_memory_keyhandler( input_key key )
 {
   switch ( key ) {
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L:
+#endif
   case INPUT_KEY_Escape:	/* Close widget */
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L:
+#endif
   case INPUT_KEY_Return:	/* Close widget */
   case INPUT_KEY_KP_Enter:
     widget_end_all( WIDGET_FINISHED_OK );
@@ -85,13 +98,29 @@ widget_memory_keyhandler( input_key key )
     memaddr -= 16;    widget_memory_draw( NULL ); break;
   case INPUT_KEY_Down:
     memaddr += 16;    widget_memory_draw( NULL ); break;
+#ifdef GCWZERO
+  case INPUT_KEY_Tab:
+#else
   case INPUT_KEY_Page_Up:
+#endif
     memaddr -= 128;   widget_memory_draw( NULL ); break;
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace:
+#else
   case INPUT_KEY_Page_Down:
+#endif
     memaddr += 128;   widget_memory_draw( NULL ); break;
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Up:
+#else
   case INPUT_KEY_Home:
+#endif
     memaddr = 0;      widget_memory_draw( NULL ); break;
+#ifdef GCWZERO
+  case INPUT_KEY_Page_Down:
+#else
   case INPUT_KEY_End:
+#endif
     memaddr = 0xFF80; widget_memory_draw( NULL ); break;
 
   default:;

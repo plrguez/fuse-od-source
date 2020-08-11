@@ -35,6 +35,11 @@ typedef struct utils_file {
 
 } utils_file;
 
+#ifdef GCWZERO
+/* Last filename loaded */
+extern char* last_filename;
+#endif
+
 int utils_open_file( const char *filename, int autoload,
 		     libspectrum_id_t *type );
 int utils_open_snap( void );
@@ -61,5 +66,9 @@ utils_save_binary( libspectrum_word start, size_t length,
 
 void utils_networking_init( void );
 void utils_networking_end( void );
+
+#ifdef GCWZERO
+char* utils_last_filename( const char *filename );
+#endif
 
 #endif			/* #ifndef FUSE_UTILS_H */

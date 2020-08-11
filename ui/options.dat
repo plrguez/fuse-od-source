@@ -15,7 +15,12 @@ Checkbox, Raw Sinclair(N)ET, raw_s_net, INPUT_KEY_n
 Checkbox, Black and white T(V), bw_tv, INPUT_KEY_v
 Checkbox, (P)AL-TV use TV2x effect, pal_tv2x, INPUT_KEY_p
 #ifdef UI_SDL
+#ifndef GCWZERO
 Checkbox, Full (s)creen, full_screen, INPUT_KEY_s
+#endif
+#ifdef GCWZERO
+Checkbox, Triple Bu(f)fer, triple_buffer, INPUT_KEY_f
+#endif
 #endif
 Checkbox, Show status(b)ar, statusbar, INPUT_KEY_b
 Checkbox, Snap (j)oystick prompt, joy_prompt, INPUT_KEY_j

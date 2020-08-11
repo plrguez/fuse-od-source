@@ -77,6 +77,12 @@ const char *joystick_name[ JOYSTICK_TYPE_COUNT ] = {
   "Fuller"
 };
 
+#ifdef GCWZERO
+const char *joystick_name_gcw0[] = {
+  "None", "Activated"
+};
+#endif
+
 const char *joystick_connection[ JOYSTICK_CONN_COUNT ] = {
   "None",
   "Keyboard",
@@ -167,6 +173,10 @@ joystick_press( int which, joystick_button button, int press )
   case JOYSTICK_KEYBOARD:
     type = settings_current.joystick_keyboard_output; break;
 
+#ifdef GCWZERO
+  case GCW0_KEYBOARD:
+    type = settings_current.joystick_gcw0_output; break;
+#endif
   default:
     return 0;
   }

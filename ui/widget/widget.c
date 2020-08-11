@@ -51,9 +51,15 @@
 #include "ui/widget/options_internals.h"
 #include "ui/widget/widget_internals.h"
 #include "utils.h"
+#ifdef VKEYBOARD
+#include "ui/vkeyboard.h"
+#endif
 
 #ifdef WIN32
 #include <windows.h>
+#endif
+#ifdef VKEYBOARD
+int vkeyboard_enabled = 0;
 #endif
 
 /* Bitmap font storage */
@@ -261,6 +267,24 @@ void widget_print_title( int y, int col, const char *s )
   snprintf( buffer, sizeof( buffer ), "\x0A%s", s );
   widget_printstring( 128 - widget_stringwidth( buffer ) / 2, y, col, buffer );
 }
+
+#ifdef GCWZERO
+void widget_print_filetitle( int y, struct widget_dirent *current, int is_saving )
+{
+  char buffer[128];
+  char *name, *old_name;
+
+  widget_rectangle( 10, y, 236, 8, WIDGET_COLOUR_BACKGROUND );
+  if (is_saving || S_ISDIR(current->mode) ) return;
+  name = strdup( current->name );
+  if (!name) return;
+  old_name = name;
+  while( widget_stringwidth( name ) > 232 ) name++;
+  snprintf( buffer, sizeof( buffer ), "\x0A%s", name );
+  free(old_name);
+  widget_printstring( 128 - widget_stringwidth( buffer ) / 2, y, WIDGET_COLOUR_FOREGROUND, buffer );
+}
+#endif
 
 void widget_printstring_right( int x, int y, int col, const char *s )
 {
@@ -486,6 +510,49 @@ int widget_end( void )
   return 0;
 }
 
+#ifdef GCWZERO
+#define WIDGET_MAX_INFO_LENGTH 40
+#define WIDGET_COL_INFO 5
+#define WIDGET_ROW_INFO 225
+#define WIDGET_RELATIVE_COL_INFO (WIDGET_COL_INFO - DISPLAY_BORDER_ASPECT_WIDTH)
+#define WIDGET_RELATIVE_ROW_INFO (WIDGET_ROW_INFO - DISPLAY_BORDER_HEIGHT)
+static char status_info[WIDGET_MAX_INFO_LENGTH];
+static int  info_len = 0;
+static int  info_sc  = 1;
+void widget_statusbar_update_info( float speed ) {
+/*
+  snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s - %3.0f%% (1:%d)",
+           libspectrum_machine_name( machine_current->machine ),
+           speed,
+           settings_current.frame_rate);
+*/
+  snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s - %3.0ffps (1:%d)",
+           libspectrum_machine_name( machine_current->machine ),
+           speed,
+           settings_current.frame_rate);
+  if ( settings_current.triple_buffer )
+    snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
+             status_info,
+             "B");
+}
+
+void widget_statusbar_print_info(void) {
+  int sc = machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ? 2 : 1;
+  int len = widget_stringwidth(status_info);
+  if (len>0) {
+    if (info_len && len < info_len) {
+      widget_rectangle(WIDGET_RELATIVE_COL_INFO, WIDGET_RELATIVE_ROW_INFO, info_len, 8, WIDGET_COLOUR_DISABLED);
+      uidisplay_area(WIDGET_COL_INFO*info_sc, WIDGET_ROW_INFO*info_sc, info_len*info_sc, 8 * info_sc);
+    }
+    info_len = len;
+    info_sc = sc;
+    widget_rectangle(WIDGET_RELATIVE_COL_INFO, WIDGET_RELATIVE_ROW_INFO, info_len, 8, 5);
+    widget_printstring(WIDGET_RELATIVE_COL_INFO, WIDGET_RELATIVE_ROW_INFO, 10, status_info);
+    uidisplay_area(WIDGET_COL_INFO*info_sc, WIDGET_ROW_INFO*info_sc, info_len*info_sc, 8*info_sc);
+  }
+}
+#endif
+
 /* General widget routine */
 
 int widget_do( widget_type which, void *data )
@@ -557,6 +624,21 @@ int widget_do( widget_type which, void *data )
 
   return 0;
 }
+
+#ifdef GCWZERO
+/* End the currently running widget */
+int widgets_to_end = 0;
+int
+widget_end_n_widgets( int number, widget_finish_state state )
+{
+  int i;
+
+  for( i=ui_widget_level; i > ui_widget_level - number; i-- )
+    widget_return[i].finished = state;
+
+  return 0;
+}
+#endif
 
 /* End the currently running widget */
 int
@@ -691,6 +773,9 @@ widget_t widget_data[] = {
   { widget_query_save_draw,widget_query_finish,	 widget_query_save_keyhandler },
   { widget_diskoptions_draw, widget_options_finish, widget_diskoptions_keyhandler  },
   { widget_binary_draw, widget_binary_finish, widget_binary_keyhandler  },
+#ifdef VKEYBOARD
+  { widget_vkeyboard_draw, widget_vkeyboard_finish, widget_vkeyboard_keyhandler  },
+#endif
 };
 
 #ifndef UI_SDL
@@ -779,6 +864,11 @@ void
 ui_popup_menu( int native_key )
 {
   switch( native_key ) {
+#ifdef GCWZERO
+  case INPUT_KEY_Home: /* Power Button GCW0/RG350 */
+  case INPUT_KEY_End: /* Power Button RetroFW */
+  case INPUT_KEY_Escape: /* Select */
+#endif
   case INPUT_KEY_F1:
     fuse_emulation_pause();
     widget_do_menu( widget_menu );
@@ -789,11 +879,17 @@ ui_popup_menu( int native_key )
     menu_file_savesnapshot( 0 );
     fuse_emulation_unpause();
     break;
+#ifdef GCWZERO
+  case INPUT_KEY_Tab: /*L1*/
+#endif
   case INPUT_KEY_F3:
     fuse_emulation_pause();
     menu_file_open( 0 );
     fuse_emulation_unpause();
     break;
+#ifdef GCWZERO
+  case INPUT_KEY_BackSpace: /*R1*/
+#endif
   case INPUT_KEY_F4:
     fuse_emulation_pause();
     menu_options_general( 0 );
@@ -827,6 +923,17 @@ ui_popup_menu( int native_key )
     menu_file_exit( 0 );
     fuse_emulation_unpause();
     break;
+#ifdef VKEYBOARD
+#ifdef GCWZERO
+  case INPUT_KEY_Return: /*Start*/
+#endif
+  case INPUT_KEY_F11:
+    vkeyboard_enabled = !vkeyboard_enabled;
+/*
+    menu_vkeyboard( 0 );
+*/
+    break;
+#endif /* VKEYBOARD */
 
   default: break;		/* Remove gcc warning */
 

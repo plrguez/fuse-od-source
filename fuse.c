@@ -37,6 +37,14 @@
 
 #include <unistd.h>
 
+#ifdef GCWZERO
+#ifdef HAVE_LIBGEN_H
+#include <libgen.h>
+#endif
+#include <limits.h>
+#include "compat.h"
+#endif
+
 /* We need to include SDL.h on Mac O X and Windows to do some magic
    bootstrapping by redefining main. As we now allow SDL joystick code to be
    used in the GTK+ and Xlib UIs we need to also do the magic when that code is
@@ -376,6 +384,10 @@ static int fuse_init(int argc, char **argv)
 #endif
 
   if( settings_init( &first_arg, argc, argv ) ) return 1;
+
+#ifdef GCWZERO
+  settings_current.full_screen = 1;
+#endif
 
   if( settings_current.show_version ) {
     fuse_show_version();
@@ -761,6 +773,20 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
     }
 
     utils_close_file( &file );
+
+#ifdef GCWZERO
+    if (class != LIBSPECTRUM_CLASS_UNKNOWN) {
+      char *path = 0;
+      char buffer[PATH_MAX];
+      last_filename = utils_last_filename( filename );
+      strncpy( buffer, filename, PATH_MAX );
+      path = dirname(buffer);
+      if (path && path[0] != '\0') {
+        snprintf(buffer, PATH_MAX, "%s", path);
+        chdir(buffer);
+      }
+    }
+#endif
   }
 
   return 0;

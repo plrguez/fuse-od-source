@@ -1,0 +1,10 @@
+Package: Fuse 1.5.7
+Version:
+Description: RetroFW 1 port of Fuse ZX Spectrum emulator 1.5.7
+Section: emus
+Priority: optional
+Maintainer: plrguez
+Architecture: mipsel
+Homepage: https://github.com/plrguez/fuse-rg350
+Depends:
+Source: https://github.com/plrguez/fuse-rg350

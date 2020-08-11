@@ -76,7 +76,9 @@ MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_machine_select );
 MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_peripheral_select );
 MENU_CALLBACK( menu_options_filter );
 MENU_DETAIL( menu_filter_detail );
+#ifndef GCWZERO
 MENU_CALLBACK( menu_options_fullscreen );
+#endif
 MENU_CALLBACK( menu_options_save );
 
 MENU_CALLBACK( menu_machine_profiler_start );
@@ -158,6 +160,9 @@ MENU_DETAIL( menu_didaktik_b_detail );
 MENU_DETAIL( menu_disciple1_detail );
 MENU_DETAIL( menu_disciple2_detail );
 MENU_CALLBACK_WITH_ACTION( menu_options_joysticks_select );
+#ifdef GCWZERO
+MENU_DETAIL( menu_gcw0_keyboard_detail );
+#endif
 MENU_DETAIL( menu_keyboard_joystick_detail );
 MENU_DETAIL( menu_joystick_1_detail );
 MENU_DETAIL( menu_joystick_2_detail );
@@ -173,6 +178,9 @@ MENU_CALLBACK( menu_machine_memorybrowser );
 
 MENU_CALLBACK( menu_help_keyboard );
 MENU_CALLBACK( menu_help_about );
+#if VKEYBOARD
+MENU_CALLBACK( menu_vkeyboard );
+#endif
 
 /* Called from elsewhere (generally from one of the routines defined
    in menu.c) */

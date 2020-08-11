@@ -1,0 +1,5 @@
+title=Fuse 1.5.7
+description=Fuse 1.5.7 ZX Spectrum emulator
+exec=/home/retrofw/emus/fuse/fuse-retrofw
+selectordir=/home/retrofw/roms/zxspectrum
+clock=600

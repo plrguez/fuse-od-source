@@ -165,7 +165,7 @@ my %ui_data = (
                          Control_L Control_R Alt_L Alt_R Meta_L Meta_R
                          Super_L Super_R Mode_switch Up Down Left Right
                          Insert Delete Home End Page_Up Page_Down KP_Enter
-                         dead_circumflex ) },
+                         dead_circumflex KP_Divide KP_Period ) },
 	      translations => {
 		  apostrophe  => 'QUOTE',
 		  asciicircum => 'CARET',

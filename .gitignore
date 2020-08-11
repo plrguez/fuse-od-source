@@ -105,3 +105,11 @@ tags
 /z80/z80_ddfd.c
 /z80/z80_ddfdcb.c
 /z80/z80_ed.c
+/nbproject/
+/Platform/roms/*.rom
+/Platform/GCW0/build/
+/Platform/RETROFW2.0/build/
+/Platform/RETROFW1.0/build/
+/Platform/GCW0/gdbinit
+/Platform/RETROFW1.0/gdbinit
+/Platform/RETROFW2.0/gdbinit

@@ -49,12 +49,24 @@ widget_picture_keyhandler( input_key key )
     widget_picture_draw( ptr );
     break;
 #endif
-    
+#ifdef GCWZERO
+  case INPUT_KEY_Home:  /* Power   */
+  case INPUT_KEY_End:   /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_OK );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L: /* B */
+#endif
   case INPUT_KEY_Escape:
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L: /* A */
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:

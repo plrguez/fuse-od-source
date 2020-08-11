@@ -280,6 +280,9 @@ widget_binary_keyhandler( input_key key )
     break;
 #endif
 
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L: /* B */
+#endif
   case INPUT_KEY_c:
   case INPUT_KEY_C:
   case INPUT_KEY_Escape:
@@ -330,6 +333,9 @@ widget_binary_keyhandler( input_key key )
       new_highlight_entry = 0;
     break;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L: /* A */
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:

@@ -24,7 +24,10 @@
 #include <config.h>
 
 #include <libspectrum.h>
-
+#ifdef GCWZERO
+#include <stdlib.h>
+#include <string.h>
+#endif
 #include "event.h"
 #include "fuse.h"
 #include "menu.h"
@@ -317,11 +320,13 @@ MENU_CALLBACK( menu_options_filter )
   fuse_emulation_unpause();
 }
 
+#ifndef GCWZERO
 MENU_CALLBACK( menu_options_fullscreen )
 {
   ui_widget_finish();
   settings_current.full_screen = !settings_current.full_screen;
 }
+#endif
 
 MENU_CALLBACK( menu_options_save )
 {
@@ -1075,6 +1080,14 @@ menu_filter_detail( void )
 {
   return scaler_name(current_scaler);
 }
+
+#ifdef GCWZERO
+const char*
+menu_gcw0_keyboard_detail( void )
+{
+  return joystick_name_gcw0[ settings_current.joystick_gcw0_output ];
+}
+#endif
 
 const char*
 menu_keyboard_joystick_detail( void )

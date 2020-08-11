@@ -56,6 +56,13 @@ typedef struct widget_t {
   widget_keyhandler_fn keyhandler;	/* Keyhandler */
 } widget_t;
 
+#ifdef GCWZERO
+/* At joystick configurations when accept a key we don't want to exit
+  completely the widgets. We want return to the configuration of other keys. */
+extern int widgets_to_end;
+int
+widget_end_n_widgets( int number, widget_finish_state state );
+#endif
 int widget_end_widget( widget_finish_state state );
 int widget_end_all( widget_finish_state state );
 
@@ -271,8 +278,27 @@ int widget_binary_draw( void *data );
 void widget_binary_keyhandler( input_key key );
 int widget_binary_finish( widget_finish_state finished );
 
+#ifdef VKEYBOARD
+/*
+ Virtual Keyboard functions are not used as normal widget launched from
+ popup menu.
+
+ widget_vkeyboard_finish is defined here to make possible use the type
+ widget_finish_state.
+
+ See widget.h for the definition of other functions for vkeyboard:
+      widget_vkeyboard_draw
+      widget_vkeyboard_keyhandler
+      widget_vkeyboard_keyrelease
+*/
+int widget_vkeyboard_finish( widget_finish_state finished );
+#endif
 /* The widgets actually available */
 
 extern widget_t widget_data[];
+
+#ifdef GCWZERO
+void widget_print_filetitle( int y, struct widget_dirent *current, int is_saving );
+#endif
 
 #endif				/* #ifndef FUSE_WIDGET_INTERNALS_H */

@@ -58,6 +58,10 @@
 #include "tape.h"
 #include "utils.h"
 
+#ifdef GCWZERO
+char* last_filename = NULL;
+#endif
+
 static void init_path_context( path_context *ctx, utils_aux_type type );
 
 static int networking_init_count = 0;
@@ -494,3 +498,31 @@ utils_networking_end( void )
 #endif
 }
 
+#ifdef GCWZERO
+char* utils_last_filename( const char *filename )
+{
+  char *c, *test_file, *last_file;
+
+  if( !strlen( filename ) ) return NULL; /* Nothing to search */
+
+  test_file = utils_safe_strdup( filename );
+  if( !test_file ) return NULL; /* Nothing to search */
+
+  c = strrchr( test_file, FUSE_DIR_SEP_CHR );
+  if (c)
+    last_file = utils_safe_strdup( ++c );
+  else
+    last_file = utils_safe_strdup( test_file );
+
+  /* Search for extension */
+  c = strrchr( last_file, '.' );
+  if( c ) {
+    int n = c - last_file;
+    last_file[n] = '\0';
+  }
+
+  libspectrum_free( test_file );
+
+  return last_file;
+}
+#endif

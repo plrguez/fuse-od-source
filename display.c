@@ -1027,6 +1027,55 @@ void display_refresh_all(void)
           * sizeof(libspectrum_dword) );
 }
 
+#if VKEYBOARD
+void display_refresh_main_screen_rect( int x, int y, int w, int h )
+{
+  size_t i;
+  libspectrum_dword dirty;
+  int column = machine_current->timex ? x < DISPLAY_BORDER_WIDTH ? 0 : ( x - DISPLAY_BORDER_WIDTH ) >> 4
+                                      : x < DISPLAY_BORDER_ASPECT_WIDTH ? 0 : ( x - DISPLAY_BORDER_ASPECT_WIDTH ) >> 3;
+  int row    = machine_current->timex ? y < DISPLAY_BORDER_HEIGHT << 1 ?  0 : ( y - ( DISPLAY_BORDER_HEIGHT << 1 ) ) >> 1
+                                      : y < DISPLAY_BORDER_HEIGHT ?  0 : y - DISPLAY_BORDER_HEIGHT;
+  int bytes  = machine_current->timex ? x < DISPLAY_BORDER_WIDTH ? ( x + w - DISPLAY_BORDER_WIDTH ) >> 4 : w >> 4
+                                      : x < DISPLAY_BORDER_ASPECT_WIDTH ? ( x + w - DISPLAY_BORDER_ASPECT_WIDTH ) >> 3 : w >> 3;
+  int end    = column + bytes > DISPLAY_WIDTH_COLS ? DISPLAY_WIDTH_COLS : column + bytes;
+  int height = machine_current->timex ? y < DISPLAY_BORDER_HEIGHT << 1 ? ( y + h - ( DISPLAY_BORDER_HEIGHT << 1 ) ) >> 1 : h >> 1
+                                      : y < DISPLAY_BORDER_HEIGHT ? y + h - DISPLAY_BORDER_HEIGHT : h;
+
+  dirty = display_all_dirty;
+  dirty >>= column;
+  dirty <<= column + ( DISPLAY_WIDTH_COLS - end );
+  dirty >>= ( DISPLAY_WIDTH_COLS - end );
+  for( i = row; i < row + height && i < DISPLAY_HEIGHT; i++ )
+    display_maybe_dirty[i] |= dirty;
+}
+
+void display_refresh_rect( int x, int y, int w, int h )
+{
+  size_t i, j;
+  int index;
+  int column = machine_current->timex ? x >> 4 : x >> 3;
+  int bytes  = machine_current->timex ? w >> 4 : w >> 3 ;
+  int row    = machine_current->timex ? ( y >> 1 ) : y;
+  int height = machine_current->timex ? h >> 1 : h;
+  libspectrum_dword dirty;
+
+  display_refresh_main_screen_rect(x,y,w,h);
+
+  dirty = display_all_dirty;
+  dirty >>= column;
+  dirty <<= column + ( DISPLAY_SCREEN_WIDTH_COLS - ( column + bytes ) );
+  dirty >>= ( DISPLAY_SCREEN_WIDTH_COLS - ( column + bytes ) );
+  for( i = row; i < row + height && i < DISPLAY_SCREEN_HEIGHT; i++ ) {
+    display_is_dirty[i] |= dirty;
+    for ( j = column; j < column + bytes; j++) {
+      index = j + i * DISPLAY_SCREEN_WIDTH_COLS;
+      display_last_screen[index] = 0xff;
+    }
+  }
+}
+#endif
+
 /* Fetch pixel (x, y). On a Timex this will be a point on a 640x480 canvas,
    on a Sinclair/Amstrad/Russian clone this will be a point on a 320x240
    canvas */

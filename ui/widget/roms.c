@@ -47,7 +47,9 @@ widget_roms_draw( void *data )
   int i;
   char buffer[32];
   char key[] = "\x0A ";
-
+#if VKEYBOARD
+  vkeyboard_enabled = 1;
+#endif
   if( data ) info = data;
 
   /* Get a copy of the current settings */
@@ -116,10 +118,23 @@ widget_roms_keyhandler( input_key key )
     break;
 #endif
 
+#ifdef GCWZERO
+  case INPUT_KEY_Home:
+  case INPUT_KEY_End: /* RetroFW */
+    widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Alt_L: /* B */
+#endif
   case INPUT_KEY_Escape:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
+#ifdef GCWZERO
+  case INPUT_KEY_Control_L: /* A */
+#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
     widget_end_all( WIDGET_FINISHED_OK );
@@ -132,7 +147,9 @@ widget_roms_keyhandler( input_key key )
 
   if( key >= INPUT_KEY_a && key <= INPUT_KEY_z &&
       key - INPUT_KEY_a < (ptrdiff_t)rom_count ) {
-
+#if VKEYBOARD
+    vkeyboard_enabled = 0;
+#endif
     char **setting;
     char buf[32];
     widget_filesel_data data;
@@ -144,6 +161,9 @@ widget_roms_keyhandler( input_key key )
     data.exit_all_widgets = 0;
     data.title = buf;
     widget_do_fileselector( &data );
+#if VKEYBOARD
+    vkeyboard_enabled = 1;
+#endif
     if( !widget_filesel_name ) return;
 
     setting = settings_get_rom_setting( widget_settings, key + first_rom,
@@ -157,6 +177,9 @@ widget_roms_keyhandler( input_key key )
 int
 widget_roms_finish( widget_finish_state finished )
 {
+#if VKEYBOARD
+  vkeyboard_enabled = 0;
+#endif
   if( finished == WIDGET_FINISHED_OK ) {
     settings_copy( &settings_current, widget_settings );
   }

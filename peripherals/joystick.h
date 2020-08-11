@@ -35,7 +35,10 @@ void joystick_register_startup( void );
 
 /* A constant to identify the joystick emulated via the keyboard */
 #define JOYSTICK_KEYBOARD 2
-
+#ifdef GCWZERO
+/* A constant to identify the keyboard emulated via the GCW0 Buttons */
+#define GCW0_KEYBOARD 3
+#endif
 typedef enum joystick_type_t {
 
   JOYSTICK_TYPE_NONE = 0,
@@ -53,6 +56,9 @@ typedef enum joystick_type_t {
 #define JOYSTICK_TYPE_COUNT 8
 
 extern const char *joystick_name[];
+#ifdef GCWZERO
+extern const char *joystick_name_gcw0[];
+#endif
 extern const char *joystick_connection[];
 #define JOYSTICK_CONN_COUNT 4
 
