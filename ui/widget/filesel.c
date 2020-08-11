@@ -90,6 +90,10 @@ static int is_rootdir;
    display, that of the filename which the `cursor' is on, and that
    which it will be on after this keypress */
 static size_t top_left_file, current_file, new_current_file;
+#ifdef GCWZERO
+static size_t last_top_left_file, last_current_file;
+static char *last_directory = NULL;
+#endif
 
 static char *widget_get_filename( const char *title, int saving );
 
@@ -497,8 +501,17 @@ widget_filesel_draw( void *data )
 #endif				/* #ifdef WIN32 */
 
   widget_scan( directory );
+#ifdef GCWZERO
+  if (last_directory && strcmp(directory,last_directory) == 0) {
+    new_current_file = current_file = last_current_file;
+    top_left_file = last_top_left_file;
+  } else {
+#endif
   new_current_file = current_file = 0;
   top_left_file = 0;
+#ifdef GCWZERO
+  }
+#endif
 
   /* Create the dialog box */
   error = widget_dialog_with_border( 1, 2, 30, 22 );
@@ -531,7 +544,13 @@ int widget_filesel_finish( widget_finish_state finished ) {
     if( widget_filesel_name ) free( widget_filesel_name );
     widget_filesel_name = NULL;
   }
-
+#ifdef GCWZERO
+  last_directory = widget_getcwd();
+  if( finished == WIDGET_FINISHED_OK ) {
+    last_top_left_file = top_left_file;
+    last_current_file = current_file;
+  }
+#endif
   return 0;
 }
 
@@ -819,6 +838,10 @@ http://thread.gmane.org/gmane.comp.gnu.mingw.user/9197
     new_current_file = 0;
     /* Force a redisplay of all filenames */
     current_file = 1; top_left_file = 1;
+#ifdef GCWZERO
+    /* Directory change. Reset last position */
+    last_current_file = last_top_left_file = 0;
+#endif
   }
 
   free( fn );
@@ -986,7 +1009,7 @@ widget_filesel_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Control_L:
+  case INPUT_KEY_Control_L: /* A */
 #endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:

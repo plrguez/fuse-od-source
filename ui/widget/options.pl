@@ -582,7 +582,7 @@ widget_$_->{name}_keyhandler( input_key key )
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Alt_L:
+  case INPUT_KEY_Alt_L: /* B */
 #endif
   case INPUT_KEY_Escape:
   case INPUT_JOYSTICK_FIRE_2:
@@ -609,7 +609,7 @@ widget_$_->{name}_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Tab:
+  case INPUT_KEY_Tab: /* L1 */
 #else
   case INPUT_KEY_Home:
 #endif
@@ -620,7 +620,7 @@ widget_$_->{name}_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_BackSpace:
+  case INPUT_KEY_BackSpace: /* R1 */
 #else
   case INPUT_KEY_End:
 #endif
@@ -638,12 +638,16 @@ widget_$_->{name}_keyhandler( input_key key )
     return;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Control_L:
+  case INPUT_KEY_Control_L: /* A */
 #endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:
+#ifdef GCWZERO
+    widget_end_widget( WIDGET_FINISHED_OK );
+#else
     widget_end_all( WIDGET_FINISHED_OK );
+#endif
     widget_$_->{name}_running = 0;
     display_refresh_all();
     return;

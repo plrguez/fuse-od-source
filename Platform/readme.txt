@@ -61,18 +61,18 @@ The keys in the virtual keyboard correspond to ZX Spectrum keys and it send to e
 
 Buttons in emulator:
 --------------------
-    `Cursor`, `Left Stick`
-    Shift cursor ZX Spectrum keys (5, 6, 7, 8).
+    `Cursor`
+    Shifted cursor ZX Spectrum keys (5, 6, 7 and 8 keys)
     This is modified by the setting: "Use shift with arrow keys" by default On
 
     `A`, `B`
-    Nothing
+    Symbol Shift
 
     `Y`
-    CAPS Shift key
+    CAPS Shift
 
     `X`
-    Space Key
+    Space
 
     `Select`, `Power`
     Open general menu
@@ -86,45 +86,49 @@ Buttons in emulator:
     `R1`
     Open General options dialog
 
+    `Left Stick`
+    Nothing or As `Cursor` if used the `Power`+`B` hotkey on RG350
+
     `Right Stick`
-    On RG350 models you can activate Mouse with `Power`+`B` combo and use to emulate Kempston mouse
+    On RG350 models you can activate Mouse with `Power`+`B` hotkey and use to emulate Kempston mouse
 
     `L2`
-    Left click with mouse emulation active
+    Left click with mouse emulation
 
     `R2`
-    Right click with mouse emulation active
+    Right click with mouse emulation
 
 
 Buttons in Menu and Forms:
 --------------------------
     `Cursor`, `Left Stick`
-    Move
+    Move. There is no need of use `Power`+`B` hotkey on RG350 for use the left stick on menus
 
     `A`, `Start`
     Select the option or accept the options at form
 
     `B`, `Select`
-    Cancel and go back to previous menu or the emulator
+    Cancel and go back to previous menu or to the emulator if there is no previous menu
 
     `X`
-    Mark/Unmark a check option. For example "Auto-save settings"
-    Open dialog for choose an option. For example at Sound options -> AY stereo separation
+    **Mark/Unmark** for check options: For example at General options -> Auto-save settings
+    **Open list** for list options: For example at Sound options -> AY stereo separation
+    **enter name** for file save dialogs.
 
     `Y`
     Nothing
 
     `L1`
-    Go to the first option in menu
+    Go to the first menu option
 
     `R1`
-    Go to the last option in menu
+    Go to the last menu option
 
     `L2`
-    Go to the first entry in File selector
+    In the file selector go to the first entry in the current directory
 
     `R2`
-    Go to the last entry in File selector
+    In the file selector go to the last entry in the current directory
 
     `L2`, `R3`
     Nothing
@@ -133,16 +137,17 @@ Buttons in Menu and Forms:
     Nothing
 
     `Power`
-    Cancel and exit completely from menu to the emulator
+    Cancel and exit completely from any level of menu to the emulator
 
 #### Forms ####
 ---------------
 Some menu options open a form with options to mark or choose some option from a list.
-General, Media and Sound are some forms.
 
-=>¡¡The forms must be accepted to persist the selected options!!
-  To accept it you must use the `A` or `Start` buttons.
-  The `B`, `Select` or `Power` buttons cancel it and the changes are lost.
+=>¡¡The forms must be confirmed to persist the selected options!!
+  To confirm them you must use the `A` or `Start` buttons.
+  The `B`, `Select` or `Power` buttons cancel them and the changes are lost.
+
+Some examples of forms are General, Media and Sound.
 
 #### Virtual keyboard in menu ####
 ----------------------------------
@@ -153,35 +158,35 @@ This keyboard is very limited, it is don't showed at all possible options and it
 Examples where the vistual keyboard it's appearing are: Enter name at Save Snapshot, Debugger, Change Emulation Speed or Frame rate.
 
     `Cursor`
-    Move to select the keyboard keys
+    Move to select keyboard keys
 
     `A`
     Press the actual selected key
 
     `X`
-    Change the keyboard mode (Upper/Lower case and some other characters)
+    Change the keyboard mode between upper and lower case and some other characters
 
     `Y`
     Delete previous character
 
     `B`
-    Cancel the form or option and exit
+    Cancel the actual form or option and exit to previous option in menu
 
-    Accept forms
-    Select **En** at virtual Keyboard and press the `A` button to accept the form and exit
+    Confirm forms
+    To confirm changed options at forms select **En** key at virtual Keyboard and then press the `A` button
 
-For "enter the name" dialogs at save options the last loaded file name, without the extension, is proposed.
+For the **Enter the name** dialogs at save options the las loaded filename without the extension is proposed.
 
 ------------------------------------------------
 ### Mapping buttons to Joysticks or Keyboard ###
 ------------------------------------------------
-You can map Joysticks or Spectrum key to buttons at `Menu -> Options -> Joysticks`
+You can map Joysticks or Spectrum keys to buttons in `Menu -> Options -> Joysticks`
 
-There are three options but the relevant ones are the next:
+Yo can do it with the next options:
 
 ---- GCW0 Joystick 1... ----
 ----------------------------
-This option allow to emulate a ZX Spectrum joystick. Also allow to map additional buttons to ZX Spectrum keyboard keys.
+This option allows you to emulate a ZX Spectrum joystick with the buttons handheld. It also allows you to assign buttons to keys on the ZX Spectrum keyboard.
 
 It have two options:
 
@@ -189,19 +194,16 @@ It have two options:
   ---------
   This allow to choose the Joystick to emulate or None. Default is None.
 
-  Some type of Joysticks may require other emulators options active.
-  For example Kempston joystick need to be activated at `Menu --> Options --> Peripherals --> General` then check Kempston joystick and accept the form with `A` button.
+  Some type of Joysticks may require other emulator options active.
+  For example Kempston joystick need to be activated at `Menu --> Options --> Peripherals --> General`.
 
 - **Button mapping**:
   -------------------
-  Map the console buttons to Joystick fire, ZX Spectrum keys or to Nothing. By default all buttons are mapped to Joystick fire.
-
-  When you choose any Type other than **None** some buttons lost their general mapping if they was mapped at here. For example `Select`, `Start`, `L1` and `R1` buttons.
-  If you have mapped the `Select` button you can access to the Menu with `Power` button.
+  Map the handheld buttons to Joystick fire, ZX Spectrum keys or to Nothing. By default all buttons are mapped to Joystick fire.
 
 ---- GCW0 Keyboard... ----
 --------------------------
-This option allow to map console buttons to ZX Spectrum keyboard keys.
+This option allows you to map handheld buttons to the keys on the ZX Spectrum keyboard, including cursors.
 
 It have two options:
 
@@ -213,10 +215,10 @@ It have two options:
   -------------------
   Map buttons to ZX Spectrum keys or Nothing. By default all buttons are mapped to Nothing.
 
-  Again, yo can loose some button fucionality at emulator if they are mapped here.
+When you choose any type other than **None** in previous options, some buttons may lose their original functionality if they have a mapping assigned. For example, the `Select`, `Start`, `L1` and `R1` buttons.
+If you have mapped the `Select` button, you can still access the menu with the` Power` button.
 
-
-When both two are activated at once only the "GCW0 Joystick 1" will work.
+When both mappings are activated at the same time, only "GCW0 Joystick 1" will work.
 
 ----------------------
 ### Kempston mouse ###
@@ -229,29 +231,28 @@ You must activate it in the peripherals (`Menu -> Options -> Peripherals -> Gene
 ---------------------
 ### Triple Buffer ###
 ---------------------
-There is an experimental implementation for triple buffer. It can be activated at General options.
-In general I believe that is not needed, but I've seen diference activating it running some demos on Pentagon's models as "mescaline synesthesia by deMarche".
+There is an experimental implementation for triple buffer. It affect to the speed. It can be activated at General options.
+In general I believe that is not needed, but I've seen diference activating it on some demos on Pentagon's models as "mescaline synesthesia by deMarche".
 It affect to the speed.
 
-If tripple buffer is activated ther will be an [B] at status line.
+If tripple buffer is activated then an [B] will be at status line.
 
-Bug: With the triple buffer there are some times when their deactivation make the screen freeze or go to black but the emulator is up and running... probably motivated by some mistake I've done at code.
+Disabling triple buffer sometimes causes the screen to freeze or go black, but the emulator is still running ... probably motivated by some mistake I have made in the code.
 
-Also you can activate/deactivate triple buffer with this button combo: L1 + R1 + X
+You can activate/deactivate it at General options or with the button combo: L1 + R1 + X
 
 ---------------------
 ### Media options ###
 ---------------------
 
-If you have problems loading some programs take into account the compatibility with the diferent systems. There are programs than not load or hang in models like +2A or +3.
-In internet there are info about this and fixes for diferent models.
+If you have problems loading some programs take into account compatibility. There are programs that don't load or work in all moddels.
 
-Also take into account than some options in Media options can affect as "Accelerate loaders".
+Also take into account that some options in Media options can affect, as "Accelerate loaders".
 
 ------------
 ### ROMs ###
 ------------
-Fuse provide some roms for systems and peripherals. See int the source directory fuse/roms/README.copyright file for details.
+Fuse provide some roms for the systems and peripherals emulated but not for all models or peripherals that it support.
 
 You can assign aditional roms from the emulator:
 
@@ -282,7 +283,7 @@ Included with fuse:
     DISCiPLE and +D
     SpeccyBoot
 
-These are not included:
+Non included:
 
     Pentagon 128k, 512k and 1024k
     Scorpion ZS 256
@@ -293,7 +294,7 @@ These are not included:
     Opus Discovery
     uSource
 
-And the default file names expected for some of the not included:
+Default file names expected by fuse for non included roms:
 
     128p-0.rom
     128p-1.rom
