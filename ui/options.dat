@@ -19,17 +19,24 @@ Checkbox, (P)AL-TV use TV2x effect, pal_tv2x, INPUT_KEY_p
 Checkbox, Full (s)creen, full_screen, INPUT_KEY_s
 #endif
 #ifdef GCWZERO
+Checkbox, Show hi(d)den files, hidden_files, INPUT_KEY_d
 Checkbox, Triple Bu(f)fer, triple_buffer, INPUT_KEY_f
 #endif
 #endif
 Checkbox, Show status(b)ar, statusbar, INPUT_KEY_b
 Checkbox, Snap (j)oystick prompt, joy_prompt, INPUT_KEY_j
 Checkbox, (C)onfirm actions, confirm_actions, INPUT_KEY_c
+#ifdef GCWZERO
+Checkbox, Confir(m) overwrite files, confirm_overwrite_files, INPUT_KEY_m
+#endif
 Checkbox, A(u)to-save settings, autosave_settings, INPUT_KEY_u
 
 media
 Media Options
 Checkbox, (A)uto-load media, auto_load, INPUT_KEY_a
+#ifdef GCWZERO
+Checkbox, A(u)to-load media with custom roms, auto_load_with_custom_roms, INPUT_KEY_u
+#endif
 Combo, (P)hantom typist mode, phantom_typist_mode, INPUT_KEY_p, *Auto|Keyword|Keystroke|Menu|Plus 2A|Plus 3
 Checkbox, (D)etect loaders, detect_loader, INPUT_KEY_d
 Checkbox, (F)astloading, fastload, INPUT_KEY_f

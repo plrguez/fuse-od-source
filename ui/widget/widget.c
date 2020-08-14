@@ -879,17 +879,11 @@ ui_popup_menu( int native_key )
     menu_file_savesnapshot( 0 );
     fuse_emulation_unpause();
     break;
-#ifdef GCWZERO
-  case INPUT_KEY_Tab: /*L1*/
-#endif
   case INPUT_KEY_F3:
     fuse_emulation_pause();
     menu_file_open( 0 );
     fuse_emulation_unpause();
     break;
-#ifdef GCWZERO
-  case INPUT_KEY_BackSpace: /*R1*/
-#endif
   case INPUT_KEY_F4:
     fuse_emulation_pause();
     menu_options_general( 0 );

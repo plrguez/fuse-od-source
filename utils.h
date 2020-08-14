@@ -68,7 +68,7 @@ void utils_networking_init( void );
 void utils_networking_end( void );
 
 #ifdef GCWZERO
-char* utils_last_filename( const char *filename );
+char* utils_last_filename( const char *filename, int without_extension );
 #endif
 
 #endif			/* #ifndef FUSE_UTILS_H */

@@ -144,7 +144,7 @@ widget_get_filename( const char *title, int saving )
     filename = utils_safe_strdup( widget_filesel_name );
 #ifdef GCWZERO
   if ( filename )
-    last_filename = utils_last_filename( filename );
+    last_filename = utils_last_filename( filename, 1 );
 #endif
   return filename;
   
@@ -164,6 +164,31 @@ char *
 ui_get_save_filename( const char *title )
 {
 #if !defined AMIGA && !defined __MORPHOS__
+#ifdef GCWZERO
+  if ( settings_current.confirm_overwrite_files ) {
+    char* filename = widget_get_filename( title, 1 );
+    if (filename && compat_file_exists( filename ) ) {
+        const char *filename1 = strrchr( filename, FUSE_DIR_SEP_CHR );
+        filename1 = filename1 ? filename1 + 1 : filename;
+
+        dont_refresh_display = 1;
+        ui_confirm_save_t confirm = ui_confirm_save(
+          "%s already exists.\n"
+          "Do you want to overwrite it?",
+          filename1
+        );
+        dont_refresh_display = 0;
+
+        switch( confirm ) {
+
+        case UI_CONFIRM_SAVE_SAVE: return filename;
+        case UI_CONFIRM_SAVE_DONTSAVE: return NULL;
+        case UI_CONFIRM_SAVE_CANCEL: return NULL;
+        default: return NULL;
+        }
+    } else return filename;
+  } else
+#endif
   return widget_get_filename( title, 1 );
 #else
   return amiga_asl( title, TRUE );
@@ -451,6 +476,9 @@ widget_select_file( const char *name )
   if( !strcmp( name, "." ) ) return 0;
 
 #ifndef WIN32
+#ifdef GCWZERO
+  if (!settings_current.hidden_files)
+#endif
   /* Skip hidden files/directories */
   if( strlen( name ) > 1 && name[0] == '.' && name[1] != '.' ) return 0;
 #endif				/* #ifdef WIN32 */
@@ -892,8 +920,9 @@ widget_filesel_keyhandler( input_key key )
 
 #ifdef GCWZERO
   case INPUT_KEY_Alt_L: /* B */
-#endif
+#else
   case INPUT_KEY_Escape:
+#endif
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
@@ -1010,9 +1039,10 @@ widget_filesel_keyhandler( input_key key )
 
 #ifdef GCWZERO
   case INPUT_KEY_Control_L: /* A */
-#endif
+#else
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
+#endif
   case INPUT_JOYSTICK_FIRE_1:
 #ifdef WIN32
     if( is_drivesel ) {

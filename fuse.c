@@ -778,7 +778,7 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
     if (class != LIBSPECTRUM_CLASS_UNKNOWN) {
       char *path = 0;
       char buffer[PATH_MAX];
-      last_filename = utils_last_filename( filename );
+      last_filename = utils_last_filename( filename, 1 );
       strncpy( buffer, filename, PATH_MAX );
       path = dirname(buffer);
       if (path && path[0] != '\0') {

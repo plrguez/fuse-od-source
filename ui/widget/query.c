@@ -32,6 +32,9 @@
 #include "utils.h"
 #include "widget_internals.h"
 
+#ifdef GCWZERO
+int dont_refresh_display = 0;
+#endif
 widget_query_t widget_query;
 
 static const char * const title = "Fuse - Confirm";
@@ -274,6 +277,9 @@ widget_query_generic_keyhandler( widget_query_entry *query, int num_entries,
   case INPUT_JOYSTICK_FIRE_1:
     query[highlight_line].click();
     widget_end_all( WIDGET_FINISHED_OK );
+#ifdef GCWZERO
+    if (!dont_refresh_display)
+#endif
     display_refresh_all();
     return;
 

@@ -36,6 +36,8 @@ void joystick_register_startup( void );
 /* A constant to identify the joystick emulated via the keyboard */
 #define JOYSTICK_KEYBOARD 2
 #ifdef GCWZERO
+/* A constant to identify the joystick 1 for GCW0 */
+#define GCW0_JOYSTICK 0
 /* A constant to identify the keyboard emulated via the GCW0 Buttons */
 #define GCW0_KEYBOARD 3
 #endif

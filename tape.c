@@ -372,7 +372,12 @@ tape_write( const char* filename )
 
 int tape_can_autoload( void )
 {
+#ifdef GCWZERO
+  /* Allow to autoload with custom roms */
+  return( settings_current.auto_load && ( settings_current.auto_load_with_custom_roms || !memory_custom_rom() ) );
+#else
   return( settings_current.auto_load && !memory_custom_rom() );
+#endif
 }
 
 /* Load the next tape block into memory; returns 0 if a block was

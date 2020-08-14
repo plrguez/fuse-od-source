@@ -499,7 +499,7 @@ utils_networking_end( void )
 }
 
 #ifdef GCWZERO
-char* utils_last_filename( const char *filename )
+char* utils_last_filename( const char *filename, int without_extension )
 {
   char *c, *test_file, *last_file;
 
@@ -515,10 +515,12 @@ char* utils_last_filename( const char *filename )
     last_file = utils_safe_strdup( test_file );
 
   /* Search for extension */
-  c = strrchr( last_file, '.' );
-  if( c ) {
-    int n = c - last_file;
-    last_file[n] = '\0';
+  if (without_extension) {
+    c = strrchr( last_file, '.' );
+    if( c ) {
+      int n = c - last_file;
+      last_file[n] = '\0';
+    }
   }
 
   libspectrum_free( test_file );

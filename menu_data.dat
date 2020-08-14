@@ -92,8 +92,8 @@ Options/_Joysticks, Branch
 Options/Joysticks/GCW0 Joystick _1..., Item,, menu_options_joysticks_select, menu_joystick_1_detail, 1
 #else
 Options/Joysticks/Joystick _1..., Item,, menu_options_joysticks_select, menu_joystick_1_detail, 1
-Options/Joysticks/Joystick _2..., Item,, menu_options_joysticks_select, menu_joystick_2_detail, 2
 #endif
+Options/Joysticks/Joystick _2..., Item,, menu_options_joysticks_select, menu_joystick_2_detail, 2
 #endif
 Options/Joysticks/_Keyboard..., Item,, menu_options_joysticks_select, menu_keyboard_joystick_detail, 3
 #ifdef GCWZERO

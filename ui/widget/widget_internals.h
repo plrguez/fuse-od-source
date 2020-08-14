@@ -59,6 +59,7 @@ typedef struct widget_t {
 #ifdef GCWZERO
 /* At joystick configurations when accept a key we don't want to exit
   completely the widgets. We want return to the configuration of other keys. */
+extern int dont_refresh_display;
 extern int widgets_to_end;
 int
 widget_end_n_widgets( int number, widget_finish_state state );

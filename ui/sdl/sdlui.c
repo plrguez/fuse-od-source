@@ -43,6 +43,8 @@
 
 #ifdef GCWZERO
 static Uint8 *keys_state;
+int
+process_combo_keys( void );
 #endif
 
 static void
@@ -82,6 +84,30 @@ ui_init( int *argc, char ***argv )
   return 0;
 }
 
+#ifdef GCWZERO
+int
+process_combo_keys( void )
+{
+  SDL_Event event;
+
+#ifdef VKEYBOARD
+  if ( ui_widget_level >= 0 || vkeyboard_enabled ) return 0;
+#else
+  if ( ui_widget_level >= 0 ) return 0;
+#endif
+
+  SDL_PumpEvents();
+
+  /* L1 + R1 + X: Toggle triple buffer */
+  if ( keys_state[SDLK_TAB] && keys_state[SDLK_BACKSPACE] && keys_state[SDLK_SPACE] ) {
+    settings_current.triple_buffer = !settings_current.triple_buffer;
+    return 1;
+  }
+  else
+    return 0;
+}
+#endif
+
 int 
 ui_event( void )
 {
@@ -90,12 +116,7 @@ ui_event( void )
   int vkeyboard_enabled_old = vkeyboard_enabled;
 #endif
 #ifdef GCWZERO
-  SDL_PumpEvents();
-  /* L1 + R1 + X: Toggle triple buffer */
-  if ( keys_state[SDLK_BACKSPACE] && keys_state[SDLK_TAB] && keys_state[SDLK_SPACE] ) {
-    settings_current.triple_buffer = !settings_current.triple_buffer;
-    return 0;
-  }
+  if (process_combo_keys()) return 0;
 #endif
 
   while ( SDL_PollEvent( &event ) ) {

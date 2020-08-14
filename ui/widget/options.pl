@@ -583,8 +583,9 @@ widget_$_->{name}_keyhandler( input_key key )
 
 #ifdef GCWZERO
   case INPUT_KEY_Alt_L: /* B */
-#endif
+#else
   case INPUT_KEY_Escape:
+#endif
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     widget_$_->{name}_running = 0;
@@ -639,9 +640,10 @@ widget_$_->{name}_keyhandler( input_key key )
 
 #ifdef GCWZERO
   case INPUT_KEY_Control_L: /* A */
-#endif
+#else
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
+#endif
   case INPUT_JOYSTICK_FIRE_1:
 #ifdef GCWZERO
     widget_end_widget( WIDGET_FINISHED_OK );

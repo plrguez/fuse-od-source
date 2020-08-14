@@ -208,20 +208,6 @@ SUBMENU_KEY_SELECTIONS( 16 )
 #ifdef USE_JOYSTICK
 static widget_menu_entry submenu_joystick_buttons[] = {
   { "Select joystick button" },
-#ifdef GCWZERO
-  { "Button \012A\011", INPUT_KEY_1, submenu_select_key_for_button_1, NULL, get_key_name_for_button_1, 0 },
-  { "Button \012B\011", INPUT_KEY_2, submenu_select_key_for_button_2, NULL, get_key_name_for_button_2, 0 },
-  { "Button \012X\011", INPUT_KEY_3, submenu_select_key_for_button_3, NULL, get_key_name_for_button_3, 0 },
-  { "Button \012Y\011", INPUT_KEY_4, submenu_select_key_for_button_4, NULL, get_key_name_for_button_4, 0 },
-  { "Button \012L1\011", INPUT_KEY_5, submenu_select_key_for_button_5, NULL, get_key_name_for_button_5, 0 },
-  { "Button \012R1\011", INPUT_KEY_6, submenu_select_key_for_button_6, NULL, get_key_name_for_button_6, 0 },
-  { "Button \012L2\011", INPUT_KEY_7, submenu_select_key_for_button_7, NULL, get_key_name_for_button_7, 0 },
-  { "Button \012R2\011", INPUT_KEY_8, submenu_select_key_for_button_8, NULL, get_key_name_for_button_8, 0 },
-  { "Button \012START\011", INPUT_KEY_9, submenu_select_key_for_button_9, NULL, get_key_name_for_button_9, 0 },
-  { "Button \012SELECT\011", INPUT_KEY_0, submenu_select_key_for_button_10, NULL, get_key_name_for_button_10, 0 },
-  { "Button \012L3\011", INPUT_KEY_a, submenu_select_key_for_button_11, NULL, get_key_name_for_button_11, 0 },
-  { "Button \012R3\011", INPUT_KEY_b, submenu_select_key_for_button_12, NULL, get_key_name_for_button_12, 0 },
-#else
 #ifndef GEKKO
   { "Button \0121\011", INPUT_KEY_1, submenu_select_key_for_button_1, NULL, get_key_name_for_button_1, 0 },
   { "Button \0122\011", INPUT_KEY_2, submenu_select_key_for_button_2, NULL, get_key_name_for_button_2, 0 },
@@ -248,7 +234,6 @@ static widget_menu_entry submenu_joystick_buttons[] = {
   { "Button \012Z\011 on Nunchuck", INPUT_KEY_z, submenu_select_key_for_button_7, NULL, get_key_name_for_button_7, 0 },
   { "Button \012C\011 on Nunchuck", INPUT_KEY_c, submenu_select_key_for_button_8, NULL, get_key_name_for_button_8, 0 },
 #endif  /* #ifndef GEKKO */
-#endif  /* ifdef GCWZERO */
   { NULL }
 };
 #endif  /* #ifdef USE_JOYSTICK */
@@ -264,6 +249,22 @@ static widget_menu_entry submenu_keyboard_buttons[] = {
 };
 
 #ifdef GCWZERO
+static widget_menu_entry submenu_gcw0_joystick_buttons[] = {
+  { "Select joystick button" },
+  { "Button \012A\011", INPUT_KEY_1, submenu_select_key_for_button_1, NULL, get_key_name_for_button_1, 0 },
+  { "Button \012B\011", INPUT_KEY_2, submenu_select_key_for_button_2, NULL, get_key_name_for_button_2, 0 },
+  { "Button \012X\011", INPUT_KEY_3, submenu_select_key_for_button_3, NULL, get_key_name_for_button_3, 0 },
+  { "Button \012Y\011", INPUT_KEY_4, submenu_select_key_for_button_4, NULL, get_key_name_for_button_4, 0 },
+  { "Button \012L1\011", INPUT_KEY_5, submenu_select_key_for_button_5, NULL, get_key_name_for_button_5, 0 },
+  { "Button \012R1\011", INPUT_KEY_6, submenu_select_key_for_button_6, NULL, get_key_name_for_button_6, 0 },
+  { "Button \012L2\011", INPUT_KEY_7, submenu_select_key_for_button_7, NULL, get_key_name_for_button_7, 0 },
+  { "Button \012R2\011", INPUT_KEY_8, submenu_select_key_for_button_8, NULL, get_key_name_for_button_8, 0 },
+  { "Button \012START\011", INPUT_KEY_9, submenu_select_key_for_button_9, NULL, get_key_name_for_button_9, 0 },
+  { "Button \012SELECT\011", INPUT_KEY_0, submenu_select_key_for_button_10, NULL, get_key_name_for_button_10, 0 },
+  { "Button \012L3\011", INPUT_KEY_a, submenu_select_key_for_button_11, NULL, get_key_name_for_button_11, 0 },
+  { "Button \012R3\011", INPUT_KEY_b, submenu_select_key_for_button_12, NULL, get_key_name_for_button_12, 0 },
+  { NULL }
+};
 static widget_menu_entry submenu_gcw0_keys_buttons[] = {
   { "Map GCW0 to keyboard key" },
   { "Button \012U\011p", INPUT_KEY_u, submenu_select_key_for_button_1, NULL, get_key_name_for_button_1, 0 },
@@ -306,6 +307,7 @@ SUBMENU_DEVICE_SELECTIONS( joystick )
 #endif  /* #ifdef USE_JOYSTICK */
 SUBMENU_DEVICE_SELECTIONS( keyboard )
 #ifdef GCWZERO
+SUBMENU_DEVICE_SELECTIONS( gcw0_joystick )
 static widget_menu_entry submenu_types_gcw0[ 4 ];
 static char joystick_names_gcw0[ 2 ][ 100 ];
 #define SUBMENU_DEVICE_SELECTIONS_GCW0( device ) \
@@ -436,10 +438,12 @@ widget_menu_keyhandler( input_key key )
     if(!ptr->inactive) {
       if( ptr->submenu ) {
 #ifdef GCWZERO
+        /* TODO: Any better form to do this? */
+        /* We count the widgets to end from this options */
         if (widgets_to_end ||
-            strcmp(menu->text,"Select joystick button")==0 ||
-            strcmp(menu->text,"Map GCW0 to keyboard key")==0 ||
-            strcmp(menu->text,"Select keyboard key")==0 )
+            strcmp(menu->text,"Select joystick button") == 0 ||
+            strcmp(menu->text,"Map GCW0 to keyboard key") == 0 ||
+            strcmp(menu->text,"Select keyboard key") == 0 )
           widgets_to_end++;
 #endif
         widget_do_menu( ptr->submenu );
@@ -744,6 +748,8 @@ menu_options_joysticks_select( int action )
     error = widget_do_menu( submenu_type_and_mapping_for_keyboard );
 
 #ifdef GCWZERO
+  else if ( action - 1 == GCW0_JOYSTICK )
+    error = widget_do_menu( submenu_type_and_mapping_for_gcw0_joystick );
   else if ( action - 1 == GCW0_KEYBOARD )
     error = widget_do_menu( submenu_type_and_mapping_for_gcw0_keys );
 #endif

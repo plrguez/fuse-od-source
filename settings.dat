@@ -39,10 +39,12 @@ mouse_swap_buttons, boolean, 0
 tape_traps, boolean, 1,, traps, tapetraps
 fastload, boolean, 1
 auto_load, boolean, 1
+auto_load_with_custom_roms, boolean, 0
 detect_loader, boolean, 1
 accelerate_loader, boolean, 1
 slt_traps, boolean, 1,, slt, slttraps
 double_screen, null, 0
+hidden_files, boolean, 0
 triple_buffer, boolean, 0
 full_screen, boolean, 0
 writable_roms, boolean, 0
@@ -56,6 +58,7 @@ raw_rs232, null, 0
 raw_s_net, boolean, 0
 snet, string, NULL
 confirm_actions, boolean, 1
+confirm_overwrite_files, boolean, 0
 printer, boolean, 0
 statusbar, boolean, 1
 interface1, boolean, 0
