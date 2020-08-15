@@ -24,7 +24,9 @@ noinst_HEADERS += \
                   ui/ui.h \
                   ui/uidisplay.h \
                   ui/uijoystick.h \
-                  ui/uimedia.h
+                  ui/uimedia.h \
+                  ui/vkeyboard.h \
+                  ui/hotkeys.h
 
 EXTRA_DIST += \
               ui/options.dat \

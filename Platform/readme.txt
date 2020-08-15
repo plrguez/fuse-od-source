@@ -10,7 +10,7 @@ At the end of this doc is the man page of Fuse 1.5.7 for reference.
 ------------------------
 You can open the menu with the `Power` or `Select` button.
 
-The `Select` button can be mapped to joystick or keyboard. In that case you can use the `Power` button for accessing the menu.
+If `Select` button is mapped to joystick or keyboard then you must use the `Power` button for accessing the menu.
 
 ---------------------
 ### Save settings ###
@@ -81,28 +81,28 @@ Buttons in emulator:
     Open the virtual keyboard
 
     `L1`
-    Open File selector dialog
+    If not mapped in Joystick options start a hotkey combo
 
     `R1`
-    Open General options dialog
+    If not mapped in Joystick options start a hotkey combo
 
     `Left Stick`
-    Nothing or As `Cursor` if used the `Power`+`B` hotkey on RG350
+    Nothing or As `Cursor` if used the `Power`+`B` hotkey on some OpenDingux handhelds (RG350)
 
     `Right Stick`
-    On RG350 models you can activate Mouse with `Power`+`B` hotkey and use to emulate Kempston mouse
+    On some OpenDingux models (RG350) you can activate Mouse with `Power`+`B` hotkey and use to emulate Kempston mouse
 
     `L2`
-    Left click with mouse emulation
+    Left click in mouse emulation
 
     `R2`
-    Right click with mouse emulation
+    Right click in mouse emulation
 
 
 Buttons in Menu and Forms:
 --------------------------
     `Cursor`, `Left Stick`
-    Move. There is no need of use `Power`+`B` hotkey on RG350 for use the left stick on menus
+    Move
 
     `A`, `Start`
     Select the option or accept the options at form
@@ -180,7 +180,7 @@ For the **Enter the name** dialogs at save options the las loaded filename witho
 ------------------------------------------------
 ### Mapping buttons to Joysticks or Keyboard ###
 ------------------------------------------------
-You can map Joysticks or Spectrum keys to buttons in `Menu -> Options -> Joysticks`
+You can map handheld buttons to Joysticks or Spectrum keys in `Menu -> Options -> Joysticks`
 
 Yo can do it with the next options:
 
@@ -220,6 +220,37 @@ If you have mapped the `Select` button, you can still access the menu with the` 
 
 When both mappings are activated at the same time, only "GCW0 Joystick 1" will work.
 
+-------------------------
+### External joystick ###
+-------------------------
+On some handhelds is possible to connect an external Joystick using USB OTG. Then mapping of Joystick 2 is applied if it is assigned to some type of Joystick. On my RG350 I've tested with an 8Bitdo FC30 Pro controller.
+
+I don't have tested a Keyboard on USB OTG (I don't have one near), but it should work. But take into account that some keys will not work or work different to desktop version becouse the buttons on hanheld correspond to keyboard keys, and the implementation has been adapted with handheld on mind.
+
+For controllers the number of each button in mapping depends on the controller layout.
+For example on my 8Bitdo FC30 these are the mapping layout: A=1, B=2, X=4, Y=5, L1=7, R1=8, L2=9, R2=10, Select=11, Start=12, L3=14, R3=15.
+From SDL Game controller DB (https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt)
+	"03000000c82d00001038000000000000,8BitDo FC30 Pro,
+	a:b0,
+	b:b1,
+	back:b10,
+	dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,
+	leftshoulder:b6,
+	leftstick:b13,
+	lefttrigger:b8,
+	leftx:a0,lefty:a1,
+	rightshoulder:b7,
+	rightstick:b14,
+	righttrigger:b9,
+	rightx:a3,
+	righty:a4,
+	start:b11,
+	x:b3,
+	y:b4,
+	hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,"
+
+=>Take into account that Fuse count buttons from 1 not from 0, so add 1 to translate your layout into Fuse's config.
+
 ----------------------
 ### Kempston mouse ###
 ----------------------
@@ -239,7 +270,24 @@ If tripple buffer is activated then an [B] will be at status line.
 
 Disabling triple buffer sometimes causes the screen to freeze or go black, but the emulator is still running ... probably motivated by some mistake I have made in the code.
 
-You can activate/deactivate it at General options or with the button combo: L1 + R1 + X
+You can activate/deactivate it at General options or with the hotkey combo: L1 + R1.
+
+---------------------
+### Hotkey combos ###
+---------------------
+If `L1` or `R1` are not mapped to Joystick or Keyboard at press them it's activated hotkeys combos:
+
+The implemented ones correspond to Fx key functions in Fuse's SDL implementation:
+
+   L1 + R1          Toggle triple buffer
+   L1 + X           Open file (F3)
+   L1 + Y           Save file (F2)
+   R1 + X           Exit fuse (F10)
+   R1 + Y           Reset machine (F5)
+   L1 + Select + X  General options (F4)
+   L1 + Select + Y  Machine select (F9)
+   L1 + Start + X   Tape open (F7)
+   L1 + Start + Y   Tape play (F8)
 
 ---------------------
 ### Media options ###
@@ -257,20 +305,23 @@ Fuse provide some roms for the systems and peripherals emulated but not for all 
 You can assign aditional roms from the emulator:
 
 - Open menu with `Select` or `Power` button. Then navigate from Menu --> Options --> Select Roms --> Machine ROMs or Peripheral ROMs
-- With the virtual keyboard select the key corresponding to the ROM to change. This open a file selector.
-- At file selector use the `cursor` keys to navigate to folder with your roms, select the needed rom and press the `A` Button to confirm selection.
-- Repeat until all the needed ROMs are selected. Then accept the selections choosing the **Enter
+- With `cursor` select the rom to change and press `X` button
+- At file selector use the `cursor` keys to navigate to folder where your roms are located and to select the needed rom. And press the `A` button to confirm selection.
+- Repeat until all the needed ROMs are assigned.
+- Finally do accept all pressing the `A` button.
 
-Also you can put them at next directories:
+The emulator detect your rom as custom if they not have the name expected, including path. This affect to auto-load, cutoms roms don't autoload. For this reason I have introduced the option "Auto-load media with custom rom".
 
-    For RG350 /media/data/local/home/.fuse/roms
-    For RetroFW /home/retrofw/.fuse/roms
+Also you can put the roms at routes:
 
-The emulator will not create the directories so you must create them manually.
+    For RG350   "/usr/local/home/.fuse/roms"
+    For RetroFW "/home/retrofw/.fuse/roms"
 
-Also the ipk version will be installed at folder /home/retrofw/emus/fuse. You can put aditional roms at /home/retrofw/emus/fuse/romsfolder.
+=>The emulator will not create this directories so you must create them manually.
 
-Included with fuse:
+The ipk version will be installed at folder "/home/retrofw/emus/fuse" so ou can put aditional roms at "/home/retrofw/emus/fuse/roms" folder.
+
+ROMs included with fuse:
 
     48k
     128k
@@ -283,7 +334,7 @@ Included with fuse:
     DISCiPLE and +D
     SpeccyBoot
 
-Non included:
+ROMs non included:
 
     Pentagon 128k, 512k and 1024k
     Scorpion ZS 256

@@ -124,25 +124,27 @@ widget_select_keyhandler( input_key key )
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Home:
-  case INPUT_KEY_End: /* RetroFW */
+  case INPUT_KEY_Home:  /* Power */
+  case INPUT_KEY_End:   /* RetroFW */
     widget_end_all( WIDGET_FINISHED_CANCEL );
     return;
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Alt_L:
-#endif
+  case INPUT_KEY_Alt_L: /* B */
+#else
   case INPUT_KEY_Escape:
+#endif
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Control_L:
-#endif
+  case INPUT_KEY_Control_L: /* A */
+#else
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
+#endif
   case INPUT_JOYSTICK_FIRE_1:
     widget_end_widget( WIDGET_FINISHED_OK );
     return;
@@ -166,7 +168,7 @@ widget_select_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Tab:
+  case INPUT_KEY_Tab: /* L1 */
 #else
   case INPUT_KEY_Home:
 #endif
@@ -177,7 +179,7 @@ widget_select_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_BackSpace:
+  case INPUT_KEY_BackSpace: /* R1 */
 #else
   case INPUT_KEY_End:
 #endif
