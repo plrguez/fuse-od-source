@@ -41,6 +41,7 @@ int is_peripheral;
 
 #ifdef GCWZERO
 static size_t highlight_line = 0;
+static void set_default_rom( input_key key );
 #endif
 
 static void print_rom( int which );
@@ -74,14 +75,14 @@ widget_roms_draw( void *data )
 
   /* Blank the main display area */
 #ifdef GCWZERO
-  widget_dialog_with_border( 1, 2, 30, rom_count + 4 );
+  widget_dialog_with_border( 1, 2, 30, rom_count + 5 );
 #else
   widget_dialog_with_border( 1, 2, 30, rom_count + 2 );
 #endif
 
   widget_printstring( 10, 16, WIDGET_COLOUR_TITLE, info->title );
 #ifdef GCWZERO
-  widget_display_lines( 2, rom_count + 4 );
+  widget_display_lines( 2, rom_count + 5 );
 #else
   widget_display_lines( 2, rom_count + 2 );
 #endif
@@ -99,10 +100,14 @@ widget_roms_draw( void *data )
 #ifdef GCWZERO
   i++;
   widget_printstring_right( 244, i*8+24, WIDGET_COLOUR_FOREGROUND,
-					   "\012X\001 = change rom" );
+                       "\012A\001 = confirm changes" );
   widget_printstring( 12, i*8+24, WIDGET_COLOUR_FOREGROUND,
-				     "\012A\001 = confirm roms" );
-  widget_display_rasters(i*8+24,8);
+				       "\012X\001 = change rom" );
+  i++;
+  widget_printstring( 12, i*8+24, WIDGET_COLOUR_FOREGROUND,
+					   "\012Y\001 = default rom" );
+  i--;
+  widget_display_rasters(i*8+24,16);
 #endif
 
   return 0;
@@ -133,6 +138,31 @@ print_rom( int which )
   widget_display_rasters( which * 8 + 24, 8 );
 }
 
+#ifdef GCWZERO
+void
+set_default_rom( input_key key )
+{
+  char **setting, **default_rom;
+  static int default_init = 0;
+  static settings_info default_roms;
+
+  if (!default_init) {
+    settings_defaults( &default_roms );
+    default_init = 1;
+  }
+
+  key -= INPUT_KEY_a;
+
+  setting = settings_get_rom_setting( widget_settings, key + first_rom,
+					is_peripheral );
+  default_rom = settings_get_rom_setting( &default_roms, key + first_rom,
+					is_peripheral );
+  settings_set_string( setting, *default_rom );
+
+  print_rom( key );
+}
+#endif
+
 void
 widget_roms_keyhandler( input_key key )
 {
@@ -150,30 +180,36 @@ widget_roms_keyhandler( input_key key )
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Home:
-  case INPUT_KEY_End: /* RetroFW */
+  case INPUT_KEY_Home:  /* Power */
+  case INPUT_KEY_End:   /* RetroFW */
     widget_end_all( WIDGET_FINISHED_CANCEL );
     return;
 #endif
 
 #ifdef GCWZERO
   case INPUT_KEY_Alt_L: /* B */
-#endif
+#else
   case INPUT_KEY_Escape:
+#endif
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
 #ifdef GCWZERO
   case INPUT_KEY_Control_L: /* A */
-#endif
+#else
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
+#endif
     widget_end_all( WIDGET_FINISHED_OK );
     return;
 
 #ifdef GCWZERO
   case INPUT_KEY_space: /* X */
     key = INPUT_KEY_a + highlight_line;
+    break;
+
+  case INPUT_KEY_Shift_L: /* Y */
+    set_default_rom( INPUT_KEY_a + highlight_line );
     break;
 
   case INPUT_KEY_Up:

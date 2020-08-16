@@ -310,7 +310,9 @@ You can assign aditional roms from the emulator:
 - Repeat until all the needed ROMs are assigned.
 - Finally do accept all pressing the `A` button.
 
-The emulator detect your rom as custom if they not have the name expected, including path. This affect to auto-load, cutoms roms don't autoload. For this reason I have introduced the option "Auto-load media with custom rom".
+You can also put Fuse's default rom with the `Y` button.
+
+The emulator detect your rom as custom if they not have the name expected, including path. This affect to auto-load, cutoms roms don't autoload. For this reason it's introduced the option "Auto-load media with custom rom".
 
 Also you can put the roms at routes:
 
