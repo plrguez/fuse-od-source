@@ -163,6 +163,10 @@ compat_dir compat_opendir( const char *path );
 compat_dir_result_t compat_readdir( compat_dir directory, char *name,
 				    size_t length );
 int compat_closedir( compat_dir directory );
+#ifdef GCWZERO
+int compat_createdir( const char *path );
+int compat_create_config_paths( const char *config_path );
+#endif
 
 /* Timing routines */
 

@@ -1,8 +1,6 @@
 Using the Fuse emulator
 =======================
 
-This port port of Fuse it's in alpha stage.
-
 At the end of this doc is the man page of Fuse 1.5.7 for reference.
 
 ------------------------
@@ -192,7 +190,7 @@ It have two options:
 
 - **Type**:
   ---------
-  This allow to choose the Joystick to emulate or None. Default is None.
+  Choose the Joystick to emulate or None. Default is None.
 
   Some type of Joysticks may require other emulator options active.
   For example Kempston joystick need to be activated at `Menu --> Options --> Peripherals --> General`.
@@ -316,12 +314,10 @@ The emulator detect your rom as custom if they not have the name expected, inclu
 
 Also you can put the roms at routes:
 
-    For RG350   "/usr/local/home/.fuse/roms"
-    For RetroFW "/home/retrofw/.fuse/roms"
+    For OpenDingux   "/usr/local/home/.fuse/roms"
+    For RetroFW      "/home/retrofw/.fuse/roms"
 
-=>The emulator will not create this directories so you must create them manually.
-
-The ipk version will be installed at folder "/home/retrofw/emus/fuse" so ou can put aditional roms at "/home/retrofw/emus/fuse/roms" folder.
+The emulator will create this directories the first time is started if they don't exist.
 
 ROMs included with fuse:
 

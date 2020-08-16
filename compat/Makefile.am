@@ -44,10 +44,12 @@ endif
 if COMPAT_LINUX
 fuse_SOURCES += \
                 compat/unix/dir.c \
+                compat/linux/dir.c \
                 compat/unix/file.c \
                 compat/unix/osname.c \
                 compat/linux/relative_paths.c \
                 compat/unix/paths.c \
+                compat/linux/paths.c \
                 compat/unix/timer.c
 
 if HAVE_SOCKETS

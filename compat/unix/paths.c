@@ -49,7 +49,18 @@ const char*
 compat_get_config_path( void )
 {
   const char *dir;
+#ifdef GCWZERO
+  dir = getenv( "HOME" );
+  if (dir) {
+    char *fdir = NULL;
+    int len = strlen(dir)+7; /* /.fuse'\0' */
+    fdir = libspectrum_new(char,len);
+    if (fdir && snprintf( fdir, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", dir, ".fuse" ) == (len-1))
+      return fdir;
+  }
+#else
   dir = getenv( "HOME" ); if( dir ) return dir;
+#endif
   return ".";
 }
 
@@ -97,8 +108,31 @@ compat_get_next_path( path_context *ctx )
               path_segment );
     return 1;
 
-    /* Then where we may have installed the data files */
+#ifdef GCWZERO
+  /* Configuration directory */
   case 2:
+
+    switch( ctx->type ) {
+    case UTILS_AUXILIARY_LIB: path_segment = "lib"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "roms"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "ui/widget"; break;
+    default:
+      ui_error( UI_ERROR_ERROR, "unknown auxiliary file type %d", ctx->type );
+      return 0;
+    }
+
+    const char *cfgdir = compat_get_config_path();
+    snprintf( ctx->path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", cfgdir,
+              path_segment );
+    return 1;
+#endif
+
+    /* Then where we may have installed the data files */
+#ifdef GCWZERO
+  case 3:
+#else
+  case 2:
+#endif
 
 #ifndef ROMSDIR
     path2 = FUSEDATADIR;
@@ -108,7 +142,11 @@ compat_get_next_path( path_context *ctx )
     strncpy( ctx->path, path2, PATH_MAX ); buffer[ PATH_MAX - 1 ] = '\0';
     return 1;
 
+#ifdef GCWZERO
+  case 4: return 0;
+#else
   case 3: return 0;
+#endif
   }
   ui_error( UI_ERROR_ERROR, "unknown path_context state %d", ctx->state );
   fuse_abort();

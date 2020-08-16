@@ -95,11 +95,15 @@ print hashline( __LINE__ ), << 'CODE';
 #include "utils.h"
 
 /* The name of our configuration file */
+#ifdef GCWZERO
+#define CONFIG_FILE_NAME "fuse.cfg"
+#else
 #ifdef WIN32
 #define CONFIG_FILE_NAME "fuse.cfg"
 #else				/* #ifdef WIN32 */
 #define CONFIG_FILE_NAME ".fuserc"
 #endif				/* #ifdef WIN32 */
+#endif                          /* #ifdef GCWZERO */
 
 /* The current settings of options, etc */
 settings_info settings_current;
@@ -170,6 +174,9 @@ read_config_file( settings_info *settings )
   xmlDocPtr doc;
 
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
+#ifdef GCWZERO
+  if ( !compat_create_config_paths( cfgdir ) ) return 1;
+#endif
 
   snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
 
@@ -333,6 +340,9 @@ read_config_file( settings_info *settings )
   utils_file file;
 
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
+#ifdef GCWZERO
+  if ( !compat_create_config_paths( cfgdir ) ) return 1;
+#endif
 
   snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
 
