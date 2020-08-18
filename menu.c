@@ -63,6 +63,9 @@
 #include "ui/uimedia.h"
 #include "utils.h"
 #include "z80/z80.h"
+#ifdef GCWZERO
+#include "controlmapping/controlmapping.h"
+#endif
 
 static int menu_select_machine_roms( libspectrum_machine machine, size_t start,
 				     size_t n );
@@ -1106,6 +1109,14 @@ menu_joystick_2_detail( void )
 {
   return joystick_name[ settings_current.joystick_2_output ];
 }
+
+#ifdef GCWZERO
+const char*
+menu_control_mapping_detail( void )
+{
+  return controlmapping_get_filename();
+}
+#endif
 
 const char*
 menu_tape_detail( void )

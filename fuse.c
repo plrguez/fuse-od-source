@@ -116,6 +116,9 @@
 #include "ui/uimedia.h"
 #include "unittests/unittests.h"
 #include "utils.h"
+#ifdef GCWZERO
+#include "controlmapping/controlmapping.h"
+#endif
 
 #include "z80/z80.h"
 
@@ -355,6 +358,9 @@ run_startup_manager( int *argc, char ***argv )
   zxatasp_register_startup();
   zxcf_register_startup();
   zxmmc_register_startup();
+#ifdef GCWZERO
+  controlmapping_register_startup();
+#endif
 
   return startup_manager_run();
 }
@@ -386,6 +392,7 @@ static int fuse_init(int argc, char **argv)
   if( settings_init( &first_arg, argc, argv ) ) return 1;
 
 #ifdef GCWZERO
+  if( controlmapping_init() ) return 1;
   settings_current.full_screen = 1;
 #endif
 
@@ -775,17 +782,8 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
     utils_close_file( &file );
 
 #ifdef GCWZERO
-    if (class != LIBSPECTRUM_CLASS_UNKNOWN) {
-      char *path = 0;
-      char buffer[PATH_MAX];
-      last_filename = utils_last_filename( filename, 1 );
-      strncpy( buffer, filename, PATH_MAX );
-      path = dirname(buffer);
-      if (path && path[0] != '\0') {
-        snprintf(buffer, PATH_MAX, "%s", path);
-        chdir(buffer);
-      }
-    }
+    if (class != LIBSPECTRUM_CLASS_UNKNOWN)
+      utils_set_last_loaded_file( filename );
 #endif
   }
 

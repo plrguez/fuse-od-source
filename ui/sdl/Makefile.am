@@ -39,8 +39,12 @@ ui_sdl_files = \
                ui/sdl/sdlkeyboard.c \
                ui/sdl/sdlkeyboard.h \
                ui/sdl/sdlui.c \
-               ui/sdl/sdlhotkeys.c \
                ui/sdl/keysyms.c
+
+if BUILD_GCWZERO
+ui_sdl_files += \
+               ui/sdl/sdlhotkeys.c
+endif
 
 ui_sdl_built = ui/sdl/keysyms.c
 

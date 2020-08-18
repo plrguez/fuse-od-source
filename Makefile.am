@@ -211,3 +211,4 @@ include ui/win32/Makefile.am
 include ui/xlib/Makefile.am
 include unittests/Makefile.am
 include z80/Makefile.am
+include controlmapping/Makefile.am

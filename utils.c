@@ -59,6 +59,8 @@
 #include "utils.h"
 
 #ifdef GCWZERO
+#include "controlmapping/controlmapping.h"
+
 char* last_filename = NULL;
 #endif
 
@@ -107,12 +109,18 @@ utils_open_file( const char *filename, int autoload,
   case LIBSPECTRUM_CLASS_SNAPSHOT:
     error = snapshot_read_buffer( file.buffer, file.length, type );
     pokemem_find_pokfile( filename );
+#ifdef GCWZERO
+    controlmapping_load_mapfile( filename );
+#endif
     break;
 
   case LIBSPECTRUM_CLASS_TAPE:
     error = tape_read_buffer( file.buffer, file.length, type, filename,
 			      autoload );
     pokemem_find_pokfile( filename );
+#ifdef GCWZERO
+    controlmapping_load_mapfile( filename );
+#endif
     break;
 
   case LIBSPECTRUM_CLASS_DISK_PLUS3:
@@ -499,6 +507,23 @@ utils_networking_end( void )
 }
 
 #ifdef GCWZERO
+void utils_set_last_loaded_file( const char *filename )
+{
+  char *path = 0;
+  char buffer[PATH_MAX];
+
+  if (!filename) return;
+
+  last_filename = utils_last_filename( filename, 1 );
+
+  /* Change current working directory to the path of last loaded file */
+  strncpy( buffer, filename, PATH_MAX );
+  path = dirname(buffer);
+  if (path && path[0] != '\0') {
+     chdir(path);
+  }
+}
+
 char* utils_last_filename( const char *filename, int without_extension )
 {
   char *c, *test_file, *last_file;

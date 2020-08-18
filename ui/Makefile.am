@@ -24,9 +24,13 @@ noinst_HEADERS += \
                   ui/ui.h \
                   ui/uidisplay.h \
                   ui/uijoystick.h \
-                  ui/uimedia.h \
+                  ui/uimedia.h
+
+if BUILD_GCWZERO
+noinst_HEADERS += \
                   ui/vkeyboard.h \
                   ui/hotkeys.h
+endif
 
 EXTRA_DIST += \
               ui/options.dat \

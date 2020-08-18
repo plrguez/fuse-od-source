@@ -51,10 +51,14 @@ ui_widget_files = \
                   ui/widget/roms.c \
                   ui/widget/select.c \
                   ui/widget/text.c \
-                  ui/widget/vkeyboard.c \
                   ui/widget/widget_internals.h \
                   ui/widget/widget.c \
                   ui/widget/widget.h
+
+if BUILD_GCWZERO
+ui_widget_files +=  \
+                    ui/widget/vkeyboard.c
+endif
 
 ui_widget_built = \
                   ui/widget/fuse.font \

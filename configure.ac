@@ -991,6 +991,9 @@ AM_CONDITIONAL(COMPAT_WIN32, test "$COMPAT_OSNAME" = 'win32')
 dnl This tells the Makefile to use SDL_CFLAGS and SDL_LIBS during the build
 AM_CONDITIONAL(USE_SDL, test "$use_sdl" = "yes")
 
+dnl This tells the Makefile to build some parts for OpenDingux/RetroFW
+AM_CONDITIONAL(BUILD_GCWZERO, test [ "$gcw0" = "yes" -o "$retrofw" = "yes" ])
+
 dnl Decide whether to install desktop and mime files
 AC_ARG_ENABLE(desktop-integration,
 AS_HELP_STRING([--enable-desktop-integration], [add menu entry and file associations]),

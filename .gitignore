@@ -113,3 +113,5 @@ tags
 /Platform/GCW0/gdbinit
 /Platform/RETROFW1.0/gdbinit
 /Platform/RETROFW2.0/gdbinit
+/controlmapping/controlmappingsettings.c
+/controlmapping/controlmappingsettings.h

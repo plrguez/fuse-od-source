@@ -68,6 +68,7 @@ void utils_networking_init( void );
 void utils_networking_end( void );
 
 #ifdef GCWZERO
+void  utils_set_last_loaded_file( const char *filename);
 char* utils_last_filename( const char *filename, int without_extension );
 #endif
 

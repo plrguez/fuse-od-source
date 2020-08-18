@@ -1,4 +1,4 @@
-/* dir.c: Directory-related compatibility routines for OpenDingux (linux-uclibc)
+/* paths.c: Directory-related compatibility routines for OpenDingux (linux-uclibc)
    Copyright (c) 2020 Pedro Luis Rodríguez González
 
    This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 
 #include <sys/stat.h>
 #include <string.h>
+#include <limits.h>
+#include <errno.h>
 
 #include "compat.h"
 #include "ui/ui.h"

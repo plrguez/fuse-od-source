@@ -48,6 +48,9 @@
 #include "utils.h"
 #include "widget_internals.h"
 #include "widget.h"
+#ifdef GCWZERO
+#include "controlmapping/controlmapping.h"
+#endif
 
 widget_menu_entry *menu;
 static size_t highlight_line = 0;
@@ -771,6 +774,36 @@ set_joystick_type( int action )
   widget_end_all( WIDGET_FINISHED_OK );
 #endif
 }
+
+#ifdef GCWZERO
+void
+menu_options_load_control_mapping( int action )
+{
+  const char *message = "Load control mapping?";
+
+  if( widget_do_query( message ) ||
+      !widget_query.confirm )
+    return;
+
+  widget_end_all( WIDGET_FINISHED_OK );
+
+  controlmapping_load_mapfile( controlmapping_get_filename() );
+}
+
+void
+menu_options_save_control_mapping( int action )
+{
+  const char *message = "Save control mapping?";
+
+  if( widget_do_query( message ) ||
+      !widget_query.confirm )
+    return;
+
+  widget_end_all( WIDGET_FINISHED_OK );
+
+  controlmapping_save_mapfile( controlmapping_get_filename() );
+}
+#endif
 
 /* Options/Select ROMs/<type> */
 int

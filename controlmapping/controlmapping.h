@@ -1,4 +1,4 @@
-/* dir.c: Directory-related compatibility routines for OpenDingux (linux-uclibc)
+/* controlmapping.h: Control Mapping for OpenDingux
    Copyright (c) 2020 Pedro Luis Rodríguez González
 
    This program is free software; you can redistribute it and/or modify
@@ -21,20 +21,16 @@
 
 */
 
-#include <config.h>
 
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
+#ifndef FUSE_CONTROLMAPPING_H
+#define FUSE_CONTROLMAPPING_H
 
-#include "compat.h"
+extern char *mapfile;
 
-#ifdef GCWZERO
-int compat_createdir( const char *path )
-{
-  if (path)
-    return mkdir( path, 0754 );
-  else
-    return ENOENT;
-}
-#endif
+int controlmapping_load_mapfile( const char *filename );
+int controlmapping_save_mapfile( const char *filename );
+int controlmapping_init( void );
+void controlmapping_register_startup( void );
+const char* controlmapping_get_filename( void );
+
+#endif /* FUSE_CONTROLMAPPING_H */
