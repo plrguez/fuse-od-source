@@ -276,7 +276,11 @@ widget_query_generic_keyhandler( widget_query_entry *query, int num_entries,
   case INPUT_KEY_KP_Enter:
   case INPUT_JOYSTICK_FIRE_1:
     query[highlight_line].click();
+#ifdef GCWZERO
+    widget_end_widget( WIDGET_FINISHED_OK );
+#else
     widget_end_all( WIDGET_FINISHED_OK );
+#endif
 #ifdef GCWZERO
     if (!dont_refresh_display)
 #endif

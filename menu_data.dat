@@ -98,8 +98,22 @@ Options/Joysticks/Joystick _2..., Item,, menu_options_joysticks_select, menu_joy
 Options/Joysticks/_Keyboard..., Item,, menu_options_joysticks_select, menu_keyboard_joystick_detail, 3
 #ifdef GCWZERO
 Options/Joysticks/_GCW0 Keyboard..., Item,, menu_options_joysticks_select, menu_gcw0_keyboard_detail, 4
-Options/Joysticks/_Load control mapping, Item,, menu_options_load_control_mapping, menu_control_mapping_detail, 5
-Options/Joysticks/_Save control mapping, Item,, menu_options_save_control_mapping, menu_control_mapping_detail, 5
+Options/separator, Separator
+Options/Joysticks/_Control mapping per game..., Item,,, menu_control_mapping_detail
+Options/Joysticks/_Load control mapping, Item,, menu_options_load_control_mapping, menu_control_mapping_load_detail, 5
+Options/Joysticks/_Save control mapping, Item,, menu_options_save_control_mapping, menu_control_mapping_save_detail, 6
+Options/Joysticks/L_oad control mapping from file, Item,, menu_options_load_file_control_mapping,, 7
+Options/Joysticks/S_ave control mapping to file, Item,, menu_options_save_file_control_mapping,, 8
+Options/Joysticks/Defa_ult control mapping, Branch,,, menu_control_mapping_default_detail
+Options/Joysticks/Reset to _default controls, Item,, menu_options_reset_control_mapping_default, menu_control_mapping_reset_default_detail, 9
+Options/Joysticks/Se_t current as default, Item,, menu_options_set_control_mapping_default, menu_control_mapping_set_default_detail, 10
+
+Options/Joysticks/Default control mapping/GCW0 Joystick _1..., Item,, menu_options_joysticks_select, menu_joystick_1_detail, 1
+Options/Joysticks/Default control mapping/Joystick _2..., Item,, menu_options_joysticks_select, menu_joystick_2_detail, 2
+Options/Joysticks/Default control mapping/_Keyboard..., Item,, menu_options_joysticks_select, menu_keyboard_joystick_detail, 3
+Options/Joysticks/Default control mapping/_GCW0 Keyboard..., Item,, menu_options_joysticks_select, menu_gcw0_keyboard_detail, 4
+Options/Joysticks/Default control mapping/_Reload, Item,, menu_options_load_default_control_mapping, menu_control_mapping_load_default_detail, 5
+Options/Joysticks/Default control mapping/_Save, Item,, menu_options_save_default_control_mapping, menu_control_mapping_save_default_detail, 6
 #endif
 
 Options/S_elect ROMs, Branch

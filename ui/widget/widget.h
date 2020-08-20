@@ -79,6 +79,9 @@ typedef enum widget_type {
 #ifdef VKEYBOARD
   WIDGET_TYPE_VKEYBOARD,	/* Virtual Keyboard */
 #endif
+#ifdef GCWZERO
+  WIDGET_TYPE_JOYSTICKS_CONTROLMAPPING, /* Control mapping */
+#endif
 } widget_type;
 
 /* Activate a widget */
@@ -177,6 +180,14 @@ static inline int widget_do_about( void )
 static inline int widget_do_vkeyboard( void )
 {
   return widget_do( WIDGET_TYPE_VKEYBOARD, NULL );
+}
+#endif
+
+#ifdef GCWZERO
+/* Control Mapping */
+static inline int widget_do_joysticks_controlmapping( void )
+{
+  return widget_do( WIDGET_TYPE_JOYSTICKS_CONTROLMAPPING, NULL );
 }
 #endif
 

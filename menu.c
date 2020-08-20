@@ -382,6 +382,10 @@ MENU_CALLBACK( menu_media_tape_open )
 
   tape_open( filename, 0 );
 
+#ifdef GCWZERO
+  utils_set_last_loaded_file( filename, LIBSPECTRUM_CLASS_TAPE , 0 );
+#endif
+
   libspectrum_free( filename );
 
   fuse_emulation_unpause();
@@ -403,6 +407,11 @@ MENU_CALLBACK( menu_media_tape_clear )
 {
   ui_widget_finish();
   tape_close();
+
+#ifdef GCWZERO
+  utils_set_last_loaded_file( NULL, LIBSPECTRUM_CLASS_TAPE , 0 );
+#endif
+
 }
 
 MENU_CALLBACK( menu_media_tape_write )
@@ -503,6 +512,10 @@ MENU_CALLBACK_WITH_ACTION( menu_media_insert )
     break;
   }
 
+#ifdef GCWZERO
+  utils_set_last_loaded_file( filename, ( type == 3 ) ? LIBSPECTRUM_CLASS_MICRODRIVE : LIBSPECTRUM_CLASS_DISK_GENERIC , 0 );
+#endif
+
   libspectrum_free( filename );
 
   fuse_emulation_unpause();
@@ -526,6 +539,10 @@ MENU_CALLBACK_WITH_ACTION( menu_media_eject )
     ui_media_drive_eject( type, which );
     break;
   }
+
+#ifdef GCWZERO
+  utils_set_last_loaded_file( NULL, ( type == 3 ) ? LIBSPECTRUM_CLASS_MICRODRIVE : LIBSPECTRUM_CLASS_DISK_GENERIC , 0 );
+#endif
 }
 
 MENU_CALLBACK_WITH_ACTION( menu_media_save )
@@ -601,6 +618,10 @@ MENU_CALLBACK( menu_media_cartridge_timexdock_insert )
 
   dck_insert( filename );
 
+#ifdef GCWZERO
+  utils_set_last_loaded_file( filename, LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX, 0 );
+#endif
+
   libspectrum_free( filename );
 
   fuse_emulation_unpause();
@@ -610,6 +631,10 @@ MENU_CALLBACK( menu_media_cartridge_timexdock_eject )
 {
   ui_widget_finish();
   dck_eject();
+
+#ifdef GCWZERO
+  utils_set_last_loaded_file( NULL, LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX, 0 );
+#endif
 }
 
 MENU_CALLBACK( menu_media_cartridge_interface2_insert )
@@ -623,6 +648,10 @@ MENU_CALLBACK( menu_media_cartridge_interface2_insert )
 
   if2_insert( filename );
 
+#ifdef GCWZERO
+  utils_set_last_loaded_file( filename, LIBSPECTRUM_CLASS_CARTRIDGE_IF2, 0 );
+#endif
+
   libspectrum_free( filename );
 
   fuse_emulation_unpause();
@@ -632,6 +661,10 @@ MENU_CALLBACK( menu_media_cartridge_interface2_eject )
 {
   ui_widget_finish();
   if2_eject();
+
+#ifdef GCWZERO
+  utils_set_last_loaded_file( NULL, LIBSPECTRUM_CLASS_CARTRIDGE_IF2, 0 );
+#endif
 }
 
 MENU_CALLBACK_WITH_ACTION( menu_media_ide_insert )
@@ -1114,7 +1147,134 @@ menu_joystick_2_detail( void )
 const char*
 menu_control_mapping_detail( void )
 {
-  return controlmapping_get_filename();
+  if ( settings_current.control_mapping_per_game )
+    return "Active";
+  else
+    return "Inactive";
+}
+
+const char*
+menu_control_mapping_load_detail( void )
+{
+  const char* path = "/Options/Joysticks/Load control mapping";
+  const char* filename;
+  char* buffer;
+
+  if ( !settings_current.control_mapping_per_game )
+    return NULL;
+
+  /* If don't exist file for control mapping don't show */
+  filename = controlmapping_get_filename();
+  if ( !compat_file_exists( filename ) ) {
+    ui_menu_item_set_active( path , 0);
+    return NULL;
+  }
+  ui_menu_item_set_active( path,
+                           controlmapping_something_changed( &settings_current ) ? 1 : 0 );
+
+  filename = utils_last_filename( controlmapping_get_filename(), 0 );
+  buffer   = strndup( filename, 20 );
+  if ( strlen(filename) > 20 )
+    memcpy( &(buffer[19]), ">", 1 );
+
+  return buffer;
+}
+
+const char*
+menu_control_mapping_save_detail( void )
+{
+  const char* path = "/Options/Joysticks/Save control mapping";
+
+  const char* filename;
+  const char* mapfile;
+  char* buffer;
+  int changed;
+
+  if ( !settings_current.control_mapping_per_game )
+    return NULL;
+
+  mapfile = controlmapping_get_filename();
+  filename = utils_last_filename( mapfile,0 );
+  if (filename) {
+    buffer = strndup( filename, 20 );
+    if ( strlen(filename) > 20 )
+      memcpy( &(buffer[19]), ">", 1 );
+  } else
+    buffer = NULL;
+
+  if ( buffer && !compat_file_exists( mapfile ) )
+    changed = 1;
+  else
+    changed = controlmapping_something_changed( &settings_current );
+
+  ui_menu_item_set_active( path, buffer ? ( changed ? 1 : 0 ) : 0 );
+
+  return buffer;
+}
+
+const char*
+menu_control_mapping_load_default_detail( void )
+{
+  const char* path = "/Options/Joysticks/Default control mapping/Reload";
+  int changed;
+
+  changed = controlmapping_something_changed_defaults( &settings_current );
+  ui_menu_item_set_active( path, changed ? 1 : 0 );
+
+  return NULL;
+}
+
+const char*
+menu_control_mapping_save_default_detail( void )
+{
+  const char* path = "/Options/Joysticks/Default control mapping/Save";
+  int changed;
+
+  changed = controlmapping_something_changed_defaults( &settings_current );
+  ui_menu_item_set_active( path, changed ? 1 : 0 );
+
+  return NULL;
+}
+
+const char*
+menu_control_mapping_default_detail( void )
+{
+  const char* path = "/Options/Joysticks/Default control mapping";
+
+  if ( settings_current.control_mapping_per_game && settings_current.control_mapping_not_detached_defaults )
+    ui_menu_item_set_active( path, 0 );
+
+  return NULL;
+}
+
+const char*
+menu_control_mapping_reset_default_detail( void )
+{
+  const char* path = "/Options/Joysticks/Reset to default controls";
+
+  if ( settings_current.control_mapping_per_game ) {
+    if ( settings_current.control_mapping_not_detached_defaults )
+      ui_menu_item_set_active( path, 0 );
+    else
+      ui_menu_item_set_active( path, controlmapping_different_from_defaults( &settings_current ) ? 1 : 0 );
+  }
+
+  return NULL;
+}
+
+const char*
+menu_control_mapping_set_default_detail( void )
+{
+  const char* path = "/Options/Joysticks/Set current as default";
+
+  if ( settings_current.control_mapping_per_game ) {
+    if ( settings_current.control_mapping_not_detached_defaults )
+      ui_menu_item_set_active( path, 0 );
+    else
+      ui_menu_item_set_active( path, controlmapping_different_from_defaults( &settings_current ) ? 1 : 0 );
+  }
+
+  return NULL;
 }
 #endif
 

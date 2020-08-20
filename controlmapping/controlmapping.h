@@ -25,12 +25,28 @@
 #ifndef FUSE_CONTROLMAPPING_H
 #define FUSE_CONTROLMAPPING_H
 
-extern char *mapfile;
+#include <libspectrum.h>
+#include "settings.h"
 
-int controlmapping_load_mapfile( const char *filename );
+extern char *mapfile;
+extern char *defaultmapfile;
+extern settings_info  settings_old;
+
+int controlmapping_load_default_mapfile( );
+int controlmapping_save_default_mapfile( );
+int controlmapping_load_mapfile( const char *filename, int is_autoload );
+int controlmapping_load_mapfile_with_class( const char *filename, libspectrum_class_t class, int is_autoload );
+int controlmapping_save_current_mapfile( void );
 int controlmapping_save_mapfile( const char *filename );
-int controlmapping_init( void );
+int controlmapping_load_from_file( const char *filename, int current );
+int controlmapping_save_to_file( const char *filename );
 void controlmapping_register_startup( void );
 const char* controlmapping_get_filename( void );
+void controlmapping_set_defaults( settings_info *settings );
+void controlmapping_reset_to_defaults( settings_info *settings );
+int controlmapping_something_changed( settings_info *settings );
+int controlmapping_something_changed_defaults( settings_info *settings );
+int controlmapping_different_from_defaults( settings_info *settings );
+void controlmapping_check_settings_changed( settings_info *settings );
 
 #endif /* FUSE_CONTROLMAPPING_H */

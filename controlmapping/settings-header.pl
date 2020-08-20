@@ -50,9 +50,7 @@ while(<>) {
     }
 
 
-    next if !($name =~ /^joystick/) && !($name =~ /kempston/)
-         && !($name =~ /fuller/) && !($name =~ /^issue2/)
-         && !($name =~ /^keyboard/);
+    next if !($name =~ /^joystick/);
 
     $options{$name} = { type => $type, default => $default, short => $short,
 			commandline => $commandline,
@@ -100,7 +98,16 @@ print << 'CODE';
 
 extern control_mapping_info control_mapping_current;
 extern control_mapping_info control_mapping_default;
+extern control_mapping_info control_mapping_default_old;
+
+extern settings_info settings_old;
+
+#define DEFAULT_MAPPING_FILE "default.fcm"
+
 extern char *mapfile;
+extern char *defaultmapfile;
+
+char* get_mapping_filename( const char* filename );
 
 void control_mapping_defaults( control_mapping_info *control_mapping );
 void control_mapping_copy( control_mapping_info *dest, control_mapping_info *src );
@@ -109,13 +116,16 @@ void control_mapping_copy_to_settings( settings_info *dest, control_mapping_info
 
 void control_mapping_set_string( char **string_setting, const char *value );
 
+int control_mapping_something_changed( control_mapping_info *dest, settings_info *src );
+
 int control_mapping_free( control_mapping_info *control_mapping );
 int control_mapping_settings_free( settings_info *control_mapping );
 
-int control_mapping_read_config_file( control_mapping_info *control_mapping );
-int control_mapping_write_config( control_mapping_info *control_mapping );
+int control_mapping_read_config_file( control_mapping_info *control_mapping, const char *filename );
+int control_mapping_write_config( control_mapping_info *control_mapping, const char *filename );
 
 void control_mapping_register_startup( void );
+int  control_mapping_init( void *context );
 
 #endif				/* #ifndef FUSE_CONTROL_MAPPING_SETTINGS_H */
 CODE

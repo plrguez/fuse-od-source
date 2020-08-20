@@ -30,48 +30,25 @@
 #include "compat.h"
 #include "utils.h"
 #include "settings.h"
+#include "ui/ui.h"
 #include "controlmapping/controlmapping.h"
 #include "controlmapping/controlmappingsettings.h"
 
 #ifdef GCWZERO
 char *mapfile = NULL;              /* Path of a .fcm file to load */
+settings_info settings_old;
+static control_mapping_info control_mapping_tmp;
 
-/* Automatic search after the load of snapshots or tapes */
-static char* get_mapping_filename( const char* filename );
-
-static char*
-get_mapping_filename( const char* filename )
-{
-  const char* cfgdir;
-  char buffer[ PATH_MAX ];
-  char* filaneme_test;
-
-  if ( !filename ) return NULL;
-
-  /* Don't exist config path, no error but do nothing */
-  cfgdir = compat_get_config_path(); if( !cfgdir ) return NULL;
-
-  filaneme_test = utils_last_filename( filename, 1 );
-
-  snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%s"FUSE_DIR_SEP_STR"%s%s",
-            cfgdir, "mappings", filaneme_test, ".fcm" );
-
-  return utils_safe_strdup( buffer );
+/* Stablish current settings and control mapping defaults */
+void
+controlmapping_set_defaults( settings_info *settings ) {
+  control_mapping_copy_from_settings( &control_mapping_default, settings );
 }
 
-/* Called on emulator startup */
-int
-controlmapping_init( void )
-{
-  int error;
-
-  control_mapping_defaults( &control_mapping_default );
-  control_mapping_defaults( &control_mapping_current );
-
-  error = control_mapping_read_config_file( &control_mapping_current );
-  if( error ) return error;
-
-  return 0;
+/* Stablish defaults as control mapping settings */
+void
+controlmapping_reset_to_defaults( settings_info *settings ) {
+  control_mapping_copy_to_settings( settings, &control_mapping_default );
 }
 
 void
@@ -81,33 +58,185 @@ controlmapping_register_startup( void )
 }
 
 int
-controlmapping_load_mapfile( const char *filename )
+controlmapping_load_default_mapfile( )
 {
+  if ( !control_mapping_read_config_file( &control_mapping_default, defaultmapfile ) ) {
+    control_mapping_copy( &control_mapping_default_old, &control_mapping_default );
+    return 0;
+  } else
+    return 1;
+}
+
+int
+controlmapping_save_default_mapfile( )
+{
+  if ( !control_mapping_write_config( &control_mapping_default, defaultmapfile ) ) {
+    control_mapping_copy( &control_mapping_default_old, &control_mapping_default );
+    return 0;
+  } else
+    return 1;
+}
+
+int
+controlmapping_load_mapfile( const char *filename, int is_autoload )
+{
+  char *old_mapfile;
+
+  /* Mapping per game don't active o unset mapfile */
+  if ( !settings_current.control_mapping_per_game ) {
+    if ( mapfile && !filename ) libspectrum_free( mapfile );
+    mapfile = NULL;
+    return 0;
+  }
+
+  /* We are changing mapfile? Save previous */
+  old_mapfile = mapfile;
   mapfile = get_mapping_filename( filename );
+  if ( old_mapfile ) {
+    /* Auto-save, changed mapping and Something changed or don't yet created file? */;
+    if ( settings_current.control_mapping_autosave )
+      /* Media eject/cleared or load new */
+      if ( ( !mapfile || strcmp( old_mapfile, mapfile ) ) &&
+           ( control_mapping_something_changed( &control_mapping_current, &settings_current ) || !compat_file_exists( old_mapfile ) ) )
+        controlmapping_save_to_file( old_mapfile );
+    libspectrum_free( old_mapfile );
+  }
+
+  /* We are auto-loading */
+  if ( is_autoload && !settings_current.control_mapping_autoload ) return 0;
+
+  /* initialization with defaults if not checked last loaded as default */
+  if ( !settings_current.control_mapping_not_detached_defaults )
+    control_mapping_copy_to_settings( &settings_current, &control_mapping_default );
+
+  return controlmapping_load_from_file( mapfile, 1 );
+}
+
+int
+controlmapping_load_mapfile_with_class( const char *filename, libspectrum_class_t class, int is_autoload )
+{
+  switch ( class ) {
+  case LIBSPECTRUM_CLASS_TAPE:
+  case LIBSPECTRUM_CLASS_SNAPSHOT:
+  case LIBSPECTRUM_CLASS_DISK_PLUS3:
+  case LIBSPECTRUM_CLASS_DISK_DIDAKTIK:
+  case LIBSPECTRUM_CLASS_DISK_PLUSD:
+  case LIBSPECTRUM_CLASS_DISK_OPUS:
+  case LIBSPECTRUM_CLASS_DISK_TRDOS:
+  case LIBSPECTRUM_CLASS_DISK_GENERIC:
+  case LIBSPECTRUM_CLASS_CARTRIDGE_IF2:
+  case LIBSPECTRUM_CLASS_MICRODRIVE:
+  case LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX:
+    return controlmapping_load_mapfile( filename, 1 );
+
+  default:
+    return controlmapping_load_mapfile( NULL, 1 );
+  }
+}
+
+int
+controlmapping_load_from_file( const char *filename, int current )
+{
+  if ( !filename ) return 1;
+
+  if ( control_mapping_read_config_file( &control_mapping_tmp, filename ) ) return 1;
+  if ( current )
+    control_mapping_copy( &control_mapping_current, &control_mapping_tmp );
+
+  control_mapping_copy_to_settings( &settings_current, &control_mapping_tmp );
+  if ( settings_current.control_mapping_not_detached_defaults )
+    control_mapping_copy( &control_mapping_default, &control_mapping_tmp );
+  return 0;
+}
+
+int
+controlmapping_save_current_mapfile( void )
+{
   if ( !mapfile ) return 1;
 
-  if ( control_mapping_read_config_file( &control_mapping_current ) ) return 1;
+  /* control mapping file exist but nothing changed */
+  if( compat_file_exists( mapfile ) &&
+      !control_mapping_something_changed( &control_mapping_current, &settings_current ) )
+    return 1;
 
-  control_mapping_copy_to_settings( &settings_current, &control_mapping_current );
-  return 0;
+  return controlmapping_save_to_file( mapfile );
 }
 
 int
 controlmapping_save_mapfile( const char *filename )
 {
   mapfile = get_mapping_filename( filename );
-  if ( !mapfile ) return 1;
+  return controlmapping_save_current_mapfile();
+}
+
+int
+controlmapping_save_to_file( const char *filename )
+{
+  if ( !filename ) return 1;
 
   control_mapping_copy_from_settings( &control_mapping_current, &settings_current );
-  return control_mapping_write_config( &control_mapping_current );
+  return control_mapping_write_config( &control_mapping_current, filename );
 }
+
 
 const char*
 controlmapping_get_filename( void )
 {
-  if ( last_filename )
-    return last_filename;
-  else
-    return NULL;
+  return get_mapping_filename( mapfile );
+}
+
+int
+controlmapping_something_changed( settings_info *settings )
+{
+  return control_mapping_something_changed( &control_mapping_current, settings );
+}
+
+int
+controlmapping_something_changed_defaults( settings_info *settings )
+{
+  return control_mapping_something_changed( &control_mapping_default_old, settings );
+}
+
+int
+controlmapping_different_from_defaults( settings_info *settings )
+{
+  return control_mapping_something_changed( &control_mapping_default, settings );
+}
+
+void
+controlmapping_check_settings_changed( settings_info *settings ) {
+  /* Control mapping per game: Enabling */
+  if ( settings->control_mapping_per_game && !settings_old.control_mapping_per_game  ) {
+    /* Initilize */
+    control_mapping_init( NULL );
+    /* Autoload control mapping files if some file is loaded */
+    controlmapping_load_mapfile_with_class( last_filename, last_class, 1 );
+
+  /* Enabled and not change */
+  } else if ( settings->control_mapping_per_game && settings_old.control_mapping_per_game  ) {
+    /* Not detached defaults: Disabling. Load current defaults, only if not yet loaded */
+    if ( !settings->control_mapping_not_detached_defaults && settings_old.control_mapping_not_detached_defaults )
+      controlmapping_load_default_mapfile();
+
+    /* Not detached defaults: Enabling. Save previously current defaults */
+    else if ( settings->control_mapping_not_detached_defaults && !settings_old.control_mapping_not_detached_defaults )
+      controlmapping_save_default_mapfile();
+
+  /* Control mapping per game: Disabling */
+  } else if ( !settings->control_mapping_per_game && settings_old.control_mapping_per_game ) {
+    /* Save current mapfile */
+    controlmapping_save_current_mapfile();
+
+    /* Not detached defaults: diabled. Save defaults and set current settings as new defaults */
+    if ( !settings_old.control_mapping_not_detached_defaults )
+      controlmapping_save_default_mapfile();
+      controlmapping_reset_to_defaults( settings );
+
+    /* Unassign mapfile */
+    controlmapping_load_mapfile_with_class( NULL, LIBSPECTRUM_CLASS_UNKNOWN, 1 );
+  }
+
+  /* Save actual configuration for detect changes */
+  settings_copy( &settings_old, settings );
 }
 #endif /* GCWZERO */

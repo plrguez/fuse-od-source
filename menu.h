@@ -166,8 +166,22 @@ MENU_DETAIL( menu_joystick_2_detail );
 #ifdef GCWZERO
 MENU_DETAIL( menu_gcw0_keyboard_detail );
 MENU_DETAIL( menu_control_mapping_detail );
+MENU_DETAIL( menu_control_mapping_load_detail );
+MENU_DETAIL( menu_control_mapping_save_detail );
+MENU_DETAIL( menu_control_mapping_default_detail );
+MENU_DETAIL( menu_control_mapping_reset_default_detail );
+MENU_DETAIL( menu_control_mapping_set_default_detail );
 MENU_CALLBACK_WITH_ACTION( menu_options_load_control_mapping );
 MENU_CALLBACK_WITH_ACTION( menu_options_save_control_mapping );
+MENU_CALLBACK_WITH_ACTION( menu_options_load_file_control_mapping );
+MENU_CALLBACK_WITH_ACTION( menu_options_save_file_control_mapping );
+MENU_CALLBACK_WITH_ACTION( menu_options_set_control_mapping_default );
+MENU_CALLBACK_WITH_ACTION( menu_options_reset_control_mapping_default );
+MENU_CALLBACK( menu_options_joysticks_controlmappingpergame );
+MENU_DETAIL( menu_control_mapping_load_default_detail );
+MENU_DETAIL( menu_control_mapping_save_default_detail );
+MENU_CALLBACK_WITH_ACTION( menu_options_load_default_control_mapping );
+MENU_CALLBACK_WITH_ACTION( menu_options_save_default_control_mapping );
 #endif
 
 MENU_CALLBACK( menu_machine_pause );

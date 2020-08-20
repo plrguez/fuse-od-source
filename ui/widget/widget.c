@@ -96,6 +96,40 @@ typedef struct widget_recurse_t {
 
 static widget_recurse_t widget_return[10]; /* The stack to recurse on */
 
+#ifdef GCWZERO
+static int widget_do_for_path( widget_menu_entry *data, const char* path )
+{
+  int found = 0;
+  widget_menu_entry *submenu, *menu;
+  char *search_path;
+  char *entry;
+
+  search_path = utils_safe_strdup( path );
+  entry = strtok( search_path, "/" );
+  if ( entry ) {
+    menu = &(widget_menu[0]);
+    while (menu) {
+      submenu = menu->submenu;
+      if (submenu) {
+        if ( strcmp( submenu->text, entry ) == 0 ) {
+          menu = submenu;
+          entry = strtok(NULL,"/");
+          if (!entry) {
+            found = 1;
+            break;
+          }
+        } else menu++;
+      } else
+        menu++;
+    } /* while (menu) */
+  }
+  libspectrum_free( search_path );
+
+  if (found) return widget_do_menu(menu);
+  return 0;
+}
+#endif
+
 static int widget_read_font( const char *filename )
 {
   utils_file file;
@@ -776,6 +810,9 @@ widget_t widget_data[] = {
 #ifdef VKEYBOARD
   { widget_vkeyboard_draw, widget_vkeyboard_finish, widget_vkeyboard_keyhandler  },
 #endif
+#ifdef GCWZERO
+  { widget_control_mapping_draw, widget_control_mapping_finish, widget_control_mapping_keyhandler  },
+#endif
 };
 
 #ifndef UI_SDL
@@ -920,14 +957,20 @@ ui_popup_menu( int native_key )
 #ifdef VKEYBOARD
 #ifdef GCWZERO
   case INPUT_KEY_Return: /*Start*/
-#endif
+#endif /* GCWZERO */
   case INPUT_KEY_F11:
     vkeyboard_enabled = !vkeyboard_enabled;
-/*
-    menu_vkeyboard( 0 );
-*/
+    /* menu_vkeyboard( 0 ); */
     break;
 #endif /* VKEYBOARD */
+
+#ifdef GCWZERO
+  case INPUT_KEY_F12:
+    fuse_emulation_pause();
+    widget_do_for_path( widget_menu, "/Options/Joysticks" );
+    fuse_emulation_unpause();
+    break;
+#endif /* GCWZERO */
 
   default: break;		/* Remove gcc warning */
 

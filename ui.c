@@ -670,8 +670,19 @@ static const struct menu_item_entries menu_item_lookup[] = {
     "/Media/Tape/Rewind", 1,
     "/Media/Tape/Clear", 1,
     "/Media/Tape/Write...", 1 },
-  
+
+#ifdef GCWZERO
+  { UI_MENU_ITEM_JOYSTICKS_CONTROL_MAPPING,
+    "/Options/Joysticks/Save control mapping",
+    "/Options/Joysticks/Load control mapping", 0,
+    "/Options/Joysticks/Reset to default controls", 0,
+    "/Options/Joysticks/Set current as default", 0,
+    "/Options/Joysticks/Default control mapping", 0 },
+
+  { UI_MENU_ITEM_JOYSTICKS_CONTROL_MAPPING, NULL },
+#else
   { UI_MENU_ITEM_TAPE_RECORDING, NULL },	/* End marker */
+#endif
 
 };
 

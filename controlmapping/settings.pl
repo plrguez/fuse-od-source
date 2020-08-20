@@ -50,9 +50,7 @@ while(<>) {
     }
 
 
-    next if !($name =~ /^joystick/) && !($name =~ /kempston/)
-         && !($name =~ /fuller/) && !($name =~ /^issue2/)
-         && !($name =~ /^keyboard/);
+    next if !($name =~ /^joystick/);
 
     $options{$name} = { type => $type, default => $default, short => $short,
 			commandline => $commandline,
@@ -103,6 +101,9 @@ print hashline( __LINE__ ), << 'CODE';
 /* The current control mappings */
 control_mapping_info control_mapping_current;
 control_mapping_info control_mapping_default;
+control_mapping_info control_mapping_default_old;
+
+char *defaultmapfile = NULL;
 
 #ifdef HAVE_LIB_XML2
 static int control_mapping_parse_xml( xmlDocPtr doc, control_mapping_info *control_mapping );
@@ -118,7 +119,7 @@ static void control_mapping_end( void );
 /* Fill the control mapping structure with sensible defaults */
 void control_mapping_defaults( control_mapping_info *control_mapping )
 {
-  control_mapping_copy_from_settings_internal( control_mapping, &settings_default );
+  control_mapping_copy_internal( control_mapping, &control_mapping_default );
 }
 
 #ifdef HAVE_LIB_XML2
@@ -126,19 +127,17 @@ void control_mapping_defaults( control_mapping_info *control_mapping )
 /* Read control mappings from the mapping file (if libxml2 is available) */
 
 int
-control_mapping_read_config_file( control_mapping_info *control_mapping )
+control_mapping_read_config_file( control_mapping_info *control_mapping, const char *filename )
 {
   xmlDocPtr doc;
 
   /* If don't have file to load there is no error */
-  if ( !mapfile ) return 0;
+  if ( !filename ) return 1;
 
   /* See if the file exists, if don't there is no error */
-  if( !compat_file_exists( mapfile ) ) {
-      return 0;
-  }
+  if( !compat_file_exists( filename ) ) return 1;
 
-  doc = xmlReadFile( mapfile, NULL, 0 );
+  doc = xmlReadFile( filename, NULL, 0 );
   if( !doc ) {
     ui_error( UI_ERROR_ERROR, "error reading mapping controls file" );
     return 1;
@@ -228,14 +227,14 @@ print hashline( __LINE__ ), << 'CODE';
 }
 
 int
-control_mapping_write_config( control_mapping_info *control_mapping )
+control_mapping_write_config( control_mapping_info *control_mapping, const char *filename )
 {
   char buffer[80];
 
   xmlDocPtr doc; xmlNodePtr root;
 
-  /* No file loaded do nothing */
-  if ( !mapfile ) return 0;
+  /* If don't have file to save do nothing */
+  if ( !filename ) return 0;
 
   /* Create the XML document */
   doc = xmlNewDoc( (const xmlChar*)"1.0" );
@@ -271,7 +270,7 @@ CODE
 
   print hashline( __LINE__ ), << 'CODE';
 
-  xmlSaveFormatFile( mapfile, doc, 1 );
+  xmlSaveFormatFile( filename, doc, 1 );
 
   xmlFreeDoc( doc );
 
@@ -282,29 +281,20 @@ CODE
 
 /* Read control mapping from the config file as ini file (if libxml2 is not available) */
 
-static int
-control_mapping_read_config_file( control_mapping_info *control_mapping )
+int
+control_mapping_read_config_file( control_mapping_info *control_mapping, const char *filename )
 {
-  struct stat stat_info;
   int error;
 
   utils_file file;
 
   /* If don't have file to load there is no error */
-  if ( !mapfile ) return 0;
+  if ( !filename ) return 1;
 
   /* See if the file exists; if doesn't, it's not a problem */
-  if( stat( mapfile, &stat_info ) ) {
-    if( errno == ENOENT ) {
-      return 0;
-    } else {
-      ui_error( UI_ERROR_ERROR, "couldn't stat '%s': %s", mapfile,
-		strerror( errno ) );
-      return 1;
-    }
-  }
+  if( !compat_file_exists( filename ) ) return 1;
 
-  error = utils_read_file( mapfile, &file );
+  error = utils_read_file( filename, &file );
   if( error ) {
     ui_error( UI_ERROR_ERROR, "error reading control mapping file" );
     return 1;
@@ -437,12 +427,6 @@ control_mapping_string_write( compat_fd doc, const char* name, const char* confi
 }
 
 static int
-control_mapping_boolean_write( compat_fd doc, const char* name, int config )
-{
-  return control_mapping_string_write( doc, name, config ? "1" : "0" );
-}
-
-static int
 control_mapping_numeric_write( compat_fd doc, const char* name, int config )
 {
   char buffer[80]; 
@@ -451,18 +435,17 @@ control_mapping_numeric_write( compat_fd doc, const char* name, int config )
 }
 
 int
-control_mapping_write_config( control_mapping_info *control_mapping )
+control_mapping_write_config( control_mapping_info *control_mapping, const char *filename )
 {
-  const char *cfgdir; char path[ PATH_MAX ];
-
   compat_fd doc;
 
-  if ( !mapfile ) return 1;
+  /* If don't have file to save do nothing */
+  if ( !filename ) return 0;
 
-  doc = compat_file_open( mapfile, 1 );
+  doc = compat_file_open( filename, 1 );
   if( doc == COMPAT_FILE_OPEN_FAILED ) {
     ui_error( UI_ERROR_ERROR, "couldn't open `%s' for writing: %s\n",
-	      path, strerror( errno ) );
+	      filename, strerror( errno ) );
     return 1;
   }
 
@@ -514,6 +497,32 @@ error:
 }
 
 #endif				/* #ifdef HAVE_LIB_XML2 */
+
+/* Compare two control mapping options */
+int
+control_mapping_something_changed( control_mapping_info *dest, settings_info *src )
+{
+CODE
+
+foreach my $name ( sort keys %options ) {
+
+    my $type = $options{$name}->{type};
+
+    if( $type eq 'boolean' or $type eq 'numeric' ) {
+	print "  if ( dest->$name != src->$name ) return 1;\n";
+    } elsif( $type eq 'string' ) {
+        print << "CODE";
+  if ( ( src->$name && !dest->$name ) ||
+       ( !src->$name && dest->$name ) ||
+       ( src->$name && dest->$name && strcmp( src->$name, dest->$name ) ) )
+    return 1;
+CODE
+    }
+}
+
+print << "CODE";
+  return 0;
+}
 
 /* Copy one custom mapping object to another */
 static void
@@ -658,15 +667,66 @@ print hashline( __LINE__ ), << 'CODE';
   return 0;
 }
 
+int
+control_mapping_init( void *context )
+{
+  /* Current settings as defaults for control mapping */
+  control_mapping_copy_from_settings( &control_mapping_default, &settings_current );
+
+ defaultmapfile = get_mapping_filename( DEFAULT_MAPPING_FILE );
+ if ( settings_current.control_mapping_per_game && !settings_current.control_mapping_not_detached_defaults ) {
+   if ( defaultmapfile ) {
+      /* Read default config file. If it doesn't exist create it */
+      if ( compat_file_exists( defaultmapfile ) ) {
+        control_mapping_read_config_file( &control_mapping_default, defaultmapfile );
+        control_mapping_copy_to_settings( &settings_current, &control_mapping_default );
+      } else
+        control_mapping_write_config( &control_mapping_default, defaultmapfile ) ;
+   }
+ }
+
+  /* Stablish defaults as current control mapping */
+  control_mapping_defaults( &control_mapping_current );
+  control_mapping_copy( &control_mapping_default_old, &control_mapping_default );
+
+  /* Save actual settings for detect changes for control mapping */
+  settings_copy( &settings_old, &settings_current );
+
+  ui_menu_activate( UI_MENU_ITEM_JOYSTICKS_CONTROL_MAPPING, settings_current.control_mapping_per_game ? 1 : 0 );
+
+  return 0;
+}
+
 static void
 control_mapping_end( void )
 {
-  if( settings_current.autosave_settings ) {
-    control_mapping_copy_from_settings( &control_mapping_current, &settings_current );
-    control_mapping_write_config( &control_mapping_current );
+  /* Control mapping per game and auto-save actives? */
+  if( settings_current.control_mapping_per_game && settings_current.control_mapping_autosave ) {
+    /* Save only if something changed or if don't exist mapfile yet */
+    if( mapfile &&
+        ( !compat_file_exists( mapfile ) ||
+           control_mapping_something_changed( &control_mapping_current, &settings_current ) ) ) {
+      control_mapping_copy_from_settings( &control_mapping_current, &settings_current );
+      control_mapping_write_config( &control_mapping_current, mapfile );
+    }
+    /* Save to defaults if detached defaults */
+    if ( !settings_current.control_mapping_not_detached_defaults )
+      control_mapping_write_config( &control_mapping_default, defaultmapfile );
   }
 
+  /* 
+     Restore default settings if not checked last mapping as default.
+     If autosave is activated then settings_end will not save the last 
+     control mapping loaded
+  */
+  if ( settings_current.control_mapping_per_game && !settings_current.control_mapping_not_detached_defaults )
+    control_mapping_copy_to_settings( &settings_current, &control_mapping_default );
+
+  /* Free stuff */
   control_mapping_free( &control_mapping_current );
+  control_mapping_free( &control_mapping_default );
+  control_mapping_free( &control_mapping_default_old );
+  if ( mapfile ) libspectrum_free( mapfile );
 
 #ifdef HAVE_LIB_XML2
   xmlCleanupParser();
@@ -686,8 +746,30 @@ control_mapping_register_startup( void )
     STARTUP_MANAGER_MODULE_SETUID
   };
   startup_manager_register( STARTUP_MANAGER_MODULE_CONTROL_MAPPING_END, dependencies,
-                            ARRAY_SIZE( dependencies ), NULL, NULL,
+                            ARRAY_SIZE( dependencies ), control_mapping_init, NULL,
                             control_mapping_end );
+}
+
+char*
+get_mapping_filename( const char* filename )
+{
+  const char* cfgdir;
+  char buffer[ PATH_MAX ];
+  char* filaneme_test;
+
+  if ( !filename ) return NULL;
+
+  /* Don't exist config path, no error but do nothing */
+  cfgdir = compat_get_config_path(); if( !cfgdir ) return NULL;
+
+  filaneme_test = utils_last_filename( filename, 1 );
+
+  snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%s"FUSE_DIR_SEP_STR"%s%s",
+            cfgdir, "mappings", filaneme_test, ".fcm" );
+
+  libspectrum_free( filaneme_test );
+
+  return utils_safe_strdup( buffer );
 }
 
 CODE

@@ -142,10 +142,7 @@ widget_get_filename( const char *title, int saving )
   }
   if( widget_filesel_name )
     filename = utils_safe_strdup( widget_filesel_name );
-#ifdef GCWZERO
-  if ( filename )
-    last_filename = utils_last_filename( filename, 1 );
-#endif
+
   return filename;
   
 }
@@ -1003,7 +1000,7 @@ widget_filesel_keyhandler( input_key key )
       text_data.max_length = 30;
 #ifdef GCWZERO
       if (last_filename)
-        snprintf( text_data.text, 30, "%s", last_filename );
+        snprintf( text_data.text, 30, "%s", utils_last_filename( last_filename, 1 ) );
       else
 #endif
       text_data.text[0] = 0;

@@ -26,9 +26,6 @@
 #include <SDL.h>
 #include "settings.h"
 #include "ui/ui.h"
-#if VKEYBOARD
-#include "ui/vkeyboard.h"
-#endif
 #include "ui/hotkeys.h"
 
 #ifdef GCWZERO
@@ -91,16 +88,17 @@ filter_combo_done( const SDL_Event *event )
 int
 push_combo_event( Uint8* flags )
 {
-  SDLKey        combo_key = 0;
-  SDL_Event    *combo_event;
-  int       toggle_triple_buffer = 0;
+  SDLKey combo_key = 0;
+  SDL_Event *combo_event;
+  int toggle_triple_buffer = 0;
 
   /* Search valid combos */
   switch (*flags) {
   case 0xA1: combo_key = SDLK_F4; break;/* L1 + Select + X General opetions */
   case 0xA2: combo_key = SDLK_F9; break;/* L1 + Select + Y Machine Select */
-  case 0xC1: combo_key = SDLK_F7; break;/* L1 + Start + X Tape Open */
-  case 0xC2: combo_key = SDLK_F8; break;/* L1 + Start + Y Tape play */
+  case 0x61: combo_key = SDLK_F7; break;/* L1 + Start + X Tape Open */
+  case 0x62: combo_key = SDLK_F8; break;/* L1 + Start + Y Tape play */
+  case 0x91: combo_key = SDLK_F12; break;/*R1 + Select + X Joystick */
   case 0x30: toggle_triple_buffer = 1; break;/* L1 + R1 Toggle triple buffer */
   case 0x21: combo_key = SDLK_F3; break;/* L1 + X Open files */
   case 0x22: combo_key = SDLK_F2; break;/* L1 + Y  Save files*/
@@ -120,7 +118,7 @@ push_combo_event( Uint8* flags )
     *flags = 0x00;
     combo_done = 1;
     return 1;
-  } else if (toggle_triple_buffer) {
+  } else if ( toggle_triple_buffer ) {
     settings_current.triple_buffer = !settings_current.triple_buffer;
     combo_done = 1;
     *flags = 0x00;
@@ -151,6 +149,7 @@ push_combo_event( Uint8* flags )
    L1 + Y           Save file (F2)
    R1 + X           Exit fuse (F10)
    R1 + Y           Reset machine (F5)
+   R1 + Select + X  Joystick
    L1 + Select + X  General options (F4)
    L1 + Select + Y  Machine select (F9)
    L1 + Start + X   Tape open (F7)

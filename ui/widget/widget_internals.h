@@ -300,6 +300,7 @@ extern widget_t widget_data[];
 
 #ifdef GCWZERO
 void widget_print_filetitle( int y, struct widget_dirent *current, int is_saving );
+int widget_control_mapping_finish( widget_finish_state finished );
 #endif
 
 #endif				/* #ifndef FUSE_WIDGET_INTERNALS_H */

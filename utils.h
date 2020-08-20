@@ -38,6 +38,7 @@ typedef struct utils_file {
 #ifdef GCWZERO
 /* Last filename loaded */
 extern char* last_filename;
+extern libspectrum_class_t last_class;
 #endif
 
 int utils_open_file( const char *filename, int autoload,
@@ -68,7 +69,7 @@ void utils_networking_init( void );
 void utils_networking_end( void );
 
 #ifdef GCWZERO
-void  utils_set_last_loaded_file( const char *filename);
+void  utils_set_last_loaded_file( const char *filename, libspectrum_class_t class, int change_to_path );
 char* utils_last_filename( const char *filename, int without_extension );
 #endif
 

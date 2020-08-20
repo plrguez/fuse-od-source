@@ -167,6 +167,11 @@ joystick_gcw0_r3, numeric, 0
 
 keyboard_arrows_shifted, boolean, 1
 
+control_mapping_per_game, boolean, 0
+control_mapping_autoload, boolean, 1
+control_mapping_autosave, boolean, 1
+control_mapping_not_detached_defaults, boolean, 0
+
 rzx_compression, boolean, 1,, compress-rzx
 competition_mode, boolean, 0
 competition_code, numeric, 0

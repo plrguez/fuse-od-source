@@ -147,3 +147,12 @@ Combo, Movie (c)ompression, movie_compr, INPUT_KEY_c, None|*Lossless|High
 Combo, Movie (c)ompression, movie_compr, INPUT_KEY_c, *None
 #endif
 Checkbox, (S)top recording after RZX ends, movie_stop_after_rzx, INPUT_KEY_S
+
+#ifdef GCWZERO
+control_mapping
+Control Mapping Options
+Checkbox, (C)ontrol mapping per game, control_mapping_per_game, INPUT_KEY_A
+Checkbox, Auto-(l)oad, control_mapping_autoload, INPUT_KEY_L
+Checkbox, Auto-(s)ave, control_mapping_autosave, INPUT_KEY_S
+Checkbox, No(t) detached defaults, control_mapping_not_detached_defaults, INPUT_KEY_T
+#endif

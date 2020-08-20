@@ -56,6 +56,9 @@ widget_menu_entry *menu;
 static size_t highlight_line = 0;
 static size_t count;
 #ifdef GCWZERO
+settings_info settings_previous;
+int in_control_mapping_defaults = 0;
+static size_t last_mapping_button_line = 0;
 static int *current_settings[ 17 ];
 #else
 static int *current_settings[ 16 ];
@@ -68,6 +71,8 @@ static void \
 set_key_for_button_ ## which ( int action ) \
 { \
   *current_settings[ which ] = action; \
+  if ( settings_current.control_mapping_per_game && settings_current.control_mapping_not_detached_defaults ) \
+    controlmapping_set_defaults( &settings_current ); \
   int number_widgets = widgets_to_end; \
   widgets_to_end = 0; \
   widget_end_n_widgets( number_widgets, WIDGET_FINISHED_OK ); \
@@ -324,6 +329,31 @@ static widget_menu_entry submenu_type_and_mapping_for_ ## device [] = { \
 SUBMENU_DEVICE_SELECTIONS_GCW0( gcw0_keys )
 #endif
 
+#ifdef GCWZERO
+#define BUTTON_MAPPING_MENU \
+  ( strcmp( menu->text, "Select joystick button" ) == 0 || \
+    strcmp( menu->text, "Map GCW0 to keyboard key" ) == 0 || \
+    strcmp( menu->text, "Select keyboard key" ) == 0 )
+#define DEFAULT_CONTROL_MAPPING_MENU( text ) \
+ ( strcmp( text, "Default control mapping" ) == 0 )
+
+static void
+controlmapping_menu_enter_to_defaults( void )
+{
+  in_control_mapping_defaults = 1;
+  settings_copy( &settings_previous, &settings_current );
+  controlmapping_reset_to_defaults( &settings_current );
+}
+
+static void
+controlmapping_menu_exit_from_defaults( void )
+{
+  controlmapping_set_defaults( &settings_current );
+  settings_copy( &settings_current, &settings_previous );
+  in_control_mapping_defaults = 0;
+}
+#endif
+
 static void
 print_items( void )
 {
@@ -379,6 +409,11 @@ int widget_menu_draw( void *data )
 
   menu = (widget_menu_entry*)data;
 
+#ifdef GCWZERO
+  if ( last_mapping_button_line && BUTTON_MAPPING_MENU )
+    highlight_line = last_mapping_button_line;
+#endif
+
   /* How many menu items do we have? */
   for( ptr = &menu[1]; ptr->text; ptr++ )
     height += ptr->text[0] ? 2 : 1;
@@ -415,6 +450,11 @@ widget_menu_keyhandler( input_key key )
   case INPUT_KEY_End:  /* RetroFW */
 #ifdef GCWZERO
     widgets_to_end = 0;
+    last_mapping_button_line = 0;
+    if ( in_control_mapping_defaults ) {
+      controlmapping_menu_exit_from_defaults();
+    }
+    in_control_mapping_defaults = 0;
 #endif
     widget_end_all( WIDGET_FINISHED_CANCEL );
     return;
@@ -422,10 +462,16 @@ widget_menu_keyhandler( input_key key )
 
 #ifdef GCWZERO
   case INPUT_KEY_Alt_L: /* B */
-#endif
+#else
   case INPUT_KEY_Escape:
+#endif
   case INPUT_JOYSTICK_FIRE_2:
 #ifdef GCWZERO
+    if ( BUTTON_MAPPING_MENU  )
+      last_mapping_button_line = 0;
+    if ( in_control_mapping_defaults && DEFAULT_CONTROL_MAPPING_MENU( menu->text ) ) {
+      controlmapping_menu_exit_from_defaults();
+    }
     if (widgets_to_end) widgets_to_end--;
 #endif
     widget_end_widget( WIDGET_FINISHED_CANCEL );
@@ -433,21 +479,21 @@ widget_menu_keyhandler( input_key key )
 
 #ifdef GCWZERO
   case INPUT_KEY_Control_L: /* A */
-#endif
+#else
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
+#endif
   case INPUT_JOYSTICK_FIRE_1:
     ptr=&menu[1 + highlight_line];
     if(!ptr->inactive) {
       if( ptr->submenu ) {
 #ifdef GCWZERO
-        /* TODO: Any better form to do this? */
+        /* TODO: Any better way to do this? */
         /* We count the widgets to end from this options */
-        if (widgets_to_end ||
-            strcmp(menu->text,"Select joystick button") == 0 ||
-            strcmp(menu->text,"Map GCW0 to keyboard key") == 0 ||
-            strcmp(menu->text,"Select keyboard key") == 0 )
+        if ( widgets_to_end || BUTTON_MAPPING_MENU )
           widgets_to_end++;
+        if ( DEFAULT_CONTROL_MAPPING_MENU( ptr->submenu->text ) )
+          controlmapping_menu_enter_to_defaults();
 #endif
         widget_do_menu( ptr->submenu );
       } else {
@@ -509,6 +555,10 @@ widget_menu_keyhandler( input_key key )
 
   if( cursor_pressed ) {
     highlight_line = new_highlight_line;
+#ifdef GCWZERO
+    if ( BUTTON_MAPPING_MENU )
+      last_mapping_button_line = highlight_line;
+#endif
     print_items();
     return;
   }
@@ -777,31 +827,107 @@ set_joystick_type( int action )
 
 #ifdef GCWZERO
 void
+menu_options_joysticks_controlmappingpergame( int action )
+{
+  widget_do_joysticks_controlmapping();
+}
+
+void
 menu_options_load_control_mapping( int action )
 {
-  const char *message = "Load control mapping?";
+  const char *message = "Reload control mapping?";
+  const char *filename;
+
+  filename = controlmapping_get_filename();
+  if (!filename) return;
 
   if( widget_do_query( message ) ||
       !widget_query.confirm )
     return;
 
-  widget_end_all( WIDGET_FINISHED_OK );
-
-  controlmapping_load_mapfile( controlmapping_get_filename() );
+  controlmapping_load_mapfile( filename, 0 );
+  print_items();
 }
 
 void
 menu_options_save_control_mapping( int action )
 {
   const char *message = "Save control mapping?";
+  const char *filename;
+
+  filename = controlmapping_get_filename();
+  if (!filename) return;
 
   if( widget_do_query( message ) ||
       !widget_query.confirm )
     return;
 
-  widget_end_all( WIDGET_FINISHED_OK );
+  controlmapping_save_mapfile( filename );
+  print_items();
+}
 
-  controlmapping_save_mapfile( controlmapping_get_filename() );
+void
+menu_options_load_file_control_mapping( int action )
+{
+  char *filename;
+
+  filename = ui_get_open_filename( "Fuse - Load Control Mapping" );
+  if( !filename ) return;
+
+  controlmapping_load_from_file( filename, 0 );
+  print_items();
+}
+
+void
+menu_options_save_file_control_mapping( int action )
+{
+  char *filename;
+
+  filename = ui_get_save_filename( "Fuse - Save Control Mapping" );
+  if( !filename ) return;
+
+  controlmapping_save_to_file( filename );
+}
+
+void
+menu_options_load_default_control_mapping( int action )
+{
+  controlmapping_load_default_mapfile();
+  controlmapping_reset_to_defaults( &settings_current );
+  print_items();
+}
+void
+menu_options_save_default_control_mapping( int action )
+{
+  controlmapping_set_defaults( &settings_current );
+  controlmapping_save_default_mapfile();
+  print_items();
+}
+
+void
+menu_options_set_control_mapping_default( int action )
+{
+  const char *message = "Set current control mapping as default?";
+
+  if( widget_do_query( message ) ||
+      !widget_query.confirm )
+    return;
+
+  controlmapping_set_defaults( &settings_current );
+  print_items();
+}
+
+void
+menu_options_reset_control_mapping_default( int action )
+{
+  const char *message = "Reset current control mapping to defaults?";
+
+  if( widget_do_query( message ) ||
+      !widget_query.confirm )
+    return;
+
+  controlmapping_reset_to_defaults( &settings_current );
+  print_items();
 }
 #endif
 
