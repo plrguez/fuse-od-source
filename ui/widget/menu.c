@@ -845,7 +845,7 @@ menu_options_load_control_mapping( int action )
       !widget_query.confirm )
     return;
 
-  controlmapping_load_mapfile( filename, 0 );
+  controlmapping_load_mapfile( filename, mapfile_class, 0 );
   print_items();
 }
 

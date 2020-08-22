@@ -673,17 +673,17 @@ control_mapping_init( void *context )
   /* Current settings as defaults for control mapping */
   control_mapping_copy_from_settings( &control_mapping_default, &settings_current );
 
- defaultmapfile = get_mapping_filename( DEFAULT_MAPPING_FILE );
- if ( settings_current.control_mapping_per_game && !settings_current.control_mapping_not_detached_defaults ) {
-   if ( defaultmapfile ) {
+  defaultmapfile = get_mapping_filename( DEFAULT_MAPPING_FILE );
+  if ( settings_current.control_mapping_per_game && !settings_current.control_mapping_not_detached_defaults ) {
+    if ( defaultmapfile ) {
       /* Read default config file. If it doesn't exist create it */
       if ( compat_file_exists( defaultmapfile ) ) {
         control_mapping_read_config_file( &control_mapping_default, defaultmapfile );
         control_mapping_copy_to_settings( &settings_current, &control_mapping_default );
       } else
         control_mapping_write_config( &control_mapping_default, defaultmapfile ) ;
-   }
- }
+    }
+  }
 
   /* Stablish defaults as current control mapping */
   control_mapping_defaults( &control_mapping_current );

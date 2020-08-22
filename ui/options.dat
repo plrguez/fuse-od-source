@@ -19,7 +19,6 @@ Checkbox, (P)AL-TV use TV2x effect, pal_tv2x, INPUT_KEY_p
 Checkbox, Full (s)creen, full_screen, INPUT_KEY_s
 #endif
 #ifdef GCWZERO
-Checkbox, Show hi(d)den files, hidden_files, INPUT_KEY_d
 Checkbox, Triple Bu(f)fer, triple_buffer, INPUT_KEY_f
 #endif
 #endif
@@ -28,6 +27,8 @@ Checkbox, Snap (j)oystick prompt, joy_prompt, INPUT_KEY_j
 Checkbox, (C)onfirm actions, confirm_actions, INPUT_KEY_c
 #ifdef GCWZERO
 Checkbox, Confir(m) overwrite files, confirm_overwrite_files, INPUT_KEY_m
+Checkbox, Show hi(d)den files, hidden_files, INPUT_KEY_d
+Checkbox, Hot(k)ey combos, hotkey_combos, INPUT_KEY_k
 #endif
 Checkbox, A(u)to-save settings, autosave_settings, INPUT_KEY_u
 

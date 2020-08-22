@@ -44,7 +44,6 @@ detect_loader, boolean, 1
 accelerate_loader, boolean, 1
 slt_traps, boolean, 1,, slt, slttraps
 double_screen, null, 0
-hidden_files, boolean, 0
 triple_buffer, boolean, 0
 full_screen, boolean, 0
 writable_roms, boolean, 0
@@ -59,6 +58,8 @@ raw_s_net, boolean, 0
 snet, string, NULL
 confirm_actions, boolean, 1
 confirm_overwrite_files, boolean, 0
+hidden_files, boolean, 0
+hotkey_combos, boolean, 0
 printer, boolean, 0
 statusbar, boolean, 1
 interface1, boolean, 0

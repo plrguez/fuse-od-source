@@ -957,14 +957,19 @@ ui_popup_menu( int native_key )
 #ifdef VKEYBOARD
 #ifdef GCWZERO
   case INPUT_KEY_Return: /*Start*/
-#endif /* GCWZERO */
-  case INPUT_KEY_F11:
     vkeyboard_enabled = !vkeyboard_enabled;
     /* menu_vkeyboard( 0 ); */
     break;
+#endif /* GCWZERO */
 #endif /* VKEYBOARD */
 
 #ifdef GCWZERO
+  case INPUT_KEY_F11:
+    fuse_emulation_pause();
+    widget_do_for_path( widget_menu, "/Media" );
+    fuse_emulation_unpause();
+    break;
+
   case INPUT_KEY_F12:
     fuse_emulation_pause();
     widget_do_for_path( widget_menu, "/Options/Joysticks" );

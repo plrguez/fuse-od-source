@@ -46,7 +46,7 @@ The keys in the virtual keyboard correspond to ZX Spectrum keys and it send to e
 
     `B`
     Lock key. It's marked in blue.
-    They are used when press the `A` button over a Key and then unlocked.
+    The locked keys are used when press the `A` button over a Key and then are unlocked.
     For use in combinations of Caps Shift or Symbol Shift with other keys.
     For example: In 48k mode you can Lock key "Ss" and then press 'Cs' key to change keyboard to "Extended" mode.
 
@@ -96,10 +96,12 @@ The buttons function detailed are when no mapping is assigned.
     Open the virtual keyboard
 
     `L1`
-    Start a hotkey combo
+    If hotkey combos disabled: Nothing
+    If hotkey combos enabled: Start a hotkey combo
 
     `R1`
-    Start a hotkey combo
+    If hotkey combos disabled: Caps Shith + 0 (DELETE)
+    If hotkey combos enabled: Start a hotkey combo
 
     `Left Stick`
     Nothing.
@@ -162,7 +164,7 @@ These are no dependent of button mapping.
 Some menu options open a form with options to mark or choose option from a list.
 
 The forms must be confirmed to persist the selected options
-  To confirm them you must use the `A` buttons.
+  To confirm them you must use the `A` button.
   The `B` or `Power` buttons cancel them and the changes are lost.
 
 Some examples of forms are General, Media and Sound.
@@ -225,7 +227,7 @@ This option allows to map handheld buttons to ZX Spectrum keys. The cursors also
 - **Button mapping**:
   Map buttons to ZX Spectrum keys or Nothing. By default all buttons are mapped to Nothing.
 
-When both mappings, "GCW0 Joystick 1" or "GCW0 Keyboard", are enabled at the same time only "GCW0 Joystick 1" will work.
+When both mappings, "GCW0 Joystick 1" and "GCW0 Keyboard", are enabled at the same time only "GCW0 Joystick 1" will work.
 
 When you choose any 'Type' other than "None" in "GCW0 Joystick 1" or "GCW0 Keyboard", some buttons may lose their original functionality if they are mapped to joystick fire or to keyboard keys.
 `Select`, `Start`, `L1` and `R1` buttons have functionanility that may be lost.
@@ -237,6 +239,8 @@ If you have mapped the `Select` button, you can still access the menu with the` 
 ----------------------------------------------
 
 To have control gaming configuration per game you must activate it in the menu 'Options -> Joysticks -> Control mapping'.
+
+See PITFALLs at end of this section.
 
   - Control mapping per game:
     -------------------------
@@ -341,13 +345,28 @@ Other options in Joystick menu for Control mapping:
 
     Set the current controls as the default control mapping.
 
+PITFALLS:
+  Different sides. For now a control mapping filename is based on last filename loaded. For games with two or more files (tapes, disk sides) will be two or more control mapping files.
+
+  When insert various media the last inserted will be the selected control mapping.
+    - If you unload it then it will be cleared and you could start a game from other media inserted with no file control mapping.
+    - If you start from Loader the system can load from media different to the last assigned control mapping file.
+
+  Example:
+    1.- Select machine +3
+    2.- Open media menu and insert a disk
+    3.- Open media menu and insert a tape
+    4.- The control mapping file will be the last tape inserted
+    5.- Open media menu and clear tape
+    6.- Now there is not control mapping file assigned
+
 -------------------------
 ### External joystick ###
 -------------------------
 
 On some handhelds it is possible to connect an external Joystick using USB OTG. The mapping of 'Joystick 2' will be applied to it.
 
-On my RG350 I've tested this with an 8Bitdo FC30 Pro controller.
+|On my RG350 I've tested this with an 8Bitdo FC30 Pro controller.
 
 For controllers the number of each button in mapping depends on the controller layout.
 For example on my 8Bitdo FC30 these are the mapping layout: A=1, B=2, X=4, Y=5, L1=7, R1=8, L2=9, R2=10, Select=11, Start=12, L3=14, R3=15.
@@ -374,7 +393,7 @@ From SDL Game controller DB (https://github.com/gabomdq/SDL_GameControllerDB/blo
 =>Fuse count buttons from 1 not from 0, so add 1 to translate your layout into Fuse's config.
 
 -------------------------
-### External joystick ###
+### External keyboard ###
 -------------------------
 
 I don't have tested a Keyboard on USB OTG but in theory it should "work".
@@ -399,7 +418,7 @@ You must enable 'Kempston mouse' in the peripherals: `Menu -> Options -> Periphe
 ### Triple Buffer ###
 ---------------------
 
-There is an implementation to use the triple buffer. It can be enabled at General options or whith combo hotkeys 'L1' + 'R1'.
+There is an implementation to use the triple buffer. It can be enabled at General options or whith combo hotkeys 'L1' + 'R1' + 'B'.
 
 If tripple buffer is activated then an [B] will be at status line.
 
@@ -414,22 +433,28 @@ BUG: At disabling triple buffer sometimes the screen will be frozen but the emul
 ### Hotkey combinations ###
 ---------------------------
 
-If `L1` and `R1` buttons are not mapped to Joystick or Keyboard it will be used to start hotkey combinations.
+For use hotkey combos it they must be enabled in Menu -> Options -> General.
 
-The implemented ones correspond to Fx key functions in Fuse's SDL implementation:
+If `L1` and `R1` buttons are not mapped to Joystick or Keyboard it will be used to start the hotkey combinations.
 
-   L1 + R1          Toggle triple buffer
-   L1 + X           Open file (F3)
-   L1 + Y           Save file (F2)
-   R1 + X           Exit fuse (F10)
-   R1 + Y           Reset machine (F5)
-   L1 + Select + X  General options (F4)
-   L1 + Select + Y  Machine select (F9)
-   L1 + Start + X   Tape open (F7)
-   L1 + Start + Y   Tape play (F8)
-   R1 + Select + X  Joysticks
+The implemented hotkeys correspond to Fx key functions in Fuse's SDL implementation:
 
-(And yes, I know, some combinations on some devices are impracticable)
+    L1 + R1 + B      Toggle triple buffer
+    L1 + R1 + X      Joystick
+
+    L1 + Select + Y  Tape play (F8)
+
+    L1 + A           Tape open (F7)
+    L1 + B           Save file (F2)
+    L1 + X           Open file (F3)
+    L1 + Y           Media menu
+
+    R1 + A           General options (F4)
+    R1 + B           Reset machine (F5)
+    R1 + X           Exit fuse (F10)
+    R1 + Y           Machine select (F9)
+
+(Yes, I know, some combinations on some devices are impracticable)
 
 ---------------------
 ### Media options ###

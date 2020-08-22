@@ -36,6 +36,7 @@
 
 #ifdef GCWZERO
 char *mapfile = NULL;              /* Path of a .fcm file to load */
+libspectrum_class_t mapfile_class;
 settings_info settings_old;
 static control_mapping_info control_mapping_tmp;
 
@@ -78,7 +79,17 @@ controlmapping_save_default_mapfile( )
 }
 
 int
-controlmapping_load_mapfile( const char *filename, int is_autoload )
+controlmapping_eject_mapfile( libspectrum_class_t class )
+{
+  /* Only unload if was the last mapfile class */
+  if ( class == mapfile_class )
+    return controlmapping_load_mapfile( NULL, LIBSPECTRUM_CLASS_UNKNOWN, 1 );
+  else
+    return 0;
+}
+
+int
+controlmapping_load_mapfile( const char *filename, libspectrum_class_t class, int is_autoload )
 {
   char *old_mapfile;
 
@@ -92,6 +103,7 @@ controlmapping_load_mapfile( const char *filename, int is_autoload )
   /* We are changing mapfile? Save previous */
   old_mapfile = mapfile;
   mapfile = get_mapping_filename( filename );
+  mapfile_class = class;
   if ( old_mapfile ) {
     /* Auto-save, changed mapping and Something changed or don't yet created file? */;
     if ( settings_current.control_mapping_autosave )
@@ -127,10 +139,13 @@ controlmapping_load_mapfile_with_class( const char *filename, libspectrum_class_
   case LIBSPECTRUM_CLASS_CARTRIDGE_IF2:
   case LIBSPECTRUM_CLASS_MICRODRIVE:
   case LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX:
-    return controlmapping_load_mapfile( filename, 1 );
+    if ( filename )
+      return controlmapping_load_mapfile( filename, class, 1 );
+    else
+      return controlmapping_eject_mapfile( class );
 
   default:
-    return controlmapping_load_mapfile( NULL, 1 );
+    return controlmapping_load_mapfile( NULL, class, 1 );
   }
 }
 
