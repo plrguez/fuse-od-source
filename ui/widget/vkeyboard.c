@@ -76,14 +76,14 @@ static const keyboard_options_t vkeyboard_options[4][10] = {
 };
 
 static const keyboard_options_t vkeyboard_options_u[4][10] = {
-  { { "1", INPUT_KEY_1 },     { "2", INPUT_KEY_2 }, { "3", INPUT_KEY_3 },      { "4", INPUT_KEY_4 },      { "5", INPUT_KEY_5 },
-    { "6", INPUT_KEY_6 },     { "7", INPUT_KEY_7 }, { "8", INPUT_KEY_8 },      { "9", INPUT_KEY_9 },      { "0", INPUT_KEY_0 } },
-  { { "Q", INPUT_KEY_Q },     { "W", INPUT_KEY_W }, { "E", INPUT_KEY_E },      { "R", INPUT_KEY_R },      { "T", INPUT_KEY_T },
-    { "Y", INPUT_KEY_Y },     { "U", INPUT_KEY_U }, { "I", INPUT_KEY_I },      { "O", INPUT_KEY_O },      { "P", INPUT_KEY_P } },
-  { { "A", INPUT_KEY_A },     { "S", INPUT_KEY_S }, { "D", INPUT_KEY_D },      { "F", INPUT_KEY_F },      { "G", INPUT_KEY_G },
-    { "H", INPUT_KEY_H },     { "J", INPUT_KEY_J }, { "K", INPUT_KEY_K },      { "L", INPUT_KEY_L },      { "En", INPUT_KEY_Return } },
-  { { "Z", INPUT_KEY_Z },     { "X", INPUT_KEY_X }, { "C", INPUT_KEY_C },      { "V", INPUT_KEY_V },      { "b", INPUT_KEY_B },
-    { "N", INPUT_KEY_N },     { "M", INPUT_KEY_M }, { ",", INPUT_KEY_comma },  { "_", INPUT_KEY_underscore },  { "Sp", INPUT_KEY_space } },
+  { { ",", INPUT_KEY_comma }, { "[", INPUT_KEY_bracketleft }, { "&", INPUT_KEY_ampersand }, { "]", INPUT_KEY_bracketright }, { "+", INPUT_KEY_plus },
+    { "<", INPUT_KEY_less },  { ">", INPUT_KEY_greater },     { "(", INPUT_KEY_parenleft }, { ")", INPUT_KEY_parenright },   { "=", INPUT_KEY_equal } },
+  { { "Q", INPUT_KEY_Q },     { "W", INPUT_KEY_W },           { "E", INPUT_KEY_E },         { "R", INPUT_KEY_R },            { "T", INPUT_KEY_T },
+    { "Y", INPUT_KEY_Y },     { "U", INPUT_KEY_U },           { "I", INPUT_KEY_I },         { "O", INPUT_KEY_O },            { "P", INPUT_KEY_P } },
+  { { "A", INPUT_KEY_A },     { "S", INPUT_KEY_S },           { "D", INPUT_KEY_D },         { "F", INPUT_KEY_F },            { "G", INPUT_KEY_G },
+    { "H", INPUT_KEY_H },     { "J", INPUT_KEY_J },           { "K", INPUT_KEY_K },         { "L", INPUT_KEY_L },            { "En", INPUT_KEY_Return } },
+  { { "Z", INPUT_KEY_Z },     { "X", INPUT_KEY_X },           { "C", INPUT_KEY_C },         { "V", INPUT_KEY_V },            { "B", INPUT_KEY_B },
+    { "N", INPUT_KEY_N },     { "M", INPUT_KEY_M },           { ":", INPUT_KEY_colon },     { "_", INPUT_KEY_underscore },   { "/", INPUT_KEY_slash } },
 };
 
 static int fixed_keys_released[4][10] = {};
@@ -171,6 +171,15 @@ widget_input_keyboard( input_key key )
   case INPUT_KEY_Resize:	/* Fake keypress used on window resize */
     widget_menu_draw( menu );
     break;
+#endif
+
+#ifdef GCWZERO
+  case INPUT_KEY_Home:  /* Power */
+  case INPUT_KEY_End:   /* RetroFW */
+    widget_vkeyboard_finish( WIDGET_FINISHED_CANCEL );
+    if (ui_widget_level >= 0)
+      widget_end_all( WIDGET_FINISHED_CANCEL );
+    return;
 #endif
 
 #ifdef GCWZERO

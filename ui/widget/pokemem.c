@@ -41,7 +41,11 @@ typedef struct entry_t {
 } entry_t;
 
 const char *pokemem_title = "Poke memory";
+#ifdef GCWZERO
+const unsigned int page_size = 8;
+#else
 const unsigned int page_size = 16;
+#endif
 GArray *store = NULL;
 int selected = -1;
 int highlight_line = 0;
@@ -109,8 +113,13 @@ widget_pokemem_draw( void *data GCC_UNUSED )
 
   widget_pokemem_print_list( menu_left_edge_x, menu_width );
 
+#ifdef GCWZERO
+  widget_printstring( menu_left_edge_x * 8 + 8, ( page_size + 4 ) * 8,
+                      WIDGET_COLOUR_FOREGROUND, "\x0A" "X\x01" " Add" );
+#else
   widget_printstring( menu_left_edge_x * 8 + 8, ( page_size + 4 ) * 8,
                       WIDGET_COLOUR_FOREGROUND, "\x0A" "A\x01" "dd" );
+#endif
 
   widget_display_lines( 2, page_size + 4 );
 
@@ -251,35 +260,40 @@ widget_pokemem_keyhandler( input_key key )
 
   switch ( key ) {
 #ifdef GCWZERO
-  case INPUT_KEY_Home:
-  case INPUT_KEY_End: /* RetroFW */
+  case INPUT_KEY_Home:  /* Power */
+  case INPUT_KEY_End:   /* RetroFW */
     widget_end_all( WIDGET_FINISHED_CANCEL );
     return;
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Control_L:
-#endif
+  case INPUT_KEY_Control_L: /* A */
+#else
   case INPUT_KEY_Return: /* Do pokes */
   case INPUT_KEY_KP_Enter:
+#endif
   case INPUT_JOYSTICK_FIRE_1:
     widget_end_all( WIDGET_FINISHED_OK );
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Alt_L:
-#endif
+  case INPUT_KEY_Alt_L:  /* B */
+#else
   case INPUT_KEY_Escape: /* Close widget */
+#endif
   case INPUT_JOYSTICK_FIRE_2:
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
+#ifdef GCWZERO
+  case INPUT_KEY_space:  /* X */
+#endif
   case INPUT_KEY_a: /* Add poke */
     if( !widget_pokemem_add_custom_poke() ) new_selected = pokemem_count - 1;
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Page_Up:
+  case INPUT_KEY_Page_Up: /* L2 */
 #else
   case INPUT_KEY_Home:
 #endif
@@ -287,7 +301,7 @@ widget_pokemem_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Page_Down:
+  case INPUT_KEY_Page_Down: /* R2 */
 #else
   case INPUT_KEY_End:
 #endif
@@ -295,7 +309,7 @@ widget_pokemem_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Tab:
+  case INPUT_KEY_Tab: /* L1 */
 #else
   case INPUT_KEY_Page_Up:
 #endif
@@ -303,7 +317,7 @@ widget_pokemem_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_BackSpace:
+  case INPUT_KEY_BackSpace: /* R1 */
 #else
   case INPUT_KEY_Page_Down:
 #endif
@@ -323,7 +337,9 @@ widget_pokemem_keyhandler( input_key key )
     if( selected + 1 < pokemem_count ) new_selected = selected + 1;
     break;
 
+#ifndef GCWZERO
   case INPUT_KEY_space:
+#endif
   case INPUT_KEY_8:
   case INPUT_JOYSTICK_RIGHT:
     if( !widget_pokemem_trainer_click( selected ) )

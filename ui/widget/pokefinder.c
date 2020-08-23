@@ -51,6 +51,9 @@ static const char * const title = "Poke finder";
 int
 widget_pokefinder_draw( void *data )
 {
+#if VKEYBOARD
+  vkeyboard_enabled = 1;
+#endif
   widget_dialog_with_border( 1, 2, 30, 12 );
   widget_printstring( 10, 16, WIDGET_COLOUR_TITLE, title );
   widget_printstring( 16, 24, WIDGET_COLOUR_FOREGROUND, "Possible: " );
@@ -164,24 +167,30 @@ widget_pokefinder_keyhandler( input_key key )
 {
   switch ( key ) {
 #ifdef GCWZERO
-  case INPUT_KEY_Home:
-  case INPUT_KEY_End: /* RetroFW */
+  case INPUT_KEY_Home:  /* Power */
+  case INPUT_KEY_End:   /* RetroFW */
     widget_end_all( WIDGET_FINISHED_CANCEL );
+#if VKEYBOARD
+    vkeyboard_enabled = 0;
+#endif
     return;
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Alt_L:
+  case INPUT_KEY_Alt_L: /* B */
 #endif
   case INPUT_KEY_Escape:	/* Close widget */
     widget_end_widget( WIDGET_FINISHED_CANCEL );
+#if VKEYBOARD
+    vkeyboard_enabled = 0;
+#endif
     break;
 
-#ifdef GCWZERO
-  case INPUT_KEY_Shift_L:
-#endif
   case INPUT_KEY_c:		/* Close widget */
     widget_end_all( WIDGET_FINISHED_OK );
+#if VKEYBOARD
+    vkeyboard_enabled = 0;
+#endif
     break;
 
   case INPUT_KEY_i:		/* Search for incremented */
@@ -196,9 +205,6 @@ widget_pokefinder_keyhandler( input_key key )
     display_possible();
     break;
 
-#ifdef GCWZERO
-  case INPUT_KEY_Control_L:
-#endif
   case INPUT_KEY_Return:
   case INPUT_KEY_KP_Enter:
   case INPUT_KEY_s:		/* Search */
@@ -235,14 +241,24 @@ widget_pokefinder_keyhandler( input_key key )
     break;
 
   /* Address selection */
+#ifdef GCWZERO
+  case INPUT_KEY_U:
+  case INPUT_KEY_u:     scroll(  -1 ); break;
+  case INPUT_KEY_J:
+  case INPUT_KEY_j:	    scroll(   1 ); break;
+  case INPUT_KEY_H:
+  case INPUT_KEY_h:	    scroll(  -4 ); break;
+  case INPUT_KEY_K:
+  case INPUT_KEY_k:	    scroll(   4 ); break;
+  case INPUT_KEY_G:
+  case INPUT_KEY_g:	    scroll( -20 ); break;
+  case INPUT_KEY_L:
+  case INPUT_KEY_l:	    scroll(  20 ); break;
+#else
   case INPUT_KEY_Up:	scroll(  -1 ); break;
   case INPUT_KEY_Down:	scroll(   1 ); break;
   case INPUT_KEY_Left:	scroll(  -4 ); break;
   case INPUT_KEY_Right:	scroll(   4 ); break;
-#ifdef GCWZERO
-  case INPUT_KEY_Tab:	    scroll( -20 ); break;
-  case INPUT_KEY_BackSpace: scroll(  20 ); break;
-#else
   case INPUT_KEY_Home:	scroll( -20 ); break;
   case INPUT_KEY_End:	scroll(  20 ); break;
 #endif
@@ -262,11 +278,7 @@ widget_pokefinder_keyhandler( input_key key )
     display_value();
     break;
 
-#ifdef GCWZERO
-  case INPUT_KEY_space:
-#else
   case INPUT_KEY_BackSpace:	/* Value alteration */
-#endif
     value /= 10;
     display_value();
     break;

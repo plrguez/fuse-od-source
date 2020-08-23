@@ -169,16 +169,17 @@ void widget_debugger_keyhandler( input_key key )
   /* Display mode */
   switch ( key ) {
 #ifdef GCWZERO
-  case INPUT_KEY_Home:
-  case INPUT_KEY_End: /* RetroFW */
+  case INPUT_KEY_Home: /* Power */
+  case INPUT_KEY_End:  /* RetroFW */
     widget_end_all( WIDGET_FINISHED_OK );
     return;
 #endif
 
 #ifdef GCWZERO
   case INPUT_KEY_Alt_L: /* B */
-#endif
+#else
   case INPUT_KEY_Escape:	/* Close widget */
+#endif
     widget_end_widget( WIDGET_FINISHED_CANCEL );
     debugger_run();
     break;
@@ -187,8 +188,10 @@ void widget_debugger_keyhandler( input_key key )
   case INPUT_KEY_Control_L: /* A */
 #endif
   case INPUT_KEY_c:
+#ifndef GCWZERO
   case INPUT_KEY_Return:	/* Close widget */
   case INPUT_KEY_KP_Enter:
+#endif
     widget_end_all( WIDGET_FINISHED_OK );
     debugger_run();
     break;
@@ -250,7 +253,7 @@ void widget_debugger_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Tab:
+  case INPUT_KEY_Tab: /* L1 */
 #else
   case INPUT_KEY_Page_Up:	/* Back eight lines */
 #endif
@@ -258,7 +261,7 @@ void widget_debugger_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_BackSpace:
+  case INPUT_KEY_BackSpace: /* R1 */
 #else
   case INPUT_KEY_Page_Down:	/* Forward eight lines */
 #endif
@@ -266,7 +269,7 @@ void widget_debugger_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Page_Up:
+  case INPUT_KEY_Page_Up: /* L2 */
 #else
   case INPUT_KEY_Home:		/* To start of memory */
 #endif
@@ -275,7 +278,7 @@ void widget_debugger_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
-  case INPUT_KEY_Page_Down:
+  case INPUT_KEY_Page_Down: /* R2 */
 #else
   case INPUT_KEY_End:		/* To end of RAM */
 #endif

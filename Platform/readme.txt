@@ -169,13 +169,12 @@ The forms must be confirmed to persist the selected options
 
 Some examples of forms are General, Media and Sound.
 
-#### Virtual keyboard in menu ####
-----------------------------------
-Some other options from menu will open a virtual keyboard.
+#### Virtual keyboard in menu options ####
+------------------------------------------
 
-This keyboard it's not showed at all possible options and it is not adapted to each context.
+In some menu options the virtual keyboard is presented to allow to use different options presented or enter values.
 
-Examples where the virtual keyboard it's appearing are: 'Enter name' for save dialogs and Debugger.
+Examples where the virtual keyboard it's appearing are: 'Enter name' for save dialogs, Debugger, Poke Finder, Poke Memory.
 
     `Cursor`
     Move
@@ -361,12 +360,12 @@ PITFALLS:
     - If you start from Loader the system can load from media different to the last assigned control mapping file.
 
   Example:
-    1.- Select machine +3
+    1.- Select +3 machine
     2.- Open media menu and insert a disk
     3.- Open media menu and insert a tape
     4.- The control mapping file will be the last tape inserted
     5.- Open media menu and clear tape
-    6.- Now there is not control mapping file assigned
+    6.- Now there is not control mapping file assigned but you can load a program from disk
 
   Bugs aside, probably there are other scenarios not taken into account but I believe that the most relevant use cases are covered.
 
