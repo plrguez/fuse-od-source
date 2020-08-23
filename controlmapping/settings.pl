@@ -116,6 +116,13 @@ static void control_mapping_copy_from_settings_internal( control_mapping_info *d
 static void control_mapping_copy_to_settings_internal( settings_info *dest, control_mapping_info *src );
 static void control_mapping_end( void );
 
+const char* re_expressions[] = {
+    "(([[:space:]]|[-_])*)(([[]|[(])+[[:space:]]*)(([[:alnum:]]|[[:space:]]|[[:punct:]])*)([[:space:]]*([]]|[)])+)(([[:space:]]|[-_])*)",
+    "(([[:space:]]|[-_])*)(([(]|[[])*[[:space:]]*)(disk|tape|side|part)(([[:space:]]|[[:punct:]])*)(([abcd1234])([[:space:]]*of[[:space:]]*[1234])*)([[:space:]]*([)]|[]])*)(([[:space:]]|[-_])*)",
+    "(([[:space:]]|[-_])*)((128k|48k)+)(([[:space:]]|[-_])*)",
+    "(([[:space:]]|[-_])*)((small|medium|large)[[:space:]]*[[:alnum:]]*[[:space:]]*case)(([[:space:]]|[-_])*)",
+    NULL };
+
 /* Fill the control mapping structure with sensible defaults */
 void control_mapping_defaults( control_mapping_info *control_mapping )
 {
@@ -755,19 +762,19 @@ get_mapping_filename( const char* filename )
 {
   const char* cfgdir;
   char buffer[ PATH_MAX ];
-  char* filaneme_test;
+  char* filename_test;
 
   if ( !filename ) return NULL;
 
   /* Don't exist config path, no error but do nothing */
   cfgdir = compat_get_config_path(); if( !cfgdir ) return NULL;
 
-  filaneme_test = utils_last_filename( filename, 1 );
+  filename_test = compat_chop_expressions( re_expressions, utils_last_filename( filename, 1 ) );
 
   snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%s"FUSE_DIR_SEP_STR"%s%s",
-            cfgdir, "mappings", filaneme_test, ".fcm" );
+            cfgdir, "mappings", filename_test, ".fcm" );
 
-  libspectrum_free( filaneme_test );
+  libspectrum_free( filename_test );
 
   return utils_safe_strdup( buffer );
 }

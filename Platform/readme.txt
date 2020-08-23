@@ -346,7 +346,15 @@ Other options in Joystick menu for Control mapping:
     Set the current controls as the default control mapping.
 
 PITFALLS:
-  Different sides. For now a control mapping filename is based on last filename loaded. For games with two or more files (tapes, disk sides) will be two or more control mapping files.
+  Variants of the same program:
+    Control mapping filenames are based on the filename loaded.
+    For games with two or more files (tapes, disk sides) or variations of the same program (48k, 128k, different publishers or formats) the emulator try to detect some patterns on name to cut them off:
+      - All the denominations between '()' or '[]'
+      - 'Tape', 'Disk', 'Side' for 'ABCD' or '1234', 'Part 1234 of 1234'
+      - The '128k', '48k' out of '()' '[]'
+      - The 'Small, Medium, Large' whatever 'Case'
+    The searchs are case insensitive.
+    But if the names used are no consistent then a different name for the same program may be determined.
 
   When insert various media the last inserted will be the selected control mapping.
     - If you unload it then it will be cleared and you could start a game from other media inserted with no file control mapping.
@@ -359,6 +367,8 @@ PITFALLS:
     4.- The control mapping file will be the last tape inserted
     5.- Open media menu and clear tape
     6.- Now there is not control mapping file assigned
+
+  Bugs aside, probably there are other scenarios not taken into account but I believe that the most relevant use cases are covered.
 
 -------------------------
 ### External joystick ###

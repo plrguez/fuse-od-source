@@ -104,6 +104,13 @@ controlmapping_load_mapfile( const char *filename, libspectrum_class_t class, in
   old_mapfile = mapfile;
   mapfile = get_mapping_filename( filename );
   mapfile_class = class;
+
+  /* Different loads but same mapfile? (F.example SIDE B of tape
+     Maintain current mapfilen */
+  if ( old_mapfile && mapfile && !strcmp( old_mapfile,mapfile ) )
+    return 0;
+
+  /* Autosave current mapfile preiovusly to load new mapfile */
   if ( old_mapfile ) {
     /* Auto-save, changed mapping and Something changed or don't yet created file? */;
     if ( settings_current.control_mapping_autosave )

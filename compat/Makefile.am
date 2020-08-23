@@ -57,7 +57,8 @@ endif
 if BUILD_GCWZERO
 fuse_SOURCES += \
               compat/linux/dir.c \
-              compat/linux/paths.c
+              compat/linux/paths.c \
+              compat/linux/regex.c
 endif
 endif
 
