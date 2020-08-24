@@ -147,8 +147,12 @@ EXTRA_DIST = AUTHORS \
 	     menu_data.pl \
 	     settings.dat \
 	     settings.pl \
-	     settings-header.pl \
+	     settings-header.pl
+
+if BUILD_GCWZERO
+EXTRA_DIST += \
 	     Platform/readme.txt \
+	     Platform/INSTALL.txt \
 	     Platform/roms/read.me \
 	     Platform/GCW0/Makefile \
 	     Platform/GCW0/default.gcw0.desktop \
@@ -161,6 +165,7 @@ EXTRA_DIST = AUTHORS \
 	     Platform/RETROFW1.0/control \
 	     Platform/RETROFW1.0/fuse.lnk \
 	     Platform/RETROFW1.0/postinst
+endif
 
 CLEANFILES = options.h \
 	     settings.c \
@@ -211,4 +216,6 @@ include ui/win32/Makefile.am
 include ui/xlib/Makefile.am
 include unittests/Makefile.am
 include z80/Makefile.am
+if BUILD_GCWZERO
 include controlmapping/Makefile.am
+endif

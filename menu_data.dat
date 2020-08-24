@@ -76,7 +76,9 @@ File/E_xit..., Item, F10
 
 _Options, Branch
 Options/_General..., Item, F4
+#ifdef GCWZERO
 Options/General GC_W0..., Item
+#endif
 Options/_Media..., Item
 Options/_Sound..., Item
 
