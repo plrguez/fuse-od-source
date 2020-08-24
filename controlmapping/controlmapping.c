@@ -250,9 +250,10 @@ controlmapping_check_settings_changed( settings_info *settings ) {
     controlmapping_save_current_mapfile();
 
     /* Not detached defaults: diabled. Save defaults and set current settings as new defaults */
-    if ( !settings_old.control_mapping_not_detached_defaults )
+    if ( !settings_old.control_mapping_not_detached_defaults ) {
       controlmapping_save_default_mapfile();
       controlmapping_reset_to_defaults( settings );
+    }
 
     /* Unassign mapfile */
     controlmapping_load_mapfile_with_class( NULL, LIBSPECTRUM_CLASS_UNKNOWN, 1 );

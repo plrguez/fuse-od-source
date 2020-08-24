@@ -118,7 +118,7 @@ static void control_mapping_end( void );
 
 const char* re_expressions[] = {
     "(([[:space:]]|[-_])*)(([[]|[(])+[[:space:]]*)(([[:alnum:]]|[[:space:]]|[[:punct:]])*)([[:space:]]*([]]|[)])+)(([[:space:]]|[-_])*)",
-    "(([[:space:]]|[-_])*)(([(]|[[])*[[:space:]]*)(disk|tape|side|part)(([[:space:]]|[[:punct:]])*)(([abcd1234])([[:space:]]*of[[:space:]]*[1234])*)([[:space:]]*([)]|[]])*)(([[:space:]]|[-_])*)",
+    "(([[:space:]]|[-_])*)(([(]|[[])*[[:space:]]*)(disk|tape|side|part|release)(([[:space:]]|[[:punct:]])*)(([abcd1234])([[:space:]]*of[[:space:]]*[1234])*)([[:space:]]*([)]|[]])*)(([[:space:]]|[-_])*)",
     "(([[:space:]]|[-_])*)((128k|48k)+)(([[:space:]]|[-_])*)",
     "(([[:space:]]|[-_])*)((small|medium|large)[[:space:]]*[[:alnum:]]*[[:space:]]*case)(([[:space:]]|[-_])*)",
     NULL };
@@ -769,7 +769,10 @@ get_mapping_filename( const char* filename )
   /* Don't exist config path, no error but do nothing */
   cfgdir = compat_get_config_path(); if( !cfgdir ) return NULL;
 
-  filename_test = compat_chop_expressions( re_expressions, utils_last_filename( filename, 1 ) );
+  if ( settings_current.control_mapping_no_transform_filename )
+    filename_test = utils_last_filename( filename, 1 );
+  else
+    filename_test = compat_chop_expressions( re_expressions, utils_last_filename( filename, 1 ) );
 
   snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%s"FUSE_DIR_SEP_STR"%s%s",
             cfgdir, "mappings", filename_test, ".fcm" );

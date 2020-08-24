@@ -1147,10 +1147,7 @@ menu_joystick_2_detail( void )
 const char*
 menu_control_mapping_detail( void )
 {
-  if ( settings_current.control_mapping_per_game )
-    return "Active";
-  else
-    return "Inactive";
+  return settings_current.control_mapping_per_game ? "Enabled" : "Disabled";
 }
 
 const char*

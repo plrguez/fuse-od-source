@@ -97,11 +97,13 @@ timer_estimate_speed( void )
   }
 
 #ifdef GCWZERO
-  ui_statusbar_update_speed( frames_per_second );
-  frame_count = 0;
-#else
-  ui_statusbar_update_speed( current_speed );
+  if ( settings_current.show_fps ) {
+    ui_statusbar_update_speed( frames_per_second );
+    frame_count = 0;
+  } else
 #endif
+  ui_statusbar_update_speed( current_speed );
+
   stored_times[ next_stored_time ] = current_time;
 
   next_stored_time = ( next_stored_time + 1 ) % 10;

@@ -391,10 +391,6 @@ static int fuse_init(int argc, char **argv)
 
   if( settings_init( &first_arg, argc, argv ) ) return 1;
 
-#ifdef GCWZERO
-  settings_current.full_screen = 1;
-#endif
-
   if( settings_current.show_version ) {
     fuse_show_version();
     return 0;

@@ -79,7 +79,7 @@ const char *joystick_name[ JOYSTICK_TYPE_COUNT ] = {
 
 #ifdef GCWZERO
 const char *joystick_name_gcw0[] = {
-  "None", "Activated"
+  "None", "Enabled"
 };
 #endif
 

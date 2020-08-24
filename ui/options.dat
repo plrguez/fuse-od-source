@@ -18,19 +18,21 @@ Checkbox, (P)AL-TV use TV2x effect, pal_tv2x, INPUT_KEY_p
 #ifndef GCWZERO
 Checkbox, Full (s)creen, full_screen, INPUT_KEY_s
 #endif
-#ifdef GCWZERO
-Checkbox, Triple Bu(f)fer, triple_buffer, INPUT_KEY_f
-#endif
 #endif
 Checkbox, Show status(b)ar, statusbar, INPUT_KEY_b
 Checkbox, Snap (j)oystick prompt, joy_prompt, INPUT_KEY_j
 Checkbox, (C)onfirm actions, confirm_actions, INPUT_KEY_c
+Checkbox, A(u)to-save settings, autosave_settings, INPUT_KEY_u
+
 #ifdef GCWZERO
+general_gcw0
+General GCW0 Options
+Checkbox, Triple Bu(f)fer, triple_buffer, INPUT_KEY_f
+Checkbox, Sho(w) FPS instead of speed percentaje, show_fps, INPUT_KEY_w
 Checkbox, Confir(m) overwrite files, confirm_overwrite_files, INPUT_KEY_m
 Checkbox, Show hi(d)den files, hidden_files, INPUT_KEY_d
 Checkbox, Hot(k)ey combos, hotkey_combos, INPUT_KEY_k
 #endif
-Checkbox, A(u)to-save settings, autosave_settings, INPUT_KEY_u
 
 media
 Media Options
@@ -156,4 +158,5 @@ Checkbox, (C)ontrol mapping per game, control_mapping_per_game, INPUT_KEY_A
 Checkbox, Auto-(l)oad, control_mapping_autoload, INPUT_KEY_L
 Checkbox, Auto-(s)ave, control_mapping_autosave, INPUT_KEY_S
 Checkbox, No(t) detached defaults, control_mapping_not_detached_defaults, INPUT_KEY_T
+Checkbox, No cut/transfor(m) filenames, control_mapping_no_transform_filename, INPUT_KEY_M
 #endif

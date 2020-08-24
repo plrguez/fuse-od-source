@@ -545,7 +545,7 @@ int widget_end( void )
 }
 
 #ifdef GCWZERO
-#define WIDGET_MAX_INFO_LENGTH 40
+#define WIDGET_MAX_INFO_LENGTH 60
 #define WIDGET_COL_INFO 5
 #define WIDGET_ROW_INFO 225
 #define WIDGET_RELATIVE_COL_INFO (WIDGET_COL_INFO - DISPLAY_BORDER_ASPECT_WIDTH)
@@ -554,16 +554,20 @@ static char status_info[WIDGET_MAX_INFO_LENGTH];
 static int  info_len = 0;
 static int  info_sc  = 1;
 void widget_statusbar_update_info( float speed ) {
-/*
-  snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s - %3.0f%% (1:%d)",
+  snprintf(status_info, WIDGET_MAX_INFO_LENGTH,
+           settings_current.show_fps ? "%s - %3.0ffps (1:%d)" : "%s - %3.0f%% (1:%d)",
            libspectrum_machine_name( machine_current->machine ),
            speed,
            settings_current.frame_rate);
-*/
-  snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s - %3.0ffps (1:%d)",
-           libspectrum_machine_name( machine_current->machine ),
-           speed,
-           settings_current.frame_rate);
+  if ( settings_current.joystick_1_output || settings_current.joystick_gcw0_output )
+    snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
+             status_info,
+             settings_current.joystick_1_output ? joystick_name[settings_current.joystick_1_output]
+                                                : "Keyboard" );
+  if ( settings_current.joystick_2_output )
+    snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
+             status_info,
+             joystick_name[settings_current.joystick_2_output] );
   if ( settings_current.triple_buffer )
     snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
              status_info,
@@ -812,6 +816,7 @@ widget_t widget_data[] = {
 #endif
 #ifdef GCWZERO
   { widget_control_mapping_draw, widget_control_mapping_finish, widget_control_mapping_keyhandler  },
+  { widget_general_gcw0_draw,  widget_options_finish, widget_general_gcw0_keyhandler  },
 #endif
 };
 

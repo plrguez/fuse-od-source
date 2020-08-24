@@ -60,6 +60,7 @@ confirm_actions, boolean, 1
 confirm_overwrite_files, boolean, 0
 hidden_files, boolean, 0
 hotkey_combos, boolean, 0
+show_fps, boolean, 0
 printer, boolean, 0
 statusbar, boolean, 1
 interface1, boolean, 0
@@ -172,6 +173,7 @@ control_mapping_per_game, boolean, 0
 control_mapping_autoload, boolean, 1
 control_mapping_autosave, boolean, 1
 control_mapping_not_detached_defaults, boolean, 0
+control_mapping_no_transform_filename, boolean, 0
 
 rzx_compression, boolean, 1,, compress-rzx
 competition_mode, boolean, 0

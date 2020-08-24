@@ -47,7 +47,7 @@ compat_chop_expressions( const char** re_expressions, const char* text )
 
   i = 0;
   while ( re_expressions[i] ) {
-    strncpy(new_search, cut_patterns( re_expressions[i], new_search ), MAX_LENGTH);
+    strncpy( new_search, cut_patterns( re_expressions[i], new_search ), MAX_LENGTH );
     i++;
   }
 
@@ -57,21 +57,21 @@ compat_chop_expressions( const char** re_expressions, const char* text )
 static char*
 cut_patterns( const char* re_expression, const char* text )
 {
-  char remain[MAX_LENGTH ] = {'\0'};
+  char remain[MAX_LENGTH] = {'\0'};
   char *new_search;
   regex_t reg_expr;
 
-  new_search = libspectrum_new(char, MAX_LENGTH);
-  strncpy(new_search, text, MAX_LENGTH);
+  new_search = libspectrum_new( char, MAX_LENGTH );
+  strncpy( new_search, text, MAX_LENGTH-1 );
 
-  if (regcomp(&reg_expr, re_expression, REG_ICASE|REG_EXTENDED|REG_NEWLINE))
+  if ( regcomp( &reg_expr, re_expression, REG_ICASE|REG_EXTENDED|REG_NEWLINE ) )
     return new_search;
 
   while ( !cut_pattern( &reg_expr, new_search, &remain[0] ) )
     strncpy( new_search, &remain[0], 100 );
 
-  strncpy(new_search, &remain[0], 100);
-  regfree(&reg_expr);
+  strncpy( new_search, &remain[0], 100 );
+  regfree( &reg_expr );
 
   return new_search;
 }
@@ -83,14 +83,14 @@ cut_pattern( const regex_t* reg_expr, const char* text, char* remain )
 
   if ( !text ) return 1;
 
-  if ( regexec(reg_expr, text, MAX_MATCHES, matches, 0) ) {
-    strncpy( remain, text, MAX_LENGTH);
+  if ( regexec( reg_expr, text, MAX_MATCHES, matches, 0 ) ) {
+    strncpy( remain, text, MAX_LENGTH );
     return 1;
   }
 
   strncpy( remain, text, matches[0].rm_so );
   remain[matches[0].rm_so] = '\0';
-  if ( text[matches[0].rm_eo] ) strncat(remain, &text[matches[0].rm_eo], MAX_LENGTH);
+  if ( text[matches[0].rm_eo] ) strncat( remain, &text[matches[0].rm_eo], MAX_LENGTH-1 );
 
   return 0;
 }

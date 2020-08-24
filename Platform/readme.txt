@@ -1,13 +1,14 @@
 Using the Fuse emulator
 =======================
 
-This port of Fuse to OpenDingux and RetroFW is simply a compilation of Fuse 1.5.7 for this platforms with some additions to the SDL UI and some new options.
-
-Nothing is touched for the emulation engine or the miriad of Fuse options.
+This port of Fuse to OpenDingux and RetroFW is a compilation of Fuse 1.5.7 for Opendingux/RetroFW
+with some additions to the SDL UI and some new options.
 
 So the thanks for this port are for Phillip Kendall and all the Fuse team.
+And also to the GCW0/OpenDingux and RetroFW community for all documentation, development threads, and
+all opensource ports.
 
-At the end of this doc is the man page of Fuse 1.5.7 for reference.
+At the end of this doc is the man page of Fuse 1.5.7 for a complete reference.
 
 ------------------------
 ### Opening the Menu ###
@@ -23,12 +24,17 @@ If `Select` button is mapped to joystick or keyboard then the only option to ope
 
 By default the emulator don't save settings changes. You can save settings at any time from menu: `Menu -> Options -> Save`.
 
-You can activate "Auto-save" to save settings when you exit the emulator. To activate it access to `Menu -> Options -> General` then navigate to the option **Auto-save settings**, check it with the `X` Button and finally accept the form with the `A` Button. Yo should exit from the emulator o use the Save option to save it.
+You also can activate "Auto-save" to save settings when you exit the emulator.
 
-The options are saved into 'fuse.cfg' file in the fuse config path. If some option changes prevent to open the emulator delete this file and try to start again.
-The config path is '$HOME/.fuse' directory. If it does not exist the emulator will create it at start.
+|To activate auto-save access to `Menu -> Options -> General` and check 'Auto-save settings'.
+|Check the option with the `X` button and accept options with the `A` button.
+|You should exit from the emulator or use the 'Save' to save this changes.
 
-Note: $HOME is located in '/media/data/local/home' for OpenDingux and in '/home/retrofw' for RetroFW.
+In this port the options are saved into 'fuse.cfg' file in the fuse config path.
+If some option changes prevent to open the emulator delete this file and try to start again.
+
+The config path is in '$HOME/.fuse' directory. If it does not exist the emulator will create it at start.
+|$HOME is located in '/media/data/local/home' for OpenDingux and in '/home/retrofw' for RetroFW.
 
 ------------------------
 ### Virtual Keyboard ###
@@ -36,34 +42,26 @@ Note: $HOME is located in '/media/data/local/home' for OpenDingux and in '/home/
 
 Press the `Start` button to open a Virtual Keyboard when you are at emulator.
 
-The keys in the virtual keyboard correspond to ZX Spectrum keys and it send to emulator as if you are using a real ZX Spectrum keyboard.
+The keys in keyboard correspond to ZX Spectrum 48k keys.
+When you press them are send to emulator as if you are using a real ZX Spectrum keyboard.
 
-    `Cursor`
-    Move to select keys.
+  `Cursor`    Move to select keys.
+  `A`         Press selected key.
 
-    `A`
-    Press selected key.
+  `B`         Lock key. It's marked in blue.
+              The locked keys are used when press the `A` button over a Key and then are unlocked.
+              For use in combinations of Caps Shift or Symbol Shift with other keys.
+              For example: In 48k mode you can Lock key "Ss" and then press 'Cs' key to change keyboard to "Extended" mode.
 
-    `B`
-    Lock key. It's marked in blue.
-    The locked keys are used when press the `A` button over a Key and then are unlocked.
-    For use in combinations of Caps Shift or Symbol Shift with other keys.
-    For example: In 48k mode you can Lock key "Ss" and then press 'Cs' key to change keyboard to "Extended" mode.
+  `X`         Sticky key. It's marked in Red.
+              The key is continously pressed.
+              For example: In 48k mode you can press key 'J' then Sticky key 'Ss' and then press twice key 'P' to obtain 'LOAD ""'.
 
-    `X`
-    Sticky key. It's marked in Red.
-    The key is continously pressed.
-    For example: In 48k mode you can press key 'J' then Sticky key 'Ss' and then press twice key 'P' to obtain 'LOAD ""'.
+  `Y`         Clean all Lock and Sticky keys.
+  `Start`     Close Virtual Keyboard
 
-    `Y`
-    Clean all Lock and Sticky keys.
-
-    `Start`
-    Close Virtual Keyboard
-
-    `L1`, `R1`
-    Change the Virtual Keyboard position. 
-    There are 4 positions, one for earch corner of screen.
+  `L1`, `R1`  Change the Virtual Keyboard position.
+              There are 4 positions, one for earch corner of screen.
 
 -------------------------------------
 ### Buttons at different contexts ###
@@ -76,49 +74,39 @@ Buttons in emulator:
 
 The buttons function detailed are when no mapping is assigned.
 
-    `Cursor`
-    Shifted cursor ZX Spectrum keys (5, 6, 7 and 8 keys)
-    This is modified by the setting "Use shift with arrow keys"
+  `Cursor`    Shifted cursor ZX Spectrum keys (5, 6, 7 and 8 keys)
+              This is modified by the setting "Use shift with arrow keys"
 
-    `A`, `B`
-    Symbol Shift
+  `A`, `B`    Symbol Shift
+  `Y`         CAPS Shift
+  `X`         Space
 
-    `Y`
-    CAPS Shift
+  `Select`, `Power`
+              Open Menu
 
-    `X`
-    Space
+  `Start`     Open/Close the virtual keyboard
 
-    `Select`, `Power`
-    Open general menu
+  `L1`        If hotkey combos disabled: Nothing
+              If hotkey combos enabled: Start a hotkey combo
 
-    `Start`
-    Open the virtual keyboard
+  `R1`        If hotkey combos disabled: Caps Shith + 0 (DELETE)
+              If hotkey combos enabled: Start a hotkey combo
 
-    `L1`
-    If hotkey combos disabled: Nothing
-    If hotkey combos enabled: Start a hotkey combo
+  `Left Stick`
+              Nothing.
+              On some systems you can map it as cursor.
 
-    `R1`
-    If hotkey combos disabled: Caps Shith + 0 (DELETE)
-    If hotkey combos enabled: Start a hotkey combo
+  `Right Stick`
+              Nothing.
+              On some systems you can enable an emulated mouse that uses the left
+              stick to move the mouse. In Fuse you can use it as Kempston mouse.
+              |In RG350 you can enable it with `Power`+`B` hotkey.
 
-    `Left Stick`
-    Nothing.
-    On some systems you can map it as cursor.
+  `L2`        Nothing.
+              Left click with mouse emulation enabled.
 
-    `Right Stick`
-    Nothing. 
-    On some systems you can enable an emulated mouse that uses the left stick to move the mouse. In Fuse you can use it as Kempston mouse.
-    |In RG350 you can enable it with `Power`+`B` hotkey.
-
-    `L2`
-    Nothing.
-    Left click with mouse emulation enabled.
-
-    `R2`
-    Nothing.
-    Right click with mouse emulation enabled.
+  `R2`        Nothing.
+              Right click with mouse emulation enabled.
 
 
 Buttons in Menu:
@@ -126,46 +114,33 @@ Buttons in Menu:
 
 These are no dependent of button mapping.
 
-    `Cursor`, `Left Stick`
-    Move
+  `Cursor`, `Left Stick`
+             Move
 
-    `A`
-    Select the option or accept the options at form
+  `A`        Select the option or accept the options at form
+  `B`        Cancel and go back to previous menu or to the emulator if there is no previous menu
 
-    `B`
-    Cancel and go back to previous menu or to the emulator if there is no previous menu
+  `X`        At different contexts:
+               - Mark/Unmark for check options: For example at General options -> Auto-save settings
+               - Open list of options for list options: For example at Sound options -> AY stereo separation
+               - It open 'enter name' dialog for file save dialogs.
 
-    `X`
-    At different contexts:
-    - Mark/Unmark for check options: For example at General options -> Auto-save settings
-    - Open list of options for list options: For example at Sound options -> AY stereo separation
-    - It open 'enter name' dialog for file save dialogs.
+  `L1`       Go to the first menu option
+  `R1`       Go to the last menu option
+  `L2`       In the file selector go to the first entry in the current directory
+  `R2`       In the file selector go to the last entry in the current directory
+  `Power`    Cancel and exit completely from any level of menu to the emulator
 
-    `L1`
-    Go to the first menu option
+  `Y`, `Select`, `Start`, `L2`, `R3`, `Right Stick`
+             Nothing
 
-    `R1`
-    Go to the last menu option
+#### Maintain options ####
+--------------------------
+Some menu options open a form with options to check/uncheck or choose option from a list.
 
-    `L2`
-    In the file selector go to the first entry in the current directory
-
-    `R2`
-    In the file selector go to the last entry in the current directory
-
-    `Power`
-    Cancel and exit completely from any level of menu to the emulator
-
-    `Y`, `Select`, `Start`, `L2`, `R3`, `Right Stick`
-    Nothing
-
-#### Forms ####
----------------
-Some menu options open a form with options to mark or choose option from a list.
-
-The forms must be confirmed to persist the selected options
-  To confirm them you must use the `A` button.
-  The `B` or `Power` buttons cancel them and the changes are lost.
+  - To check/uncheck options use `X` button.
+  - To confirm changes in form use the `A` button.
+  - To cancel changes in form use the `B` or `Power` buttons.
 
 Some examples of forms are General, Media and Sound.
 
@@ -176,23 +151,14 @@ In some menu options the virtual keyboard is presented to allow to use different
 
 Examples where the virtual keyboard it's appearing are: 'Enter name' for save dialogs, Debugger, Poke Finder, Poke Memory.
 
-    `Cursor`
-    Move
+  `Cursor`   Move to select keys
+  `A`        Press the selected key
+  `X`        Change the keyboard mode between upper and lower case and some additional characters
+  `Y`        Delete previous character
+  `B`        Cancel and exit to previous option in menu
 
-    `A`
-    Press the selected key
-
-    `X`
-    Change the keyboard mode between upper and lower case and some additional characters
-
-    `Y`
-    Delete previous character
-
-    `B`
-    Cancel and exit to previous option in menu
-
-    Confirm input
-    To confirm press 'En' key at virtual Keyboard
+  Confirm input
+             To confirm the input press 'En' key at virtual Keyboard
 
 |For the 'Enter the name' in save dialogs the last loaded filename without the extension is proposed.
 
@@ -202,36 +168,32 @@ Examples where the virtual keyboard it's appearing are: 'Enter name' for save di
 
 You can map handheld buttons to Joysticks or Spectrum keys in `Menu -> Options -> Joysticks`
 
----- GCW0 Joystick 1... ----
-----------------------------
+==== GCW0 Joystick 1 ====
 This option allows to emulate a ZX Spectrum joystick with the handheld buttons.
 It also allows you to assign keyboard keys to buttons
 
-- **Type**:
-  Choose the Joystick to emulate or None. Default is None.
+  - Type: Choose the Joystick to emulate or None. Default is None.
+  - Button mapping: Map the handheld buttons to Joystick fire, ZX Spectrum keys or to Nothing.
 
   Some type of Joysticks may require other emulator options enabled.
-  |For example for Kempston joystick emulation you need to enable 'Kempston joystick' in `Menu --> Options --> Peripherals --> General`.
+  |For example for Kempston joystick emulation you need to enable 'Kempston joystick'
+  |in `Menu --> Options --> Peripherals --> General`.
+  By default all buttons are mapped to Joystick fire.
 
-- **Button mapping**:
-  Map the handheld buttons to Joystick fire, ZX Spectrum keys or to Nothing. By default all buttons are mapped to Joystick fire.
-
----- GCW0 Keyboard... ----
---------------------------
+==== GCW0 Keyboard ====
 This option allows to map handheld buttons to ZX Spectrum keys. The cursors also can be mapped.
 
-- **Type**:
-  Choose Activated or None. Default is None.
+  - Type: Choose Activated or None. Default is None.
+  - Button mapping: Map buttons to ZX Spectrum keys or Nothing. By default all buttons are mapped to Nothing.
 
-- **Button mapping**:
-  Map buttons to ZX Spectrum keys or Nothing. By default all buttons are mapped to Nothing.
+--------------------------
 
 When both mappings, "GCW0 Joystick 1" and "GCW0 Keyboard", are enabled at the same time only "GCW0 Joystick 1" will work.
 
-When you choose any 'Type' other than "None" in "GCW0 Joystick 1" or "GCW0 Keyboard", some buttons may lose their original functionality if they are mapped to joystick fire or to keyboard keys.
-`Select`, `Start`, `L1` and `R1` buttons have functionanility that may be lost.
-
-If you have mapped the `Select` button, you can still access the menu with the` Power` button.
+When you choose any 'Type' other than "None" in "GCW0 Joystick 1" or "GCW0 Keyboard", some buttons may lose their original functionality if they are
+mapped to joystick fire or to keyboard keys.
+  - `Select`, `Start`, `L1` and `R1` buttons have functionanility that may be lost.
+  - If you have mapped the `Select` button, you can still access the menu with the` Power` button.
 
 ----------------------------------------------
 ### Control mapping per game configuration ###
@@ -239,18 +201,27 @@ If you have mapped the `Select` button, you can still access the menu with the` 
 
 To have control gaming configuration per game you must activate it in the menu 'Options -> Joysticks -> Control mapping'.
 
-See PITFALLs at end of this section.
+Files for save control mapping:
+  - The configuration files per game are saved in 'mappings' directory in fuse config path ($HOME/.fuse/mappings).
+  - They have extension '.fcm' (fcm is for Fuse Control Mapping).
+  - The options saved are the 'Types' and buttons mappings for GCW0 Joystick 1, Joystick 2, Keyboard and GCW0 Keyboard.
+  - The format of the file is the same used for the general settings: XML for OpenDingux or plain text for RetroFW.
+  - By default for the control mapping filenames will be tried to detect some patterns on name to cut them off:
+        - All the denominations between '()' or '[]'
+        - 'Tape', 'Disk', 'Side' for 'ABCD' or '1234', 'Part 1234 of 1234'
+        - The '128k', '48k' out of '()' '[]'
+        - The 'Small, Medium, Large' whatever 'Case'
+        (The search of patterns are case insensitive)
 
+The supported media for auto-load control mapping files are tapes, microdrives, snapshots, disks (not IDE), rom cartridges and Timex cartridges.
+
+See PITFALLs at the end of this section.
+
+Options:
   - Control mapping per game:
     -------------------------
     Default disabled.
     It enable the save and load of control mappings per game for supported media: : tapes, snapshots, disks (not IDE), rom cartridges, Timex cartridges.
-
-    The configuration files per game are saved in 'mappings' directory in fuse config path ($HOME/.fuse/mappings).
-    The name of the files will be the same of the file loaded replacing its extenstion by '.fcm' (fcm is for Fuse Control Mapping).
-    The options saved are the 'Types' and buttons mappings for GCW0 Joystick 1, Joystick 2, Keyboard and GCW0 Keyboard.
-
-    The format of the file is the same used for the general settings: XML for OpenDingux or plain text for RetroFW.
 
     If you disable it:
       - If defaults are detached they are saved and restored as current defaults.
@@ -264,7 +235,7 @@ See PITFALLs at end of this section.
     ----------
     Default enabled. Only take effect if 'Control mapping per game' is enabled.
 
-    It enable the autoload of control mapping files associated to the file loaded.
+    If enabled the autoload of control mapping files associated to the file loaded.
     This apply for supported media when are loaded from 'File -> Open' or inserted from the 'Media' menu.
 
   - Auto-save:
@@ -281,18 +252,19 @@ See PITFALLs at end of this section.
     ----------------------
     Default disabled. Only take effect if 'Control mapping per game' is enabled.
 
-    This allow to maintain default control mapping different of particular of each game.
-
-    If this option it's not enabled then you can maintain separated default controls.
+    If this option is enabled you can't maintain separated default controls.
 
     The default controls are used:
       - At start of Fuse, if no media is autoload or no control mapping autoload is enable
       - When you insert a media with not yet control mapping configuration
       - When you clear or eject a media
 
-    If this option is enabled the changes to controls are the defaults. 
-      - Loading any control mapping file, automatically or manually change it
-      - If you load any media with no control mapping yet then this defaults will be used.
+  - No cut/transform filenames:
+    ---------------------------
+    Default disabled. Only take effect if 'Control mapping per game' is enabled.
+
+    With this option enabled the filename for mapping control will be the same of the file loaded replacing the extension by '.fmc'.
+    With this option disabled the control mapping filename follow the rules indicated above.
 
 When you exit from Fuse and have General Auto-save setting enabled then default control mapping will be saved at general file.
 
@@ -346,14 +318,8 @@ Other options in Joystick menu for Control mapping:
 
 PITFALLS:
   Variants of the same program:
-    Control mapping filenames are based on the filename loaded.
-    For games with two or more files (tapes, disk sides) or variations of the same program (48k, 128k, different publishers or formats) the emulator try to detect some patterns on name to cut them off:
-      - All the denominations between '()' or '[]'
-      - 'Tape', 'Disk', 'Side' for 'ABCD' or '1234', 'Part 1234 of 1234'
-      - The '128k', '48k' out of '()' '[]'
-      - The 'Small, Medium, Large' whatever 'Case'
-    The searchs are case insensitive.
-    But if the names used are no consistent then a different name for the same program may be determined.
+    If 'No cut/transform filenames' is disabled (default) the emulator try to clean the name of filename to make it equal name for variations.
+    But if the filenames used are no consistent, including letter case, then a different name for the same program may be determined.
 
   When insert various media the last inserted will be the selected control mapping.
     - If you unload it then it will be cleared and you could start a game from other media inserted with no file control mapping.
@@ -375,38 +341,24 @@ PITFALLS:
 
 On some handhelds it is possible to connect an external Joystick using USB OTG. The mapping of 'Joystick 2' will be applied to it.
 
-|On my RG350 I've tested this with an 8Bitdo FC30 Pro controller.
-
 For controllers the number of each button in mapping depends on the controller layout.
-For example on my 8Bitdo FC30 these are the mapping layout: A=1, B=2, X=4, Y=5, L1=7, R1=8, L2=9, R2=10, Select=11, Start=12, L3=14, R3=15.
-From SDL Game controller DB (https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt)
-	"03000000c82d00001038000000000000,8BitDo FC30 Pro,
-	a:b0,
-	b:b1,
-	back:b10,
-	dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,
-	leftshoulder:b6,
-	leftstick:b13,
-	lefttrigger:b8,
-	leftx:a0,lefty:a1,
-	rightshoulder:b7,
-	rightstick:b14,
-	righttrigger:b9,
-	rightx:a3,
-	righty:a4,
-	start:b11,
-	x:b3,
-	y:b4,
-	hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,"
 
 =>Fuse count buttons from 1 not from 0, so add 1 to translate your layout into Fuse's config.
+
+|On my RG350 I've tested this with an 8Bitdo FC30 Pro controller.
+|The mapping layout: A=1, B=2, X=4, Y=5, L1=7, R1=8, L2=9, R2=10, Select=11, Start=12, L3=14, R3=15.
+|From SDL Game controller DB (https://github.com/gabomdq/SDL_GameControllerDB/blob/master/gamecontrollerdb.txt)
+    "03000000c82d00001038000000000000,8BitDo FC30 Pro,
+        a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,
+        leftshoulder:b6,leftstick:b13,lefttrigger:b8,leftx:a0,lefty:a1,
+	rightshoulder:b7,rightstick:b14,righttrigger:b9,rightx:a3,righty:a4,start:b11,x:b3,y:b4,
+	hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,"
 
 -------------------------
 ### External keyboard ###
 -------------------------
 
 I don't have tested a Keyboard on USB OTG but in theory it should "work".
-
 But keep in mind that current adaptations made for handhelds buttons have probably made it unusable.
 
 The handheld buttons are keystrokes that have conflict with some keys used for SDL menus.
@@ -416,9 +368,7 @@ The handheld buttons are keystrokes that have conflict with some keys used for S
 ----------------------
 
 In some handhelds you can emulate mouse with the Right stick and `L2`, `R2` buttons.
-
 This make possible emulating the Kempston mouse.
-
 You must enable 'Kempston mouse' in the peripherals: `Menu -> Options -> Peripherals -> General`, and enable the mouse emulation in the handheld.
 
 |For example, in the RG350 you can activate the mouse with hotkey `Power` + `B`.
@@ -427,7 +377,7 @@ You must enable 'Kempston mouse' in the peripherals: `Menu -> Options -> Periphe
 ### Triple Buffer ###
 ---------------------
 
-There is an implementation to use the triple buffer. It can be enabled at General options or whith combo hotkeys 'L1' + 'R1' + 'B'.
+There is an implementation to use the triple buffer. It can be enabled at 'General GCW0' options or whith combo hotkeys 'L1' + 'R1' + 'B'.
 
 If tripple buffer is activated then an [B] will be at status line.
 
@@ -442,7 +392,7 @@ BUG: At disabling triple buffer sometimes the screen will be frozen but the emul
 ### Hotkey combinations ###
 ---------------------------
 
-For use hotkey combos it they must be enabled in Menu -> Options -> General.
+For use hotkey combos it they must be enabled in 'Menu -> Options -> General GCW0'.
 
 If `L1` and `R1` buttons are not mapped to Joystick or Keyboard it will be used to start the hotkey combinations.
 
@@ -450,20 +400,15 @@ The implemented hotkeys correspond to Fx key functions in Fuse's SDL implementat
 
     L1 + R1 + B      Toggle triple buffer
     L1 + R1 + X      Joystick
-
     L1 + Select + Y  Tape play (F8)
-
     L1 + A           Tape open (F7)
     L1 + B           Save file (F2)
     L1 + X           Open file (F3)
     L1 + Y           Media menu
-
     R1 + A           General options (F4)
     R1 + B           Reset machine (F5)
     R1 + X           Exit fuse (F10)
     R1 + Y           Machine select (F9)
-
-(Yes, I know, some combinations on some devices are impracticable)
 
 ---------------------
 ### Media options ###
@@ -471,7 +416,7 @@ The implemented hotkeys correspond to Fx key functions in Fuse's SDL implementat
 
 If you have problems loading some programs keep in mind the compatibility issues of software with the model emulated.
 
-Also some options in Media options can influence to some loaders as "Accelerate loaders". Try enabling/disabling this options.
+Also some options in 'Media' options can influence to some loaders as 'Accelerate loaders'. Try enabling/disabling different otions.
 
 ------------
 ### ROMs ###
@@ -479,7 +424,7 @@ Also some options in Media options can influence to some loaders as "Accelerate 
 
 Fuse provides roms for some systems and peripherals it emulate but not for all models or peripherals that it support.
 
-You can assign not distributed roms or change the default roms from the emulator itself:
+You can assign new roms or change the defaults from the emulator itself:
 
 - Open menu with `Select` or `Power` button. Then navigate from Menu --> Options --> Select Roms --> Machine ROMs or Peripheral ROMs
 - With `cursor` select the rom to change and press `X` button
@@ -487,14 +432,14 @@ You can assign not distributed roms or change the default roms from the emulator
 - Repeat until all the needed ROMs are assigned.
 - Finally do accept all pressing the `A` button.
 
-You can reset a rom to Fuse's default rom with the `Y` button.
+You can reset a rom to default with the `Y` button.
 
 NOTE:
   The emulator detect your rom as custom if they not have the name expected, including the path.
   This affect to auto-load media (tapes, disks). In standard Fuse compilation cutoms roms don't autoload.
   The option "Auto-load media with custom rom" in General options (default False) auto-load also with custom roms.
 
-Also roms con be added to the 'rom' directory at Fuse config path ("$HOME/.fuse/roms").
+Also roms con be added to the 'rom' directory in config path ("$HOME/.fuse/roms").
 Fuse search in this path for rom files with the default names.
 
     For OpenDingux   "/media/data/local/home/.fuse/roms"

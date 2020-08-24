@@ -757,7 +757,7 @@ ui_tape_write( void )
   /* Add the extension .TZX */
   filename = realloc( filename, strlen( filename ) + 4 );
   if( !filename ) { fuse_emulation_unpause(); return 1; }
-  strcat( filename, ".tzx" );
+  strncat( filename, ".tzx", 4 );
 #endif
 
   tape_write( filename );
@@ -787,7 +787,7 @@ ui_mdr_write( int which, int saveas )
     /* Add the extension .MDR */
     filename = realloc( filename, strlen( filename ) + 4 );
     if( !filename ) { fuse_emulation_unpause(); return 1; }
-    strcat( filename, ".mdr" );
+    strncat( filename, ".mdr", 4 );
 #endif
   }
 

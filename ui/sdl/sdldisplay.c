@@ -261,6 +261,88 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
   return 0;
 }
 
+#ifdef GCWZERO
+/* Initializations for OpenDingux/RetroFW */
+void
+uidisplay_od_init( SDL_Rect **modes )
+{
+  char line[100];
+  char* ptok;
+
+/* On OpenDingux/RetroFW fix Full Screen */
+  settings_current.full_screen = 1;
+  sdldisplay_change_triple_buffer = settings_current.triple_buffer;
+  settings_current.sdl_fullscreen_mode = utils_safe_strdup( '\0' );
+
+/*
+ * Dirty hack. There should be a better solution.
+ * In RetroFW 1 the video driver don't downscale correctly. This is problematic
+ * with filters higher than 1x, the can be choosed but the image is not correct.
+ * This should prevent to use any filter that will be problematic.
+ * Also for Timex Machines this will force to use the Timex Half filters...
+ *
+ * First:
+ * for OpenDingux devices like GCW0, RG350 the info about downscaling is at:
+ *        /sys/devices/platform/jz-lcd.0/allow_downscaling
+ *        If it can be read then it's done.
+ *
+ * Second:
+ * Read /etc/os-release. RetroFW 2 downscale right, so if NAME is Buildroot then
+ * the full_screen_mode will be fixed to 320x240.
+ *
+ * This avoids that the use of scalers with a scale factor greater than 1x
+ * which in RetroFW1 makes it try to use the actual resolution and not downscaling
+ * to the resolution of display.
+ *
+ * But probably this will be problematic on devices with no 320x240 resolution.
+ *
+ *  For RetroFW 2.x
+ *    NAME=RetroFW
+ *    ID=retrofw
+ *    VERSION_ID=2.2
+ *    PRETTY_NAME="RetroFW v2.2"
+ *    ANSI_COLOR="0;36"
+ *    HOME_URL="https://retrofw.github.io/"
+ *    BUG_REPORT_URL="https://github.com/retrofw/retrofw.github.io/issues"
+ *
+ * For RetroFW 1
+ *    NAME=Buildroot
+ *    VERSION=2018.02.11
+ *    ID=buildroot
+ *    VERSION_ID=2018.02.11
+ *    PRETTY_NAME="Buildroot 2018.02.11"
+*
+ * For OpenDingux:
+ *    NAME=Buildroot
+ *    VERSION=2014.08-g156cb719e
+ *    ID=buildroot
+ *    VERSION_ID=2014.08
+ *    PRETTY_NAME="Buildroot 2014.08"
+ */
+  FILE* allow_downscaling = fopen( "/sys/devices/platform/jz-lcd.0/allow_downscaling", "r" );
+  if ( !allow_downscaling ) {
+    /* We are on RetroFW */
+    FILE* os_release = fopen( "/etc/os-release", "r" );
+    if ( os_release ) {
+      while ( fgets(line, sizeof( line ), os_release ) != NULL ) {
+        ptok = strtok( line, "=" );
+        if ( strcmp( ptok, "NAME" ) == 0 ) {
+          ptok = strtok( NULL, "=" );
+          /* And we are on RetroFW 1.X */
+          if ( strcmp( ptok, "Buildroot\n" ) == 0)
+            settings_current.sdl_fullscreen_mode = utils_safe_strdup( "320x240" );
+          break;
+        }
+      }
+      fclose( os_release );
+    }
+
+  /* We are on OpenDingux */
+  } else
+    fclose( allow_downscaling );
+}
+#endif
+
 int
 uidisplay_init( int width, int height )
 {
@@ -278,34 +360,7 @@ uidisplay_init( int width, int height )
   no_modes = ( modes == (SDL_Rect **) 0 || modes == (SDL_Rect **) -1 ) ? 1 : 0;
 
 #ifdef GCWZERO
-  settings_current.full_screen = 1;
-  sdldisplay_change_triple_buffer = settings_current.triple_buffer;
-  settings_current.sdl_fullscreen_mode = utils_safe_strdup( '\0' );
-/*
- * Dirty hack. There should be a better solution.
- * In RetroFW 1 the video driver don't downscale correctly. This is problematic
- * with filters higher than 1x, the can be choosed but the image is not correct.
- * This should prevent to use any filter that will be problematic.
- * Also for Timex Machines this will force to use the Timex Half filters...
- */
-  FILE* allow_downscaling = fopen("/sys/devices/platform/jz-lcd.0/allow_downscaling","r");
-  if (!allow_downscaling) {
-    FILE* os_release = fopen("/etc/os-release", "r");
-    if (os_release) {
-      char line[100];
-      char* ptok;
-      while ( fgets(line,sizeof(line),os_release) != NULL ) {
-        ptok = strtok(line,"=");
-        if (strcmp(ptok,"NAME") == 0) {
-          ptok = strtok(NULL,"=");
-          if (strcmp(ptok,"Buildroot\n") == 0)
-            settings_current.sdl_fullscreen_mode = utils_safe_strdup( "320x240" );
-          break;
-        }
-      }
-      fclose(os_release);
-    }
-  } else fclose(allow_downscaling);
+  uidisplay_od_init( modes );
 #endif
 
   if( settings_current.sdl_fullscreen_mode &&

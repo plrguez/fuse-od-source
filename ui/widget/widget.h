@@ -81,6 +81,7 @@ typedef enum widget_type {
 #endif
 #ifdef GCWZERO
   WIDGET_TYPE_JOYSTICKS_CONTROLMAPPING, /* Control mapping */
+  WIDGET_TYPE_GENERALGCW0,		/* General GCW0 options */
 #endif
 } widget_type;
 
@@ -184,6 +185,12 @@ static inline int widget_do_vkeyboard( void )
 #endif
 
 #ifdef GCWZERO
+/* General options for GCW0 */
+static inline int widget_do_generalgcw0( void )
+{
+  return widget_do( WIDGET_TYPE_GENERALGCW0, NULL );
+}
+
 /* Control Mapping */
 static inline int widget_do_joysticks_controlmapping( void )
 {

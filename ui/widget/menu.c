@@ -784,7 +784,7 @@ menu_options_joysticks_select( int action )
   submenu_types[ i + 1 ].text = NULL;
 
 #ifdef GCWZERO
-  submenu_types_gcw0[ 0 ].text = "Activate joystick";
+  submenu_types_gcw0[ 0 ].text = "Enable joystick";
   for( i = 0; i < 2; i++ ) {
     char shortcut[ 2 ] = { 'A' + i, '\0' };
     snprintf( ( char * ) joystick_names_gcw0[ i ], 100, "\012%s\011 %s", shortcut,
@@ -826,6 +826,12 @@ set_joystick_type( int action )
 }
 
 #ifdef GCWZERO
+void
+menu_options_generalgcw0( int action )
+{
+  widget_do_generalgcw0();
+}
+
 void
 menu_options_joysticks_controlmappingpergame( int action )
 {
