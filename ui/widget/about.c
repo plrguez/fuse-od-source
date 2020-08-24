@@ -38,7 +38,11 @@ widget_about_draw( void *data GCC_UNUSED )
   margin = 17;
   line = 0;
 
+#ifdef GCWZERO
+  widget_dialog_with_border( 1, 2, dialog_cols, 9+2 );
+#else
   widget_dialog_with_border( 1, 2, dialog_cols, 7+2 );
+#endif
   widget_printstring( 10, 16, WIDGET_COLOUR_TITLE, "About Fuse" );
 
   string_width = widget_stringwidth( "the Free Unix Spectrum Emulator (Fuse)" );
@@ -63,6 +67,15 @@ widget_about_draw( void *data GCC_UNUSED )
   string_width = widget_stringwidth( PACKAGE_URL );
   x = margin - 8 + ( dialog_cols * 8 - string_width ) / 2;
   widget_printstring( x, ++line * 8 + 24, 0x09, PACKAGE_URL );
+
+#ifdef GCWZERO
+  ++line;
+
+  string_width = widget_stringwidth( GCW0_VERSION );
+  x = margin - 8 + ( dialog_cols * 8 - string_width ) / 2;
+  widget_printstring( x, ++line * 8 + 24, WIDGET_COLOUR_FOREGROUND,
+                      GCW0_VERSION );
+#endif
 
   widget_display_lines( 2, line + 3 );
 
