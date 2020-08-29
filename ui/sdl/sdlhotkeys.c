@@ -90,9 +90,9 @@ int is_combo_possible( const SDL_Event *event )
 {
   /* There are not combos in widgets or keyboard */
 #ifdef VKEYBOARD
-  if ( !settings_current.hotkey_combos || ui_widget_level >= 0 || vkeyboard_enabled ) return 0;
+  if ( !settings_current.od_hotkey_combos || ui_widget_level >= 0 || vkeyboard_enabled ) return 0;
 #else
-  if ( !settings_current.hotkey_combos || ui_widget_level >= 0 ) return 0;
+  if ( !settings_current.od_hotkey_combos || ui_widget_level >= 0 ) return 0;
 #endif
 
  /* Mot filter if R1 and R1 are mapped to joysticks */
@@ -204,7 +204,7 @@ push_combo_event( Uint8* flags )
 
   /* Switch triple buffer */
   } else if ( toggle_triple_buffer ) {
-    settings_current.triple_buffer = !settings_current.triple_buffer;
+    settings_current.od_triple_buffer = !settings_current.od_triple_buffer;
 
     /* Clean flags and mark combo as done */
     *flags = 0x00;

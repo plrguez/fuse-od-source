@@ -33,6 +33,9 @@
 #include "compat.h"
 #include "utils.h"
 #include "ui/ui.h"
+#ifdef GCWZERO
+#include "settings.h"
+#endif
 
 const compat_fd COMPAT_FILE_OPEN_FAILED = NULL;
 

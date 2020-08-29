@@ -271,7 +271,7 @@ uidisplay_od_init( SDL_Rect **modes )
 
 /* On OpenDingux/RetroFW fix Full Screen */
   settings_current.full_screen = 1;
-  sdldisplay_change_triple_buffer = settings_current.triple_buffer;
+  sdldisplay_change_triple_buffer = settings_current.od_triple_buffer;
   settings_current.sdl_fullscreen_mode = utils_safe_strdup( '\0' );
 
 /*
@@ -1114,7 +1114,7 @@ uidisplay_frame_end( void )
      windowed-only UI a chance to free menu etc. resources before
      the switch to fullscreen (e.g. Mac OS X) */
 #ifdef GCWZERO
-  sdldisplay_change_triple_buffer = settings_current.triple_buffer;
+  sdldisplay_change_triple_buffer = settings_current.od_triple_buffer;
   if ( ( sdldisplay_is_full_screen != settings_current.full_screen  ||
       sdldisplay_is_triple_buffer != sdldisplay_change_triple_buffer ) &&
 #else
@@ -1126,7 +1126,7 @@ uidisplay_frame_end( void )
   }
 
 #ifdef GCWZERO
-  settings_current.triple_buffer = sdldisplay_change_triple_buffer;
+  settings_current.od_triple_buffer = sdldisplay_change_triple_buffer;
  #endif
 
 #if VKEYBOARD

@@ -782,6 +782,12 @@ parse_nonoption_args( int argc, char **argv, int first_arg,
 #endif
   }
 
+#ifdef GCWZERO
+  if ( ( i == first_arg || class == LIBSPECTRUM_CLASS_UNKNOWN ) &&
+       settings_current.od_last_directory )
+    chdir( settings_current.od_last_directory );
+#endif
+
   return 0;
 }
 

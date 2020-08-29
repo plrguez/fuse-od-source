@@ -306,8 +306,11 @@ int ui_query( const char *message );
 int ui_widget_init( void );
 int ui_widget_end( void );
 #ifdef GCWZERO
+#ifdef USE_WIDGET
 void ui_widget_statusbar_update_info( float speed );
 void ui_widget_statusbar_print_info( void );
+void ui_widget_set_file_filter_for_class( int filter_class, int saving );
+#endif
 #endif
 #if VKEYBOARD
 extern int vkeyboard_enabled;

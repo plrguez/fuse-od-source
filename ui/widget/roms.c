@@ -266,6 +266,9 @@ widget_roms_keyhandler( input_key key )
 
     data.exit_all_widgets = 0;
     data.title = buf;
+#if GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_ROM, 0 );
+#endif
     widget_do_fileselector( &data );
     if( !widget_filesel_name ) return;
 

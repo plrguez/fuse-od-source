@@ -166,6 +166,7 @@ int compat_closedir( compat_dir directory );
 #ifdef GCWZERO
 int compat_createdir( const char *path );
 int compat_create_config_paths( const char *config_path );
+int compat_allowed_path_to_write( const char *path );
 char* compat_chop_expressions( const char** re_expressions, const char* text );
 #endif
 

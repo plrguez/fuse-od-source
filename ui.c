@@ -39,6 +39,9 @@
 #include "ui/ui.h"
 #include "ui/uimedia.h"
 #include "ui/widget/widget.h"
+#ifdef GCWZERO
+#include "utils.h"
+#endif
 
 #define MESSAGE_MAX_LENGTH 256
 
@@ -750,15 +753,11 @@ ui_tape_write( void )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_TAPE, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Write Tape" );
   if( !filename ) { fuse_emulation_unpause(); return 1; }
-
-#ifdef GCWZERO
-  /* Add the extension .TZX */
-  filename = realloc( filename, strlen( filename ) + 4 );
-  if( !filename ) { fuse_emulation_unpause(); return 1; }
-  strncat( filename, ".tzx", 4 );
-#endif
 
   tape_write( filename );
 
@@ -780,15 +779,11 @@ ui_mdr_write( int which, int saveas )
   snprintf( title, 80, "Fuse - Write Microdrive Cartridge %i", which + 1 );
 
   if( saveas ) {
+#if USE_WIDGET && GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_MICRODRIVE, 1 );
+#endif
     filename = ui_get_save_filename( title );
     if( !filename ) { fuse_emulation_unpause(); return 1; }
-
-#ifdef GCWZERO
-    /* Add the extension .MDR */
-    filename = realloc( filename, strlen( filename ) + 4 );
-    if( !filename ) { fuse_emulation_unpause(); return 1; }
-    strncat( filename, ".mdr", 4 );
-#endif
   }
 
   err = if1_mdr_write( which, filename );
@@ -814,6 +809,7 @@ ui_widget_end( void )
 }
 
 #ifdef GCWZERO
+#ifdef USE_WIDGET
 void ui_widget_statusbar_update_info( float speed ) {
   widget_statusbar_update_info( speed );
 }
@@ -821,6 +817,12 @@ void ui_widget_statusbar_update_info( float speed ) {
 void ui_widget_statusbar_print_info( void ) {
   widget_statusbar_print_info();
 }
+
+void ui_widget_set_file_filter_for_class( int filter_class, int saving )
+{
+  widget_filesel_set_filter_for_class( filter_class, saving );
+}
+#endif
 #endif
 
 #if VKEYBOARD

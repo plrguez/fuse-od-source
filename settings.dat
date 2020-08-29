@@ -39,12 +39,10 @@ mouse_swap_buttons, boolean, 0
 tape_traps, boolean, 1,, traps, tapetraps
 fastload, boolean, 1
 auto_load, boolean, 1
-auto_load_with_custom_roms, boolean, 0
 detect_loader, boolean, 1
 accelerate_loader, boolean, 1
 slt_traps, boolean, 1,, slt, slttraps
 double_screen, null, 0
-triple_buffer, boolean, 0
 full_screen, boolean, 0
 writable_roms, boolean, 0
 autosave_settings, boolean, 0
@@ -57,10 +55,6 @@ raw_rs232, null, 0
 raw_s_net, boolean, 0
 snet, string, NULL
 confirm_actions, boolean, 1
-confirm_overwrite_files, boolean, 0
-hidden_files, boolean, 0
-hotkey_combos, boolean, 0
-show_fps, boolean, 0
 printer, boolean, 0
 statusbar, boolean, 1
 interface1, boolean, 0
@@ -168,12 +162,6 @@ joystick_gcw0_l3, numeric, 0
 joystick_gcw0_r3, numeric, 0
 
 keyboard_arrows_shifted, boolean, 1
-
-control_mapping_per_game, boolean, 0
-control_mapping_autoload, boolean, 1
-control_mapping_autosave, boolean, 1
-control_mapping_not_detached_defaults, boolean, 0
-control_mapping_no_transform_filename, boolean, 0
 
 rzx_compression, boolean, 1,, compress-rzx
 competition_mode, boolean, 0
@@ -322,3 +310,22 @@ teletext_port_1, numeric, 19761
 teletext_port_2, numeric, 19762
 teletext_port_3, numeric, 19763
 teletext_port_4, numeric, 19764
+
+od_confirm_overwrite_files, boolean, 0
+od_hidden_files, boolean, 0
+od_hotkey_combos, boolean, 0
+od_show_fps, boolean, 0
+od_filter_known_extensions, boolean, 1
+od_independent_directory_access, boolean, 0
+od_triple_buffer, boolean, 0
+od_save_last_directory, boolean, 0
+od_last_directory, string, NULL
+
+od_auto_load_with_custom_roms, boolean, 0
+
+control_mapping_per_game, boolean, 0
+control_mapping_autoload, boolean, 1
+control_mapping_autosave, boolean, 1
+control_mapping_not_detached_defaults, boolean, 0
+control_mapping_no_transform_filename, boolean, 0
+control_mapping_enable_kempston_joy, boolean, 1

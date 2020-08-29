@@ -27,13 +27,24 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
+#include <mntent.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <libgen.h>
 
 #include "compat.h"
-#include "ui/ui.h"
+#include "utils.h"
+#include "ui/ui.h" /* For launch error messages */
 
 #ifdef GCWZERO
-static int create_config_path( const char *config_path );
+static int   create_config_path( const char *config_path );
 
+/*
+ * Create config path if it not exists
+ *
+ *  1 - Error creting path supplied
+ *  0 - Path created or already exist
+ */
 int create_config_path( const char *config_path )
 {
   struct stat stat_info;
@@ -42,33 +53,39 @@ int create_config_path( const char *config_path )
     if ( errno == ENOENT ) {
       if ( compat_createdir( config_path ) == -1 ) {
         ui_error( UI_ERROR_ERROR, "error creating config directory '%s'", config_path );
-        return 0;
+        return 1;
       }
     } else {
       ui_error( UI_ERROR_ERROR, "couldn't stat '%s': %s", config_path, strerror( errno ) );
-      return 0;
+      return 1;
     }
   }
 
-  return 1;
+  return 0;
 }
 
+/*
+ *  Create config paths used for OpenDingux/RetroFW
+ *
+ *  1 - Failed to create all paths
+ *  0 - All paths created or already exists
+ */
 int
 compat_create_config_paths( const char *config_path ) {
   char next_path[ PATH_MAX ];
 
-  if ( !create_config_path( config_path ) )
-    return 0;
+  if ( create_config_path( config_path ) )
+    return 1;
 
   snprintf( next_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", config_path, "roms" );
-  if ( !create_config_path( next_path ) )
-    return 0;
+  if ( create_config_path( next_path ) )
+    return 1;
 
   snprintf( next_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", config_path, "mappings" );
-  if ( !create_config_path( next_path ) )
-    return 0;
+  if ( create_config_path( next_path ) )
+    return 1;
 
-  return 1;
+  return 0;
 }
 #endif /* GCWZERO */
 

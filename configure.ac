@@ -332,7 +332,7 @@ if test -z "$UI"; then
   AC_MSG_RESULT($retrofw)
   if test "$retrofw" = yes; then
     if test "$sdl_available" = yes; then
-      AC_DEFINE([GCWZERO], 1, [Defined if RetroFW 2 is in use])
+      AC_DEFINE([GCWZERO], 1, [Defined if RetroFW is in use])
       UI=sdl
       WIDGET=widget
       use_sdl=yes
@@ -347,7 +347,7 @@ if test "$gcw0" = "yes" -o "$retrofw" = "yes"; then
   AC_DEFINE([VKEYBOARD], 1, [Virtual Keyboard defined for OpenDingux/RetroFW])
   AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
   AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
-  AC_DEFINE([GCW0_VERSION], "0.0.1 for OpenDingux/RetroFW", [OpenDingux/RetroFW Version])
+  AC_DEFINE([GCW0_VERSION], "0.0.2 for OpenDingux/RetroFW", [OpenDingux/RetroFW Version])
 fi
 
 dnl Look for null UI (default=no)

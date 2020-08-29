@@ -1070,7 +1070,7 @@ void display_refresh_rect( int x, int y, int w, int h )
     display_is_dirty[i] |= dirty;
     for ( j = column; j < column + bytes; j++) {
       index = j + i * DISPLAY_SCREEN_WIDTH_COLS;
-      display_last_screen[index] = 0xff;
+      display_last_screen[index] = 0xffffffff;
     }
   }
 }

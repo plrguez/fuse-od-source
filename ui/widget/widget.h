@@ -85,6 +85,45 @@ typedef enum widget_type {
 #endif
 } widget_type;
 
+#ifdef GCWZERO
+/* Filter classes */
+typedef enum widget_filter_class {
+  FILTER_CLASS_SNAPSHOT,
+  FILTER_CLASS_TAPE,
+  FILTER_CLASS_DISK_PLUS3,
+  FILTER_CLASS_DISK_TRDOS,
+  FILTER_CLASS_DISK_OPUS,
+  FILTER_CLASS_DISK_DIDAKTIK,
+  FILTER_CLASS_DISK_PLUSD,
+  FILTER_CLASS_DISK_GENERIC,
+  FILTER_CLASS_MICRODRIVE,
+  FILTER_CLASS_CARTRIDGE_IF2,
+  FILTER_CLASS_CARTRIDGE_TIMEX,
+  FILTER_CLASS_BINARY,
+  FILTER_CLASS_ROM,
+  FILTER_CLASS_COMPRESSED,
+  FILTER_CLASS_RECORDING,
+  FILTER_CLASS_SCREENSHOT,
+  FILTER_CLASS_SCREENSHOT_PNG,
+  FILTER_CLASS_SCREENSHOT_MLT,
+  FILTER_CLASS_SCALABLE_VECTOR_GRAPHICS,
+  FILTER_CLASS_MOVIE_FILE,
+  FILTER_CLASS_AY_LOGGING,
+  FILTER_CLASS_POKE_FILE,
+  FILTER_CLASS_CONTROL_MAPPING,
+  FILTER_CLASS_MEDIA_IF_RS232,
+  FILTER_CLASS_PROFILER,
+  FILTER_CLASS_GENERAL,
+} widget_filter_class;
+
+void
+widget_filesel_set_filter_for_class( widget_filter_class filter_class, int saving );
+char*
+widget_set_valid_file_extension_for_class( char* filename, widget_filter_class class );
+char*
+widget_set_valid_file_extension_for_last_class( char* filename );
+#endif
+
 /* Activate a widget */
 int widget_do( widget_type which, void *data );
 

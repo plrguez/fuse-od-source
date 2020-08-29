@@ -259,6 +259,9 @@ utils_open_snap( void )
   char *filename;
   int error;
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SNAPSHOT, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Load Snapshot" );
   if( !filename ) return -1;
 
@@ -531,8 +534,15 @@ void utils_set_last_loaded_file( const char *filename, libspectrum_class_t class
   if ( change_to_path ) {
     strncpy( buffer, filename, PATH_MAX );
     path = dirname(buffer);
-    if (path && path[0] != '\0')
+    if (path && path[0] != '\0') {
       chdir(path);
+      if ( settings_current.od_save_last_directory &&
+           ( !settings_current.od_last_directory ||
+             strcmp( settings_current.od_last_directory, path ) ) ) {
+        libspectrum_free( settings_current.od_last_directory );
+        settings_current.od_last_directory = utils_safe_strdup( path );
+      }
+    }
   }
 }
 

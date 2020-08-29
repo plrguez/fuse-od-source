@@ -84,15 +84,159 @@ static int is_drivesel = 0;
 static int is_rootdir;
 #endif				/* #ifdef WIN32 */
 
+#ifdef GCWZERO
+#define ENTRIES_PER_SCREEN (is_saving ? ( last_filename ? 30 : 32 ) : 36)
+#else
 #define ENTRIES_PER_SCREEN (is_saving ? 32 : 36)
+#endif
 
 /* The number of the filename in the top-left corner of the current
    display, that of the filename which the `cursor' is on, and that
    which it will be on after this keypress */
 static size_t top_left_file, current_file, new_current_file;
 #ifdef GCWZERO
-static size_t last_top_left_file, last_current_file;
-static char *last_directory = NULL;
+typedef struct widget_file_filter_t {
+  widget_filter_class    class;
+  const char*            filters_write;
+  const char*            filters_read;
+} widget_file_filter_t;
+
+static widget_file_filter_t widget_file_filters[FILTER_CLASS_GENERAL+1] = {
+  { FILTER_CLASS_SNAPSHOT,
+                          "szx;z80;sna",
+                          "szx;z80;sna;mgtsnp;slt;snapshot;snp;sp;zx-state" },
+  { FILTER_CLASS_TAPE,
+                          "tzx",
+#ifdef HAVE_LIB_AUDIOFILE
+                          "tzx;tap;pzx;ltp;raw;spc;sta;csw;wav" },
+#else
+                          "tzx;tap;pzx;ltp;raw;spc;sta;csw" },
+#endif
+  { FILTER_CLASS_DISK_PLUS3,
+                          "dsk;udi;fdi",         "dsk;udi;fdi" },
+  { FILTER_CLASS_DISK_TRDOS,
+                          "trd;udi;fdi;sad",     "trd;scl;udi;fdi;sad" },
+  { FILTER_CLASS_DISK_OPUS,
+                          "opu;opd",             "opu;opd" },
+  { FILTER_CLASS_DISK_DIDAKTIK,
+                          "d40;d80;udi;fdi;sad", "d40;d80;udi;fdi;sad" },
+  { FILTER_CLASS_DISK_PLUSD,
+                          "mgt;img;udi;fdi;sad", "mgt;img;udi;fdi;sad" },
+  { FILTER_CLASS_DISK_GENERIC,
+                          "udi;fdi;sad",         "udi;fdi;sad;td0" },
+  { FILTER_CLASS_MICRODRIVE,
+                          "mdr", "mdr" },
+  { FILTER_CLASS_CARTRIDGE_IF2,
+                          NULL, "rom" },
+  { FILTER_CLASS_CARTRIDGE_TIMEX,
+                          NULL, "dck" },
+  { FILTER_CLASS_BINARY,
+                          NULL, NULL },
+  { FILTER_CLASS_ROM,
+                          NULL, "rom" },
+#ifdef LIBSPECTRUM_SUPPORTS_ZLIB_COMPRESSION
+#ifdef LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
+  { FILTER_CLASS_COMPRESSED,
+                          NULL, "gz;zip;bz2" },
+#else
+  { FILTER_CLASS_COMPRESSED,
+                          NULL, "gz;zip" },
+#elseif LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
+  { FILTER_CLASS_COMPRESSED,
+                          NULL, "bz2" },
+#endif
+#endif
+  { FILTER_CLASS_RECORDING,
+                          "rzx", "rzx" },
+  { FILTER_CLASS_SCREENSHOT,
+                          "scr", "scr" },
+  { FILTER_CLASS_SCREENSHOT_PNG,  
+                          "png", NULL },
+  { FILTER_CLASS_SCREENSHOT_MLT,
+                          "mlt", "mlt" },
+  { FILTER_CLASS_SCALABLE_VECTOR_GRAPHICS,
+                          "svg", "svg" },
+  { FILTER_CLASS_MOVIE_FILE,
+                          "fmf", "fmf" },
+  { FILTER_CLASS_AY_LOGGING,
+                          "psg", "psg" },
+  { FILTER_CLASS_POKE_FILE,
+                          NULL, "pok" },
+  { FILTER_CLASS_CONTROL_MAPPING,
+                          "fcm", "fcm" },
+  { FILTER_CLASS_MEDIA_IF_RS232,
+                          NULL, NULL },
+  { FILTER_CLASS_PROFILER,
+                          "prf", NULL },
+  { FILTER_CLASS_GENERAL },
+};
+
+/* Filter extensions for filesel widget */
+#define MAX_FILTER_EXTENSIONS 20
+#define MAX_ROW_EXTENSIONS 10
+static char* filter_extensions[ MAX_ROW_EXTENSIONS ][ MAX_FILTER_EXTENSIONS ];
+static int last_row_extensions = -1;
+static widget_filter_class last_filter = FILTER_CLASS_GENERAL;
+static widget_filter_class last_position = FILTER_CLASS_GENERAL;
+
+typedef struct widget_last_positions_t {
+  widget_filter_class    class;
+  size_t                 last_top_left_file;
+  size_t                 last_current_file;
+  int                    apply_filters;
+  char*                  last_directory;
+} widget_last_positions_t;
+
+static widget_last_positions_t last_known_positions[ FILTER_CLASS_GENERAL+1 ] = {
+  { FILTER_CLASS_SNAPSHOT,        0, 0, 1, NULL },
+  { FILTER_CLASS_TAPE,            0, 0, 1, NULL },
+  { FILTER_CLASS_DISK_PLUS3,      0, 0, 1, NULL },
+  { FILTER_CLASS_DISK_TRDOS,      0, 0, 1, NULL },
+  { FILTER_CLASS_DISK_OPUS,       0, 0, 1, NULL },
+  { FILTER_CLASS_DISK_DIDAKTIK,   0, 0, 1, NULL },
+  { FILTER_CLASS_DISK_PLUSD,      0, 0, 1, NULL },
+  { FILTER_CLASS_DISK_GENERIC,    0, 0, 1, NULL },
+  { FILTER_CLASS_MICRODRIVE,      0, 0, 1, NULL },
+  { FILTER_CLASS_CARTRIDGE_IF2,   0, 0, 1, NULL },
+  { FILTER_CLASS_CARTRIDGE_TIMEX, 0, 0, 1, NULL },
+  { FILTER_CLASS_BINARY,          0, 0, 1, NULL },
+  { FILTER_CLASS_ROM,             0, 0, 1, NULL },
+#ifdef LIBSPECTRUM_SUPPORTS_ZLIB_COMPRESSION
+#ifdef LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
+  { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
+#else
+  { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
+#elseif LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
+  { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
+#endif
+#endif
+  { FILTER_CLASS_RECORDING,       0, 0, 1, NULL },
+  { FILTER_CLASS_SCREENSHOT,      0, 0, 1, NULL },
+  { FILTER_CLASS_SCREENSHOT_PNG,  0, 0, 1, NULL },
+  { FILTER_CLASS_SCREENSHOT_MLT,  0, 0, 1, NULL },
+  { FILTER_CLASS_SCALABLE_VECTOR_GRAPHICS,
+                                  0, 0, 1, NULL },
+  { FILTER_CLASS_MOVIE_FILE,      0, 0, 1, NULL },
+  { FILTER_CLASS_AY_LOGGING,      0, 0, 1, NULL },
+  { FILTER_CLASS_POKE_FILE,       0, 0, 1, NULL },
+  { FILTER_CLASS_CONTROL_MAPPING, 0, 0, 1, NULL },
+  { FILTER_CLASS_MEDIA_IF_RS232,  0, 0, 1, NULL },
+  { FILTER_CLASS_PROFILER,        0, 0, 1, NULL },
+  { FILTER_CLASS_GENERAL,         0, 0, 1, NULL },
+};
+
+#define CURRENT_FILTERS \
+( is_saving ? widget_file_filters[last_filter].filters_write \
+            : widget_file_filters[last_filter].filters_read )
+
+static  int widget_set_filter_extensions( const char* extensions );
+static void widget_free_filter_extensions( void );
+static  int widget_filter_extensions( const char *filename, int maybe_dir );
+static  int widget_check_filename_has_extension( const char *filename, const char * extension );
+static void widget_init_filter_class( widget_filter_class filter_class );
+static void widget_finish_filter_class( widget_finish_state finished );
+static char *widget_get_print_title( const char* title );
+static void widget_print_default_save_filename( void );
 #endif
 
 static char *widget_get_filename( const char *title, int saving );
@@ -162,8 +306,12 @@ ui_get_save_filename( const char *title )
 {
 #if !defined AMIGA && !defined __MORPHOS__
 #ifdef GCWZERO
-  if ( settings_current.confirm_overwrite_files ) {
-    char* filename = widget_get_filename( title, 1 );
+  char* filename = widget_get_filename( title, 1 );
+  if ( filename ) filename = widget_set_valid_file_extension_for_last_class( filename );
+  if ( settings_current.od_confirm_overwrite_files &&
+       /* Disks have their own overwrite confirm dialog */
+       ( last_filter < FILTER_CLASS_DISK_PLUS3 ||
+         last_filter > FILTER_CLASS_DISK_GENERIC ) ) {
     if (filename && compat_file_exists( filename ) ) {
         const char *filename1 = strrchr( filename, FUSE_DIR_SEP_CHR );
         filename1 = filename1 ? filename1 + 1 : filename;
@@ -185,8 +333,10 @@ ui_get_save_filename( const char *title )
         }
     } else return filename;
   } else
-#endif
+    return filename;
+#else
   return widget_get_filename( title, 1 );
+#endif /* GCWZERO */
 #else
   return amiga_asl( title, TRUE );
 #endif
@@ -387,6 +537,15 @@ static int widget_scandir( const char *dir, struct widget_dirent ***namelist,
   }
 #endif				/* #ifdef WIN32 */
 
+#ifdef GCWZERO
+  if ( settings_current.od_save_last_directory && 
+       ( !settings_current.od_last_directory ||
+         strcmp( settings_current.od_last_directory, dir ) ) ) {
+    libspectrum_free( settings_current.od_last_directory );
+    settings_current.od_last_directory = utils_safe_strdup( dir );
+  }
+#endif
+
   return number;
 }
 
@@ -474,11 +633,19 @@ widget_select_file( const char *name )
 
 #ifndef WIN32
 #ifdef GCWZERO
-  if (!settings_current.hidden_files)
+  if (!settings_current.od_hidden_files)
 #endif
   /* Skip hidden files/directories */
   if( strlen( name ) > 1 && name[0] == '.' && name[1] != '.' ) return 0;
 #endif				/* #ifdef WIN32 */
+
+#ifdef GCWZERO
+  /* Filtered extensions */
+  if ( settings_current.od_filter_known_extensions &&
+       last_known_positions[last_filter].apply_filters &&
+       widget_filter_extensions( name, 1 ) )
+    return 0;
+#endif
 
   return 1;
 }
@@ -527,9 +694,12 @@ widget_filesel_draw( void *data )
 
   widget_scan( directory );
 #ifdef GCWZERO
-  if (last_directory && strcmp(directory,last_directory) == 0) {
-    new_current_file = current_file = last_current_file;
-    top_left_file = last_top_left_file;
+  /* Restore position and file selected
+    Only for load operations */
+  if ( !is_saving && last_known_positions[last_position].last_directory &&
+       strcmp( directory, last_known_positions[last_position].last_directory ) == 0 ) {
+    new_current_file = current_file = last_known_positions[last_position].last_current_file;
+    top_left_file = last_known_positions[last_position].last_top_left_file;
   } else {
 #endif
   new_current_file = current_file = 0;
@@ -570,11 +740,11 @@ int widget_filesel_finish( widget_finish_state finished ) {
     widget_filesel_name = NULL;
   }
 #ifdef GCWZERO
-  last_directory = widget_getcwd();
-  if( finished == WIDGET_FINISHED_OK ) {
-    last_top_left_file = top_left_file;
-    last_current_file = current_file;
-  }
+  /* Save last directory
+     For load operations save last position and selected file if we are
+     not cancelling  */
+  widget_finish_filter_class( finished );
+  widget_free_filter_extensions();
 #endif
   return 0;
 }
@@ -632,6 +802,69 @@ static char* widget_getcwd( void )
   return directory;
 }
 
+#ifdef GCWZERO
+static char *widget_get_print_title( const char* title )
+{
+  const char *filter_title = NULL;
+  const char *filters = NULL;
+  const int title_length = 40;
+  char * final_title;
+
+  if ( !settings_current.od_filter_known_extensions ) {
+    final_title = utils_safe_strdup( title );
+
+  } else {
+    /* Quit "Fuse - " */
+    if ( strncmp( title, "Fuse - ", 7 ) == 0 )
+      filter_title = title + 7;
+    else
+      filter_title = title;
+
+    if ( last_known_positions[last_filter].apply_filters ) {
+      filters = is_saving ? widget_file_filters[last_filter].filters_write
+                          : widget_file_filters[last_filter].filters_read;
+    }
+
+    final_title = libspectrum_new( char, title_length );
+    if ( filters ) {
+      if ( ( strlen( filter_title ) + strlen( filters ) + 3 ) >= title_length ) {
+        /* Title space (filters...)\0 */
+        int i = title_length - strlen( filter_title ) - 7;
+        snprintf( final_title, title_length, "%s (%.*s...)", filter_title, i, filters );
+      } else
+        snprintf( final_title, title_length, "%s (%s)", filter_title, filters );
+    } else
+      snprintf( final_title, title_length, "%s (*)", filter_title );
+  }
+
+  return final_title;
+}
+
+static void widget_print_default_save_filename( void )
+{
+  char *default_save, *c;
+  char  print_button[128];
+  const char* button_label = "\012Y\001 = Save\012";
+  const int   label_wide = 184;
+
+  if ( !last_filename ) return;
+
+  default_save = widget_set_valid_file_extension_for_last_class( utils_last_filename( last_filename, 1 ) );
+  if ( default_save ) {
+    c = default_save;
+    if ( widget_stringwidth( default_save ) > label_wide ) {
+      int prefix = widget_stringwidth( "..." ) + 1;
+      while( widget_stringwidth( default_save ) > label_wide - prefix ) default_save++;
+      snprintf( print_button, sizeof( print_button ), "%s ...%s\001", button_label, default_save );
+    } else {
+      snprintf( print_button, sizeof( print_button ), "%s %s\001", button_label, default_save );
+    }
+    widget_printstring( 12, 21 * 8, WIDGET_COLOUR_FOREGROUND, print_button );
+    libspectrum_free( c );
+  }
+}
+#endif
+
 static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
 				       int top_left, int current,
 				       const char *dir )
@@ -643,7 +876,13 @@ static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
   error = widget_dialog_with_border( 1, 2, 30, 22 );
   if( error ) return error;
 
+#ifdef GCWZERO
+  char* title_with_filters = widget_get_print_title( title );
+  widget_printstring( 10, 16, WIDGET_COLOUR_TITLE, title_with_filters );
+  libspectrum_free( title_with_filters );
+#else
   widget_printstring( 10, 16, WIDGET_COLOUR_TITLE, title );
+#endif
   if( widget_stringwidth( dir ) > 223 ) {
     char buffer[128];
     int prefix = widget_stringwidth( "..." ) + 1;
@@ -672,6 +911,9 @@ static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
 
   if( is_saving )
   {
+#ifdef GCWZERO
+    widget_print_default_save_filename();
+#endif
     widget_printstring( 12, 22 * 8, WIDGET_COLOUR_FOREGROUND,
 #ifdef GCWZERO
 				     "\012A\001 = select" );
@@ -687,7 +929,11 @@ static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
   }
 
   if( i < n )
+#ifdef GCWZERO
+    widget_down_arrow( 1, is_saving ? ( last_filename ? 19 : 20 ) : 22, WIDGET_COLOUR_FOREGROUND );
+#else
     widget_down_arrow( 1, is_saving ? 20 : 22, WIDGET_COLOUR_FOREGROUND );
+#endif
 
   /* Display that lot */
   widget_display_lines( 2, 22 );
@@ -863,10 +1109,6 @@ http://thread.gmane.org/gmane.comp.gnu.mingw.user/9197
     new_current_file = 0;
     /* Force a redisplay of all filenames */
     current_file = 1; top_left_file = 1;
-#ifdef GCWZERO
-    /* Directory change. Reset last position */
-    last_current_file = last_top_left_file = 0;
-#endif
   }
 
   free( fn );
@@ -989,6 +1231,64 @@ widget_filesel_keyhandler( input_key key )
     break;
 
 #ifdef GCWZERO
+  case INPUT_KEY_Escape: /* Select */
+    /* Switch on/off apply filters */
+    if ( settings_current.od_filter_known_extensions && CURRENT_FILTERS ) {
+      last_known_positions[last_filter].apply_filters = !last_known_positions[last_filter].apply_filters;
+      char *directory = widget_getcwd();
+      if( directory ) {
+        widget_scan( directory );
+        new_current_file = 0;
+        /* Force a redisplay of all filenames */
+        current_file = 1; top_left_file = 1;
+        /* Filters switch. Reset last position */
+        if ( !is_saving ) {
+          last_known_positions[last_position].last_current_file = 0;
+          last_known_positions[last_position].last_top_left_file = 0;
+        }
+      }
+    }
+    break;
+
+  case INPUT_KEY_Shift_L: /* Y */
+    /* Save dialog and we are previosly load something */
+    if ( is_saving && last_filename ) {
+      char *default_name = widget_set_valid_file_extension_for_last_class( utils_last_filename( last_filename, 1 ) );
+      if ( default_name ) {
+        /*
+           Code stolen from Tab case below...
+           there should be better to do a specific function that use both two cases
+           but for now I do not want to do more changes than necesary on Fuse standard code
+         */
+        if( !compat_is_absolute_path( default_name ) ) {
+		  /* relative name */
+          /* Get current dir name and allocate space for the leafname */
+          fn = widget_getcwd();
+          ptr = fn;
+          if( fn )
+    	    fn = realloc( fn, strlen( fn ) + strlen( default_name ) + 2 );
+          if( !fn ) {
+            free( ptr );
+	        widget_end_widget( WIDGET_FINISHED_CANCEL );
+	        return;
+          }
+          /* Append the leafname and return it */
+          strncat( fn, FUSE_DIR_SEP_STR, 1 );
+          strncat( fn, default_name, strlen( default_name ) );
+        /* absolute name */
+        } else {
+	      fn = utils_safe_strdup( default_name );
+        }
+        widget_filesel_name = fn;
+        if( exit_all_widgets ) {
+	      widget_end_all( WIDGET_FINISHED_OK );
+        } else {
+	      widget_end_widget( WIDGET_FINISHED_OK );
+        }
+      }
+    }
+    break;
+
   case INPUT_KEY_space: /* X */
 #else
   case INPUT_KEY_Tab:
@@ -1115,3 +1415,243 @@ widget_filesel_keyhandler( input_key key )
   free( dirtitle );
 #endif /* ifdef AMIGA */
 }
+
+#ifdef GCWZERO
+static void widget_init_filter_class( widget_filter_class filter_class )
+{
+  if ( !is_saving && !settings_current.od_independent_directory_access &&
+       last_filter != filter_class &&
+       ( ( widget_file_filters[last_filter].filters_read && last_known_positions[last_filter].apply_filters ) ||
+         ( widget_file_filters[filter_class].filters_read && last_known_positions[filter_class].apply_filters ) ) ) {
+    last_known_positions[FILTER_CLASS_GENERAL].last_current_file = 0;
+    last_known_positions[FILTER_CLASS_GENERAL].last_top_left_file = 0;
+  }
+
+  last_filter = filter_class;
+  if ( settings_current.od_independent_directory_access )
+    last_position = filter_class;
+  else
+    last_position = FILTER_CLASS_GENERAL;
+
+  if ( last_known_positions[last_position].last_directory )
+    chdir( last_known_positions[last_position].last_directory );
+  else
+    last_known_positions[last_position].last_directory = widget_getcwd();
+}
+
+static void widget_finish_filter_class( widget_finish_state finished )
+{
+
+  if( finished == WIDGET_FINISHED_OK ) {
+    if ( !is_saving )  {
+      last_known_positions[last_position].last_current_file = current_file;
+      last_known_positions[last_position].last_top_left_file = top_left_file;
+    }
+    if ( last_known_positions[last_position].last_directory )
+      free( last_known_positions[last_position].last_directory );
+    last_known_positions[last_position].last_directory = widget_getcwd();
+  } else if ( last_known_positions[last_position].last_directory ) {
+    char *last_dir = widget_getcwd();
+    if ( !last_dir || strcmp( last_dir, last_known_positions[last_position].last_directory ) )
+      chdir( last_known_positions[last_position].last_directory );
+    if ( last_dir ) free( last_dir );
+  }
+}
+
+/* Push extensions to filter files for filesel widget dialogs */
+void
+widget_filesel_set_filter_for_class( widget_filter_class filter_class, int saving )
+{
+  widget_init_filter_class( filter_class );
+  widget_set_filter_extensions( saving ? widget_file_filters[filter_class].filters_write
+                                       : widget_file_filters[filter_class].filters_read );
+}
+
+/*
+ * This function may change the content of parameter filename
+ */
+char*
+widget_set_valid_file_extension_for_class( char* filename, widget_filter_class class )
+{
+  char* extension;
+  char* new_filename;
+  size_t extension_length, file_length;
+  
+  if ( !filename ) return NULL;
+
+  /* Init supported extensions for filter class to write */
+  widget_set_filter_extensions( widget_file_filters[class].filters_write );
+
+  /* Add the first supported extension if filename do not have an extension supported */
+  if ( widget_filter_extensions( filename, 0 ) ) {
+    /* Extension length */
+    extension_length = strlen( filter_extensions[last_row_extensions][0] );
+    file_length = strlen( filename );
+
+    /* New filename with space to filename + '.' + extension + '\0' */
+    new_filename = libspectrum_new( char, file_length + extension_length + 2 );
+    if ( new_filename ) {
+      /* Copy filename including '\0' */
+      strncpy( new_filename, filename, file_length + 1 );
+
+      /* Create default extension for write */
+      extension = libspectrum_new( char, extension_length + 2 );
+      strncpy( extension, ".\0", 2 );
+      strncat( extension, filter_extensions[last_row_extensions][0], extension_length + 1 );
+
+      /* And append to filename  */
+      strncat( new_filename, extension, extension_length + 2 );
+
+      /* Free memory */
+      libspectrum_free( extension );
+    } else
+      new_filename = filename;
+
+  /* Filename have supported extension */
+  } else
+    new_filename = filename;
+
+  widget_free_filter_extensions();
+  return new_filename;
+}
+
+char*
+widget_set_valid_file_extension_for_last_class( char* filename )
+{
+  return widget_set_valid_file_extension_for_class( filename, last_filter );
+}
+
+/*
+ *   Extensions to filter supplied must be separated by ";".
+ *   Return 0 if all extensiones set
+ */
+static int widget_set_filter_extensions( const char* extensions )
+{
+  char* extension_test;
+  char* next;
+  int   i = 0;
+
+  /* No free extensions */
+  if ( last_row_extensions == MAX_ROW_EXTENSIONS )
+    return 1;
+
+  extension_test = utils_safe_strdup( extensions );
+
+  /* No extensions to push */
+  if ( !extension_test ) {
+    libspectrum_free( extension_test );
+    return 0;
+  }
+  last_row_extensions++;
+
+  /* Search for extensions, separated by ; */
+  next = strtok( extension_test, ";" );
+  while ( next ) {
+    filter_extensions[last_row_extensions][i] = utils_safe_strdup( next );
+    next = strtok( NULL, ";" );
+    i++;
+  }
+
+  libspectrum_free( extension_test );
+  return 0;
+}
+
+/* Free las filter extensions set */
+static void widget_free_filter_extensions( void )
+{
+  int i = 0;
+
+  /* No filters to clean */
+  if ( last_row_extensions == -1 ) return;
+
+  while ( filter_extensions[last_row_extensions][i] ) {
+    libspectrum_free( filter_extensions[last_row_extensions][i] );
+    filter_extensions[last_row_extensions][i] = NULL;
+    i++;
+  }
+  last_row_extensions--;
+}
+
+/*
+ *  To check if a filename has extension
+ *
+ *    0 - Has the extension
+ *    1 - Do not has the extension
+ */
+static int
+widget_check_filename_has_extension( const char *filename, const char * extension )
+{
+  char*  filename_test;
+  char*  file_extension;
+  char*  save_extension = NULL;
+  int    filter = 0;
+
+  if ( ( filename && !extension ) || ( !filename && extension ) )
+    return 1;
+
+  filename_test = utils_safe_strdup( filename );
+
+  if ( filename_test ) {
+    /* Search for extension */
+    file_extension = strtok( filename_test, "." );
+    while ( file_extension ) {
+      /* Free previous saved extension */
+      libspectrum_free( save_extension );
+      save_extension = utils_safe_strdup( file_extension );
+      file_extension = strtok( NULL, "." );
+    }
+
+    /* File have extension, compare with needed */
+    if ( save_extension ) {
+      if ( strcasecmp( save_extension, extension ) != 0 ) {
+        filter = 1; /* No same extension */
+      }
+
+    /* File without extension */
+    } else {
+      filter = 1; /* Filter */
+    }
+  }
+  libspectrum_free( save_extension );
+  libspectrum_free( filename_test );
+
+  return filter;
+}
+
+/*
+ * Check filename for filter extensions
+ * 
+ *   1 filter
+ *   0 don't filter
+ */
+static int widget_filter_extensions( const char *filename, int maybe_dir )
+{
+  int i;
+  struct stat file_info;
+  int error, is_dir;
+
+  /* No filters set */
+  if ( last_row_extensions == -1 ) return 0;
+
+  /* If not filters sets then don't filter*/
+  if ( !filter_extensions[last_row_extensions][0] ) return 0;
+
+  /* Do not filter directories */
+  if ( maybe_dir ) {
+    error = stat( filename, &file_info );
+    if ( !error ) is_dir = S_ISDIR( file_info.st_mode );
+    if( error || is_dir ) return 0;
+  }
+
+  /* If one of the extensions is valid then do not filter */
+  i = 0;
+  while ( ( i < MAX_FILTER_EXTENSIONS ) && filter_extensions[i] ) {
+    if ( !widget_check_filename_has_extension( filename, filter_extensions[last_row_extensions][i] ) )
+      return 0; /* Do not filter */
+    i++;
+  }
+
+  /* Filter */
+  return 1;
+}
+#endif

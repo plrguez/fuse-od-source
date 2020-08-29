@@ -374,7 +374,7 @@ int tape_can_autoload( void )
 {
 #ifdef GCWZERO
   /* Allow to autoload with custom roms */
-  return( settings_current.auto_load && ( settings_current.auto_load_with_custom_roms || !memory_custom_rom() ) );
+  return( settings_current.auto_load && ( settings_current.od_auto_load_with_custom_roms || !memory_custom_rom() ) );
 #else
   return( settings_current.auto_load && !memory_custom_rom() );
 #endif

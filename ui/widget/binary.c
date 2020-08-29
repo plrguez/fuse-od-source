@@ -140,9 +140,15 @@ ask_filename()
 
   if( widget_binary.load ) {
     filesel.title = "Fuse - Load Binary Data";
+#if GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_BINARY, 0 );
+#endif
     widget_do_fileselector( &filesel );
   } else {
     filesel.title = "Fuse - Save Binary Data";
+#if GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_BINARY, 1 );
+#endif
     widget_do_fileselector_save( &filesel );
   }
   if( !widget_filesel_name ) return;
@@ -386,6 +392,9 @@ menu_file_loadbinarydata( int action )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_BINARY, 0 );
+#endif
   widget_binary.filename = ui_get_open_filename( "Fuse - Load Binary Data" );
   if( !widget_binary.filename ) { fuse_emulation_unpause(); return 1; }
 
@@ -409,6 +418,9 @@ menu_file_savebinarydata( int action )
 {
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_BINARY, 1 );
+#endif
   widget_binary.filename = ui_get_save_filename( "Fuse - Save Binary Data" );
   if( !widget_binary.filename ) { fuse_emulation_unpause(); return 1; }
 

@@ -97,7 +97,7 @@ timer_estimate_speed( void )
   }
 
 #ifdef GCWZERO
-  if ( settings_current.show_fps ) {
+  if ( settings_current.od_show_fps ) {
     ui_statusbar_update_speed( frames_per_second );
     frame_count = 0;
   } else

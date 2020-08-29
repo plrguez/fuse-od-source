@@ -175,7 +175,7 @@ read_config_file( settings_info *settings )
 
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 #ifdef GCWZERO
-  if ( !compat_create_config_paths( cfgdir ) ) return 1;
+  if ( compat_create_config_paths( cfgdir ) ) return 1;
 #endif
 
   snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
@@ -341,7 +341,7 @@ read_config_file( settings_info *settings )
 
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 #ifdef GCWZERO
-  if ( !compat_create_config_paths( cfgdir ) ) return 1;
+  if ( compat_create_config_paths( cfgdir ) ) return 1;
 #endif
 
   snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );

@@ -240,6 +240,22 @@ drive_save( const ui_media_drive_info_t *drive, int saveas )
 
   snprintf( title, sizeof( title ), "Fuse - Write %s", drive->name );
   if( saveas ) {
+#if USE_WIDGET && GCWZERO
+    if ( strncmp( drive->name, "+3 Disk", 7 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_PLUS3, 1 );
+    else if ( strncmp( drive->name, "Beta Disk", 9 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_TRDOS, 1 );
+    else if ( strncmp( drive->name, "Opus Disk", 9 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_OPUS, 1 );
+    else if ( strncmp( drive->name, "Didaktik Disk", 13 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_DIDAKTIK, 1 );
+    else if ( strncmp( drive->name, "DISCiPLE Disk", 13 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_PLUSD, 1 );
+    else if ( strncmp( drive->name, "+D Disk", 7 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_PLUSD, 1 );
+    else
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_GENERAL, 1 );
+#endif
     filename = ui_get_save_filename( title );
     if( !filename ) {
       fuse_emulation_unpause();

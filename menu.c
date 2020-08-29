@@ -79,6 +79,9 @@ MENU_CALLBACK( menu_file_open )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_GENERAL, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Open Spectrum File" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -152,6 +155,9 @@ MENU_CALLBACK( menu_file_recording_play )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_RECORDING, 0 );
+#endif
   recording = ui_get_open_filename( "Fuse - Start Replay" );
   if( !recording ) { fuse_emulation_unpause(); return; }
 
@@ -185,6 +191,9 @@ MENU_CALLBACK( menu_file_recording_finalise )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_RECORDING, 0 );
+#endif
   rzx_filename = ui_get_open_filename( "Fuse - Finalise Recording" );
   if( !rzx_filename ) { fuse_emulation_unpause(); return; }
 
@@ -198,6 +207,9 @@ MENU_CALLBACK( menu_file_recording_finalise )
 
   libspectrum_free( rzx_filename );
 
+#ifdef GCWZERO
+  utils_set_last_loaded_file( NULL, LIBSPECTRUM_CLASS_RECORDING , 0 );
+#endif
   fuse_emulation_unpause();
 }  
 
@@ -217,6 +229,9 @@ MENU_CALLBACK( menu_file_screenshot_openscrscreenshot )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SCREENSHOT, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Open SCR Screenshot" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -233,6 +248,9 @@ MENU_CALLBACK( menu_file_screenshot_openmltscreenshot )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SCREENSHOT_MLT, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Open MLT Screenshot" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -349,6 +367,9 @@ MENU_CALLBACK( menu_machine_profiler_stop )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_PROFILER, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Save Profile Data" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -377,6 +398,9 @@ MENU_CALLBACK( menu_media_tape_open )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_TAPE, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Open Tape" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -441,6 +465,9 @@ MENU_CALLBACK_WITH_ACTION( menu_media_if1_rs232 )
     ui_widget_finish();
     if1_unplug( action & 0x0f );
   } else {
+#if USE_WIDGET && GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_MEDIA_IF_RS232, 0 );
+#endif
     filename = ui_get_open_filename( "Fuse - Select File for Communication" );
     if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -491,12 +518,31 @@ MENU_CALLBACK_WITH_ACTION( menu_media_insert )
 
   switch( type ) {
   case 3:
+#if USE_WIDGET && GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_MICRODRIVE, 0 );
+#endif
     snprintf( title, 80, "Fuse - Insert Microdrive Cartridge %i", which + 1 );
     break;
   default:
     drive = ui_media_drive_find( type, which );
     if( !drive )
       return;
+#if USE_WIDGET && GCWZERO
+    if ( strncmp( drive->name, "+3 Disk", 7 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_PLUS3, 0 );
+    else if ( strncmp( drive->name, "Beta Disk", 9 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_TRDOS, 0 );
+    else if ( strncmp( drive->name, "Opus Disk", 9 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_OPUS, 0 );
+    else if ( strncmp( drive->name, "Didaktik Disk", 13 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_DIDAKTIK, 0 );
+    else if ( strncmp( drive->name, "DISCiPLE Disk", 13 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_PLUSD, 0 );
+    else if ( strncmp( drive->name, "+D Disk", 7 ) == 0 )
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_DISK_PLUSD, 0 );
+    else
+      ui_widget_set_file_filter_for_class( FILTER_CLASS_GENERAL, 0 );
+#endif
     snprintf( title, sizeof(title), "Fuse - Insert %s", drive->name );
     break;
   }
@@ -613,6 +659,9 @@ MENU_CALLBACK( menu_media_cartridge_timexdock_insert )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_CARTRIDGE_TIMEX, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Insert Timex Dock Cartridge" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -643,6 +692,9 @@ MENU_CALLBACK( menu_media_cartridge_interface2_insert )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_CARTRIDGE_IF2, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Insert Interface 2 Cartridge" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -673,6 +725,9 @@ MENU_CALLBACK_WITH_ACTION( menu_media_ide_insert )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_GENERAL, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Insert Hard Disk File" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -742,6 +797,9 @@ MENU_CALLBACK( menu_file_savesnapshot )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SNAPSHOT, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Save Snapshot" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -760,6 +818,9 @@ MENU_CALLBACK( menu_file_screenshot_savescreenasscr )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SCREENSHOT, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Save Screenshot as SCR" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -785,6 +846,9 @@ MENU_CALLBACK( menu_file_screenshot_savescreenasmlt )
     return;
   }
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SCREENSHOT_MLT, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Save Screenshot as MLT" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -812,6 +876,9 @@ MENU_CALLBACK( menu_file_screenshot_savescreenaspng )
     return;
   }
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SCREENSHOT_PNG, 1 );
+#endif
   filename =
     ui_get_save_filename( "Fuse - Save Screenshot as PNG" );
   if( !filename ) { fuse_emulation_unpause(); return; }
@@ -836,6 +903,9 @@ MENU_CALLBACK( menu_file_scalablevectorgraphics_startcaptureinlinemode )
 
     fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_SCALABLE_VECTOR_GRAPHICS, 1 );
+#endif
     filename = ui_get_save_filename( "Fuse - Capture to SVG File" );
     if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -855,6 +925,9 @@ MENU_CALLBACK( menu_file_scalablevectorgraphics_startcaptureindotmode )
 
     fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_SCALABLE_VECTOR_GRAPHICS, 1 );
+#endif
     filename = ui_get_save_filename( "Fuse - Capture to SVG File" );
     if( !filename ) { fuse_emulation_unpause(); return; }
     ui_menu_activate( UI_MENU_ITEM_FILE_SVG_CAPTURE, 1 );
@@ -890,6 +963,9 @@ MENU_CALLBACK( menu_file_movie_record )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_MOVIE_FILE, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Record Movie File" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
@@ -909,6 +985,9 @@ MENU_CALLBACK( menu_file_movie_record_recordfromrzx )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_RECORDING, 0 );
+#endif
   rzx_file = ui_get_open_filename( "Fuse - Load RZX" );
   if( !rzx_file ) { fuse_emulation_unpause(); return; }
 
@@ -917,6 +996,9 @@ MENU_CALLBACK( menu_file_movie_record_recordfromrzx )
   display_refresh_all();
 
   if( rzx_playback ) {
+#if USE_WIDGET && GCWZERO
+    ui_widget_set_file_filter_for_class( FILTER_CLASS_MOVIE_FILE, 1 );
+#endif
     fmf_file = ui_get_save_filename( "Fuse - Record Movie File" );
     if( !fmf_file ) { 
       rzx_stop_playback( 1 );
@@ -940,6 +1022,9 @@ MENU_CALLBACK( menu_file_recording_record )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_RECORDING, 1 );
+#endif
   recording = ui_get_save_filename( "Fuse - Start Recording" );
   if( !recording ) { fuse_emulation_unpause(); return; }
 
@@ -958,12 +1043,22 @@ MENU_CALLBACK( menu_file_recording_recordfromsnapshot )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_SNAPSHOT, 0 );
+#endif
   snap = ui_get_open_filename( "Fuse - Load Snapshot " );
   if( !snap ) { fuse_emulation_unpause(); return; }
 
+#if USE_WIDGET && GCWZERO
+  utils_set_last_loaded_file( snap, LIBSPECTRUM_CLASS_SNAPSHOT , 0 );
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_RECORDING, 1 );
+#endif
   recording = ui_get_save_filename( "Fuse - Start Recording" );
   if( !recording ) {
     libspectrum_free( snap );
+#ifdef GCWZERO
+    utils_set_last_loaded_file( NULL, LIBSPECTRUM_CLASS_SNAPSHOT , 0 );
+#endif
     fuse_emulation_unpause();
     return;
   }
@@ -971,9 +1066,16 @@ MENU_CALLBACK( menu_file_recording_recordfromsnapshot )
   if( snapshot_read( snap ) ) {
     libspectrum_free( snap );
     libspectrum_free( recording );
+#ifdef GCWZERO
+    utils_set_last_loaded_file( NULL, LIBSPECTRUM_CLASS_SNAPSHOT , 0 );
+#endif
     fuse_emulation_unpause();
     return;
   }
+
+#ifdef GCWZERO
+  utils_set_last_loaded_file( recording, LIBSPECTRUM_CLASS_RECORDING , 0 );
+#endif
 
   rzx_start_recording( recording, settings_current.embed_snapshot );
 
@@ -993,8 +1095,15 @@ MENU_CALLBACK( menu_file_recording_continuerecording )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_RECORDING, 0 );
+#endif
   rzx_filename = ui_get_open_filename( "Fuse - Continue Recording" );
   if( !rzx_filename ) { fuse_emulation_unpause(); return; }
+
+#ifdef GCWZERO
+  utils_set_last_loaded_file( rzx_filename, LIBSPECTRUM_CLASS_RECORDING , 0 );
+#endif
 
   error = rzx_continue_recording( rzx_filename );
 
@@ -1015,6 +1124,9 @@ MENU_CALLBACK( menu_file_aylogging_record )
 
   fuse_emulation_pause();
 
+#if USE_WIDGET && GCWZERO
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_AY_LOGGING, 1 );
+#endif
   psgfile = ui_get_save_filename( "Fuse - Start AY Log" );
   if( !psgfile ) { fuse_emulation_unpause(); return; }
 

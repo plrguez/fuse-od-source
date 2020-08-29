@@ -33,12 +33,31 @@
 #include "ui/ui.h"
 #include "controlmapping/controlmapping.h"
 #include "controlmapping/controlmappingsettings.h"
+#include "peripherals/joystick.h"
 
 #ifdef GCWZERO
 char *mapfile = NULL;              /* Path of a .fcm file to load */
 libspectrum_class_t mapfile_class;
 settings_info settings_old;
 static control_mapping_info control_mapping_tmp;
+
+static void
+controlmapping_enable_joystick_kempston( void )
+{
+  /* Enable Kempston joystick if there is some mapping to it.
+     Kemposton joystick do not require restart and actually hot activate it
+     is supported.
+     Other peripherals, as fuller, need restart and the mapping control is
+     not designed to change hardware. */
+  if ( !settings_current.control_mapping_enable_kempston_joy ) return;
+  if ( !settings_current.joy_kempston &&
+        ( settings_current.joystick_1_output == JOYSTICK_TYPE_KEMPSTON ||
+          settings_current.joystick_2_output == JOYSTICK_TYPE_KEMPSTON ||
+          settings_current.joystick_keyboard_output == JOYSTICK_TYPE_KEMPSTON ) ) {
+    settings_current.joy_kempston = 1;
+    periph_update();
+  }
+}
 
 /* Stablish current settings and control mapping defaults */
 void
@@ -92,6 +111,7 @@ int
 controlmapping_load_mapfile( const char *filename, libspectrum_class_t class, int is_autoload )
 {
   char *old_mapfile;
+  int error;
 
   /* Mapping per game don't active o unset mapfile */
   if ( !settings_current.control_mapping_per_game ) {
@@ -107,8 +127,11 @@ controlmapping_load_mapfile( const char *filename, libspectrum_class_t class, in
 
   /* Different loads but same mapfile? (F.example SIDE B of tape
      Maintain current mapfilen */
-  if ( old_mapfile && mapfile && !strcmp( old_mapfile,mapfile ) )
+  if ( old_mapfile && mapfile && !strcmp( old_mapfile,mapfile ) ) {
+    /* Releoad of snapshot whithout joystick kempston configured */
+    controlmapping_enable_joystick_kempston();
     return 0;
+  }
 
   /* Autosave current mapfile preiovusly to load new mapfile */
   if ( old_mapfile ) {
@@ -128,7 +151,11 @@ controlmapping_load_mapfile( const char *filename, libspectrum_class_t class, in
   if ( !settings_current.control_mapping_not_detached_defaults )
     control_mapping_copy_to_settings( &settings_current, &control_mapping_default );
 
-  return controlmapping_load_from_file( mapfile, 1 );
+  error = controlmapping_load_from_file( mapfile, 1 );
+  /* Activate kempston joystick if not conifigured even if not mapdile exist yet */
+  if ( error && mapfile ) controlmapping_enable_joystick_kempston();
+
+  return error;
 }
 
 int
@@ -146,6 +173,7 @@ controlmapping_load_mapfile_with_class( const char *filename, libspectrum_class_
   case LIBSPECTRUM_CLASS_CARTRIDGE_IF2:
   case LIBSPECTRUM_CLASS_MICRODRIVE:
   case LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX:
+  case LIBSPECTRUM_CLASS_RECORDING:
     if ( filename )
       return controlmapping_load_mapfile( filename, class, 1 );
     else
@@ -168,6 +196,7 @@ controlmapping_load_from_file( const char *filename, int current )
   control_mapping_copy_to_settings( &settings_current, &control_mapping_tmp );
   if ( settings_current.control_mapping_not_detached_defaults )
     control_mapping_copy( &control_mapping_default, &control_mapping_tmp );
+  controlmapping_enable_joystick_kempston();
   return 0;
 }
 

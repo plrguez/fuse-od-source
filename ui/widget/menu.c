@@ -877,6 +877,9 @@ menu_options_load_file_control_mapping( int action )
 {
   char *filename;
 
+#if USE_WIDGET
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_CONTROL_MAPPING, 0 );
+#endif
   filename = ui_get_open_filename( "Fuse - Load Control Mapping" );
   if( !filename ) return;
 
@@ -889,6 +892,9 @@ menu_options_save_file_control_mapping( int action )
 {
   char *filename;
 
+#if USE_WIDGET
+  ui_widget_set_file_filter_for_class( FILTER_CLASS_CONTROL_MAPPING, 1 );
+#endif
   filename = ui_get_save_filename( "Fuse - Save Control Mapping" );
   if( !filename ) return;
 

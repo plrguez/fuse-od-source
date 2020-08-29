@@ -27,18 +27,21 @@ Checkbox, A(u)to-save settings, autosave_settings, INPUT_KEY_u
 #ifdef GCWZERO
 general_gcw0
 General GCW0 Options
-Checkbox, Triple Bu(f)fer, triple_buffer, INPUT_KEY_f
-Checkbox, Sho(w) FPS instead of speed percentaje, show_fps, INPUT_KEY_w
-Checkbox, Confir(m) overwrite files, confirm_overwrite_files, INPUT_KEY_m
-Checkbox, Show hi(d)den files, hidden_files, INPUT_KEY_d
-Checkbox, Hot(k)ey combos, hotkey_combos, INPUT_KEY_k
+Checkbox, Triple Bu(f)fer, od_triple_buffer, INPUT_KEY_f
+Checkbox, Sho(w) FPS instead of speed percentaje, od_show_fps, INPUT_KEY_w
+Checkbox, F(i)lter Known extensions for load and save, od_filter_known_extensions, INPUT_KEY_i
+Checkbox, I(n)dependent directory access for each media type, od_independent_directory_access, INPUT_KEY_n
+Checkbox, Confir(m) overwrite files, od_confirm_overwrite_files, INPUT_KEY_m
+Checkbox, Show hi(d)den files, od_hidden_files, INPUT_KEY_d
+Checkbox, Hot(k)ey combos, od_hotkey_combos, INPUT_KEY_k
+Checkbox, Sa(v)e last visited directory, od_save_last_directory, INPUT_KEY_v
 #endif
 
 media
 Media Options
 Checkbox, (A)uto-load media, auto_load, INPUT_KEY_a
 #ifdef GCWZERO
-Checkbox, A(u)to-load media with custom roms, auto_load_with_custom_roms, INPUT_KEY_u
+Checkbox, A(u)to-load media with custom roms, od_auto_load_with_custom_roms, INPUT_KEY_u
 #endif
 Combo, (P)hantom typist mode, phantom_typist_mode, INPUT_KEY_p, *Auto|Keyword|Keystroke|Menu|Plus 2A|Plus 3
 Checkbox, (D)etect loaders, detect_loader, INPUT_KEY_d
@@ -159,4 +162,5 @@ Checkbox, Auto-(l)oad, control_mapping_autoload, INPUT_KEY_L
 Checkbox, Auto-(s)ave, control_mapping_autosave, INPUT_KEY_S
 Checkbox, No(t) detached defaults, control_mapping_not_detached_defaults, INPUT_KEY_T
 Checkbox, No cut/transfor(m) filenames, control_mapping_no_transform_filename, INPUT_KEY_M
+Checkbox, Enable (K)empston Joystick if needed, control_mapping_enable_kempston_joy, INPUT_KEY_K
 #endif

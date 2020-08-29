@@ -555,7 +555,7 @@ static int  info_len = 0;
 static int  info_sc  = 1;
 void widget_statusbar_update_info( float speed ) {
   snprintf(status_info, WIDGET_MAX_INFO_LENGTH,
-           settings_current.show_fps ? "%s - %3.0ffps (1:%d)" : "%s - %3.0f%% (1:%d)",
+           settings_current.od_show_fps ? "%s - %3.0ffps (1:%d)" : "%s - %3.0f%% (1:%d)",
            libspectrum_machine_name( machine_current->machine ),
            speed,
            settings_current.frame_rate);
@@ -568,7 +568,7 @@ void widget_statusbar_update_info( float speed ) {
     snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
              status_info,
              joystick_name[settings_current.joystick_2_output] );
-  if ( settings_current.triple_buffer )
+  if ( settings_current.od_triple_buffer )
     snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
              status_info,
              "B");
