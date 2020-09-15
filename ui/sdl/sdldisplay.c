@@ -122,7 +122,7 @@ static libspectrum_byte sdldisplay_is_full_screen = 0;
 
 #ifdef GCWZERO
 static libspectrum_byte sdldisplay_is_triple_buffer = 0;
-static libspectrum_byte sdldisplay_change_triple_buffer = 0;
+static libspectrum_byte sdldisplay_flips_triple_buffer = 0;
 #endif
 
 static int image_width;
@@ -271,7 +271,6 @@ uidisplay_od_init( SDL_Rect **modes )
 
 /* On OpenDingux/RetroFW fix Full Screen */
   settings_current.full_screen = 1;
-  sdldisplay_change_triple_buffer = settings_current.od_triple_buffer;
   settings_current.sdl_fullscreen_mode = utils_safe_strdup( '\0' );
 
 /*
@@ -568,15 +567,13 @@ sdldisplay_load_gfx_mode( void )
   /* Create the surface that contains the scaled graphics in 16 bit mode */
 #ifdef GCWZERO
   Uint32 flags;
-  if (sdldisplay_change_triple_buffer)
+  if (settings_current.od_triple_buffer) {
+    sdldisplay_flips_triple_buffer = 0;
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
     : (SDL_HWSURFACE | SDL_TRIPLEBUF);
-  else {
-    if (sdldisplay_is_triple_buffer) {
+  } else {
+    while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
       SDL_Flip( sdldisplay_gc );
-      uidisplay_frame_restore();
-      sdldisplay_force_full_refresh = 1;
-    }
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
     : SDL_HWSURFACE;
   }
@@ -604,8 +601,8 @@ sdldisplay_load_gfx_mode( void )
   sdldisplay_is_full_screen = settings_current.full_screen;
 
 #ifdef GCWZERO
-  sdldisplay_change_triple_buffer = !!( sdldisplay_gc->flags & SDL_TRIPLEBUF );
-  sdldisplay_is_triple_buffer = sdldisplay_change_triple_buffer;
+  settings_current.od_triple_buffer = !!( sdldisplay_gc->flags & SDL_TRIPLEBUF );
+  sdldisplay_is_triple_buffer = settings_current.od_triple_buffer;
 #endif
 
   /* Distinguish 555 and 565 mode */
@@ -1114,9 +1111,8 @@ uidisplay_frame_end( void )
      windowed-only UI a chance to free menu etc. resources before
      the switch to fullscreen (e.g. Mac OS X) */
 #ifdef GCWZERO
-  sdldisplay_change_triple_buffer = settings_current.od_triple_buffer;
   if ( ( sdldisplay_is_full_screen != settings_current.full_screen  ||
-      sdldisplay_is_triple_buffer != sdldisplay_change_triple_buffer ) &&
+      sdldisplay_is_triple_buffer != settings_current.od_triple_buffer ) &&
 #else
   if( sdldisplay_is_full_screen != settings_current.full_screen &&
 #endif
@@ -1124,10 +1120,6 @@ uidisplay_frame_end( void )
     fprintf( stderr, "%s: Error switching to fullscreen\n", fuse_progname );
     fuse_abort();
   }
-
-#ifdef GCWZERO
-  settings_current.od_triple_buffer = sdldisplay_change_triple_buffer;
- #endif
 
 #if VKEYBOARD
   if ( vkeyboard_enabled )
@@ -1195,9 +1187,10 @@ uidisplay_frame_end( void )
 
   /* Finally, blit all our changes to the screen */
 #ifdef GCWZERO
-  if ( sdldisplay_is_triple_buffer )
+  if ( sdldisplay_is_triple_buffer ) {
     SDL_Flip( sdldisplay_gc );
-  else
+    if ( ++sdldisplay_flips_triple_buffer >= 3 ) sdldisplay_flips_triple_buffer = 0;
+  } else
 #endif
   SDL_UpdateRects( sdldisplay_gc, num_rects, updated_rects );
 
