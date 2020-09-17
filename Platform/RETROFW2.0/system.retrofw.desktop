@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Fuse 1.5.7
-Comment=Fuse ZX Spectrum emulator 1.5.7 (no file selector)
+Name=Fuse FUSE_VERSION
+Comment=Fuse ZX Spectrum emulator FUSE_VERSION (vFUSE_OD_VERSION) (System)
 Exec=fuse-retrofw
 Icon=fuse
 Type=Application

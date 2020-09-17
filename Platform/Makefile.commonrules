@@ -1,0 +1,107 @@
+BASEDIR = ../..
+BUILDDIR = build
+
+FUSE_VERSION = 1.5.7
+FUSE_OD_VERSION = $(shell cat ../VERSION)
+
+ICON = fuse.png
+README = ../readme.txt
+UIDIR = $(BUILDDIR)/ui
+FONT = fuse.font
+LIBDIR = $(BUILDDIR)/lib
+LIBFILES = $(LIBDIR)/cassette.bmp $(LIBDIR)/microdrive.bmp $(LIBDIR)/plus3disk.bmp $(LIBDIR)/keyboard.png $(LIBDIR)/keyboard.scr
+
+ROMSDIR = $(BUILDDIR)/roms
+BASEROMSDIR = $(BASEDIR)/roms
+EXTRAROMSDIR = ../roms
+ROMS = $(ROMSDIR)/*.rom
+
+TARGET = fuse-$(FUSE_VERSION)-$(BUILD_TYPE)-v$(FUSE_OD_VERSION).$(PACKAGE_TYPE)
+BUILD = fuse-$(DEVICE)
+
+DEFAULT_DESKTOP_FILE = default.$(DEVICE).desktop
+SYSTEM_DESKTOP_FILE = system.$(DEVICE).desktop
+DEFAULT_DESKTOP = $(BUILDDIR)/$(DEFAULT_DESKTOP_FILE)
+SYSTEM_DESKTOP = $(BUILDDIR)/$(SYSTEM_DESKTOP_FILE)
+
+CONTROL = control
+LNK = fuse.lnk
+CONTROL_FILE = $(BUILDDIR)/$(CONTROL)
+LNK_FILE = $(BUILDDIR)/$(LNK)
+
+$(BUILD): $(BASEDIR)/fuse
+	cp $^ $(BUILDDIR)/$@
+
+$(ICON): $(BASEDIR)/data/icons/32x32/fuse.png
+	cp $^ $(BUILDDIR)/$@
+
+$(ROMS): $(BASEDIR)/roms/*.rom
+	mkdir -p $(ROMSDIR)
+	cp $(BASEROMSDIR)/*.rom $(ROMSDIR)
+	-cp $(EXTRAROMSDIR)/*.rom $(ROMSDIR)
+
+$(FONT): $(BASEDIR)/ui/widget/fuse.font
+	mkdir -p $(UIDIR)/widget
+	cp $^ $(UIDIR)/widget/$@
+
+$(DEFAULT_DESKTOP): $(DEFAULT_DESKTOP_FILE)
+	@cp $(DEFAULT_DESKTOP_FILE) $(DEFAULT_DESKTOP)
+	@sed -i "s/FUSE_VERSION/${FUSE_VERSION}/g" $(DEFAULT_DESKTOP)
+	@sed -i "s/FUSE_OD_VERSION/${FUSE_OD_VERSION}/g" $(DEFAULT_DESKTOP)
+
+$(SYSTEM_DESKTOP): $(SYSTEM_DESKTOP_FILE)
+	@cp $(SYSTEM_DESKTOP_FILE) $(SYSTEM_DESKTOP)
+	@sed -i "s/FUSE_VERSION/${FUSE_VERSION}/g" $(SYSTEM_DESKTOP)
+	@sed -i "s/FUSE_OD_VERSION/${FUSE_OD_VERSION}/g" $(SYSTEM_DESKTOP)
+
+$(CONTROL_FILE): $(CONTROL)
+	@cp $(CONTROL) $(CONTROL_FILE)
+	@sed -i "s/FUSE_VERSION/${FUSE_VERSION}/g" $(CONTROL_FILE)
+	@sed -i "s/FUSE_OD_VERSION/${FUSE_OD_VERSION}/g" $(CONTROL_FILE)
+	@sed -i "s/DATE_VERSION/$$(date +%Y%m%d)/g" $(CONTROL_FILE)
+
+$(LNK_FILE): $(LNK)
+	@cp $(LNK) $(LNK_FILE)
+	@sed -i "s/FUSE_VERSION/${FUSE_VERSION}/g" $(LNK_FILE)
+	@sed -i "s/FUSE_OD_VERSION/${FUSE_OD_VERSION}/g" $(LNK_FILE)
+
+$(LIBFILES): libfiles
+
+libfiles: $(BASEDIR)/lib/cassette.bmp $(BASEDIR)/lib/microdrive.bmp $(BASEDIR)/lib/plus3disk.bmp $(BASEDIR)/lib/keyboard.png $(BASEDIR)/lib/keyboard.scr
+	mkdir -p $(LIBDIR)
+	cp $^ $(LIBDIR)
+
+buildfuse:
+	cd $(BASEDIR) && $(MAKE)
+	mkdir -p $(BUILDDIR)
+
+opk_package: $(BUILD) $(ICON) $(FONT) $(ROMS) $(LIBFILES) $(README) $(DEFAULT_DESKTOP) $(SYSTEM_DESKTOP)
+	@mksquashfs \
+	$(DEFAULT_DESKTOP) \
+	$(SYSTEM_DESKTOP) \
+	$(README) \
+	$(BUILDDIR)/$(BUILD) \
+	$(ROMSDIR) \
+	$(BUILDDIR)/$(ICON) \
+	$(UIDIR) \
+	$(LIBDIR) \
+        $(BUILDDIR)/$(TARGET) \
+	-all-root -noappend -no-exports -no-xattrs
+
+ipk_package: $(BUILD) $(ICON) $(FONT) $(ROMS) $(LIBFILES) $(README) $(CONTROL_FILE) $(LNK_FILE)
+	@rm -rf /tmp/.fuse-ipk/ && mkdir -p /tmp/.fuse-ipk/root/home/retrofw/emus/fuse /tmp/.fuse-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
+	@cp -r $(BUILDDIR)/* $(README) /tmp/.fuse-ipk/root/home/retrofw/emus/fuse
+	@cp $(LNK_FILE) /tmp/.fuse-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
+	@cp $(CONTROL_FILE) /tmp/.fuse-ipk/control
+	@cp conffiles postinst /tmp/.fuse-ipk/
+	@tar --owner=0 --group=0 -czvf /tmp/.fuse-ipk/control.tar.gz -C /tmp/.fuse-ipk/ control conffiles
+	@tar --owner=0 --group=0 -czvf /tmp/.fuse-ipk/data.tar.gz -C /tmp/.fuse-ipk/root/ .
+	@echo 2.0 > /tmp/.fuse-ipk/debian-binary
+	@ar r $(BUILDDIR)/$(TARGET) /tmp/.fuse-ipk/control.tar.gz /tmp/.fuse-ipk/data.tar.gz /tmp/.fuse-ipk/debian-binary
+
+package: $(TARGET)
+
+.PHONY: clean deploy debug all libfiles
+clean:
+	cd $(BASEDIR) && $(MAKE) clean
+	rm -rf $(BUILDDIR)

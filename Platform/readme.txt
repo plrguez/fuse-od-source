@@ -44,9 +44,9 @@ will create it at start.
   - OpenDingux: '/media/data/local/home'
   - RetroFW: '/home/retrofw'
 
---------------------------------------------
-### Extra Options for OpenDingux/RetroFW ###
---------------------------------------------
+----------------------------------
+### OpenDingux/RetroFW options ###
+----------------------------------
 
 For the OpenDingux/RetroFW port some additional options had been added.
 
@@ -60,7 +60,7 @@ Options - General GCW0
     Enable/Disable triple buffer.
     BUG: Disabling triple buffer sometimes freeze the screen but emulator will
     be still running.
-    If Hotkey combos are enabled you can enable/disable with `L1` + `R1` + `B`
+    If Hotkey combos are enabled you can enable/disable it with `L1` + `R1` + `B`
 
   - Show FSP instead of speed percentaje
     ------------------------------------
@@ -70,37 +70,32 @@ Options - General GCW0
 
   - Filter Known extensions for load and save
     -----------------------------------------
-    Default enabled. Highly recommendable to maintain enabled.
+    Default enabled.
 
     Only the supported file extensions will be presented in file dialogs for
-    save and some load operations for known media.
+    save and load operations for known media.
 
-    Filter can be switched on/off with `Select` button
+    Filter can be enabled/disabled with `Select` button in file dialogs.
 
-    Is highly recomendable have enabled this option to avoid overwrite any file
-    that is not for type pretended to save.
+    Enable this option can help to avoid overwrite any file type other than the
+    type pretended to save. See also 'Confirm overwrite files' option to prevent
+    overwrite files without advise.
 
-    See also 'Confirm overwrite files' option to prevent overwrite files without
-    advise.
+    Filters are applied in save dialogs for:
+        - Save snapshot, Screenshots, Recordings, AY logging, Movie.
+        - Media types: Tape, Microdrive, Disk (+3, Beta, +D/DISCiPLE, Didaktik).
+        - Control mapping files use the '.FCM' extension
+          (Options -> Joysticks -> Save control mapping to file)
+        - For profiler saves '.PRF' extension had been chosen in this port.
 
-    Save:
-      Save options for known media types:
-         - In the File MenÃº: Save snapshot, Screenshots, Recordings, AY logging,
-           Movie.
-         - In the Media MenÃº: Tape, Microdrives, Disks (+3, Beta, +D/DISCiPLE,
-           Didaktik).
-         - Control mapping files use the '.fcm' extension
-           (Options -> Joysticks -> Save control mapping to file)
-         - For profiler saves '.prf' extension had been chosen.
+      No filters are applied for:
+        - Binary data (File -> Save binary data...)
 
-      No filters nor known extension to save:
-         - Binary data (File -> Save binary data...)
+    Filters are applied in load dialogs for:
+        - Media types: Tape, Disks (+3, Beta, +D/DISCiPLE, Didaktik),
+          Interface 1, Cartridges.
 
-    Load:
-      Affect to insert/open operations from Media menÃº for this media: Tape,
-      Interface 1, Disk, Cartridges.
-
-      No filters are applied to load:
+      No filters are applied for:
         - Binary data (File -> Load binary data...)
         - General open files (File -> Open (or L1 + X hotkey)
 
@@ -113,27 +108,40 @@ Options - General GCW0
       - Didaktik:    .D80, .D40
       - Opus:        .OPD, .OPU
       - +D/Disciple: .IMG, .MGT, .SAD
+      - Saving screenshots: .SCR, .MLT or .PNG formats.
+      - In OpenDingux Scalable Vector Graphics: .SVG
+      - Recordings:  .RZX
+      - Movie files: .FMF
+      - AY Logging:  .PSG
+      - Control mapping: .FCM
+      - Profiler: .PRF
 
-    For saving screenshots there are options for .SCR, .MLT or .PNG formats.
-    In OpenDingux Scalable Vector Graphics: .SVG
-    Recordings:  .RZX
-    Movie files: .FMF
-    AY Logging:  .PSG
-    Control mapping: .FCM
-
-    Profiler: .PRF (This was and arbitrary decission)
-
-    If no extension is supplied when enter name in save dialogs then the first
+    If no extension is supplied when enter a name in save dialogs then the first
     extension of each media known type will be added to the name.
+
+  - Independent directory access for each media type:
+    -------------------------------------------------
+    Default disabled.
+
+    Each media type dialog will use their own navigation path from the common
+    inital path.
+
+    The common inital path will be:
+      - If Fuse is loaded selecting a spectrum media file from GMenu2x/GMenuNx
+        then the loaded program's path..
+      - If Fuse is loaded withouth file selector:
+        - The last saved directory if 'Save last directory visited' is enabled
+          and there is a last directory saved.
+        - The Fuse's executable path.
 
   - Confirm overwrite files:
     ------------------------
     Default disabled.
 
     Fuse asks for confirmation to overwrite for some media, but not for all.
-    This option ask for confirmation for all overwrites.
+    This option will ask for confirmation for all overwrites.
 
-    It must be convenient to activate.
+    It must be convenient to enable it.
 
   - Show hidden files:
     ------------------
@@ -147,6 +155,32 @@ Options - General GCW0
 
     If you want to quick access some functions. See section Hotkey combinations
     for details.
+
+  - Save last directory visited:
+    ----------------------------
+    Default disabled.
+
+    The last visited directory will be saved to use as initial path. This will
+    be used if Fuse is loaded without file selector.
+
+Options - Media
+---------------
+
+  - Auto-load media with custom roms:
+    ---------------------------------
+    Default disabled.
+
+    If Machine ROM has been changed the rom files used are not in roms paths
+    or do not have default names then they will be considered custom roms and
+    no autoload for media types will be used.
+
+    With this option enabled the auto-load will be used despite custom roms are
+    used.
+
+    This will be helpful if different version or language official ROMS are used
+    and they are not in roms path or not have the default fuse rom names.
+
+    See ROMS section for more details.
 
 ------------------------
 ### Virtual Keyboard ###
@@ -246,13 +280,20 @@ These are no dependent of button mapping.
                  Example: Sound options -> AY stereo separation
                - It open 'enter name' dialog for file save dialogs.
 
+  `Y`        At save dialogs save with the default name and type. Default name
+             will be the name of the last loaded media and extension changed to
+             default extension of media to save.
+
+  `Select`   Enable/Disable filters in file dialogs if `Filter known extensions`
+             option is enabled.
+
   `L1`       Go to the first menu option
   `R1`       Go to the last menu option
   `L2`       In the file selector go to the first entry in the current directory
   `R2`       In the file selector go to the last entry in the current directory
   `Power`    Cancel and exit completely from any level of menu to the emulator
 
-  `Y`, `Select`, `Start`, `L2`, `R3`, `Right Stick`
+  `Start`, `L2`, `R3`, `Right Stick`
              Nothing
 
 #### Maintain options ####
@@ -414,6 +455,25 @@ Options:
     of the file loaded replacing the extension by '.fmc'.
     With this option disabled the control mapping filename follow the rules
     indicated above.
+
+  - Enable Kempston Joystick if needed:
+    -----------------------------------
+    Default enabled. Only take effect if 'Control mapping per game' is enabled.
+
+    If control mapping to load have assigned Kempston Joystick in
+    GCW0 Joystick 1, Joystick 2 or Keyboard and 'Kempston Joystick' option is
+    not enabled in Peripherals -> General then it will be enabled.
+
+    When load a program if the control mapping file not exist yet but default
+    controls have assigned Kempston Joystick in GCW0 Joystick 1, Joystick 2 or
+    Keyboard then the same logic is applied.
+
+    NOTE: Custom control mapping is not intended to manage the hardware
+    attached to machine, only control mappings.
+    But enabling/disabling Kempston Joystick without reset machine is supported
+    by Fuse.
+    Other peripherlas as Fuller Box need to reset the machine and this is not
+    viable to manage in control mapping.
 
 When you exit from Fuse and have General Auto-save setting enabled then default
 control mapping will be saved at general file.

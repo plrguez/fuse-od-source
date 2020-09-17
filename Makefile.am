@@ -152,7 +152,9 @@ EXTRA_DIST = AUTHORS \
 if BUILD_GCWZERO
 EXTRA_DIST += \
 	     Platform/readme.txt \
+	     Platform/ChangeLog \
 	     Platform/INSTALL.txt \
+	     Platform/Makefile.commonrules \
 	     Platform/roms/read.me \
 	     Platform/GCW0/Makefile \
 	     Platform/GCW0/default.gcw0.desktop \
