@@ -166,6 +166,7 @@ EXTRA_DIST += \
 	     Platform/RETROFW1.0/conffiles \
 	     Platform/RETROFW1.0/control \
 	     Platform/RETROFW1.0/fuse.lnk \
+	     Platform/RETROFW1.0/zxspectrum.fuse.lnk \
 	     Platform/RETROFW1.0/postinst
 endif
 

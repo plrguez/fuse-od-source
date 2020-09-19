@@ -37,6 +37,8 @@
 
     * Makefiles refactored to reuse common rules.
 
+    * IPK build now has entry for systems and the manual is accesible
+
 2020-08-24 Fuse 1.5.4 OpenDingux/RetroFW v0.0.1 released
 
     * Initial release
