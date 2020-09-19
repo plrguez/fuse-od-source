@@ -123,6 +123,12 @@ static libspectrum_byte sdldisplay_is_full_screen = 0;
 #ifdef GCWZERO
 static libspectrum_byte sdldisplay_is_triple_buffer = 0;
 static libspectrum_byte sdldisplay_flips_triple_buffer = 0;
+typedef enum sdldisplay_od_system_types {
+      OPENDINGUX,
+      RETROFW_1,
+      RETROFW_2
+} sdldisplay_t_od_system;
+static sdldisplay_t_od_system sdldisplay_od_system_type = OPENDINGUX;
 #endif
 
 static int image_width;
@@ -328,8 +334,12 @@ uidisplay_od_init( SDL_Rect **modes )
         if ( strcmp( ptok, "NAME" ) == 0 ) {
           ptok = strtok( NULL, "=" );
           /* And we are on RetroFW 1.X */
-          if ( strcmp( ptok, "Buildroot\n" ) == 0)
+          if ( strcmp( ptok, "Buildroot\n" ) == 0) {
             settings_current.sdl_fullscreen_mode = utils_safe_strdup( "320x240" );
+            sdldisplay_od_system_type = RETROFW_1;
+          } else {
+            sdldisplay_od_system_type = RETROFW_2;
+          }
           break;
         }
       }
@@ -337,8 +347,10 @@ uidisplay_od_init( SDL_Rect **modes )
     }
 
   /* We are on OpenDingux */
-  } else
+  } else {
     fclose( allow_downscaling );
+    sdldisplay_od_system_type = OPENDINGUX;
+  }
 }
 #endif
 
@@ -568,7 +580,10 @@ sdldisplay_load_gfx_mode( void )
 #ifdef GCWZERO
   Uint32 flags;
   if (settings_current.od_triple_buffer) {
-    sdldisplay_flips_triple_buffer = 0;
+    if ( sdldisplay_od_system_type == OPENDINGUX )
+      sdldisplay_flips_triple_buffer = 0;
+    else
+      sdldisplay_flips_triple_buffer = 1;
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
     : (SDL_HWSURFACE | SDL_TRIPLEBUF);
   } else {
