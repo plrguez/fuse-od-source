@@ -177,6 +177,14 @@ Options - General GCW0
     The last visited directory will be saved to use as initial path.
     This will be used if Fuse is loaded without file selector.
 
+  - Map left stick to DPad for GCW0 keyboard mapping:
+    -------------------------------------------------
+    Default enabled.
+
+    With this option enabled and if GCW0 keyboard mapping is enabled
+    then left stick moves are mapped to directional pad buttons
+    mapped in GCW0 keyboard mapping.
+
 Options - Media
 ---------------
 

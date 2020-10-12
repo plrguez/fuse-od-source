@@ -42,11 +42,13 @@ static int input_event_gcw0( const input_event_t *event );
 
 int
 input_event_gcw0( const input_event_t *event ) {
-  if (ui_widget_level == -1 && !vkeyboard_enabled ) {
+  if ( ui_widget_level == -1 && !vkeyboard_enabled ) {
     input_event_t nevent;
-    if (settings_current.joystick_1_output) {
+
+    /* GCW0 Joystick 1 */
+    if ( settings_current.joystick_1_output ) {
       nevent.types.joystick.button = 0;
-      switch (event->types.key.native_key) {
+      switch ( event->types.key.native_key ) {
       case INPUT_KEY_Up:
         nevent.types.joystick.button = INPUT_JOYSTICK_UP;
         break;
@@ -126,99 +128,151 @@ input_event_gcw0( const input_event_t *event ) {
       default:
         break;
       }
-      if (nevent.types.joystick.button) {
+
+      if ( nevent.types.joystick.button ) {
         nevent.types.joystick.which = 0; /*Joystick 0*/
-        switch (event->type) {
+        switch ( event->type ) {
 
         case INPUT_EVENT_KEYPRESS:
           nevent.type = INPUT_EVENT_JOYSTICK_PRESS;
-          return do_joystick(&(nevent.types.joystick), 1);
+          return do_joystick( &(nevent.types.joystick), 1 );
 
         case INPUT_EVENT_KEYRELEASE:
           nevent.type = INPUT_EVENT_JOYSTICK_RELEASE;
-          return do_joystick(&(nevent.types.joystick), 0);
+          return do_joystick( &(nevent.types.joystick), 0 );
 
-        default: break;
+        default:
+          break;
         }
       }
-    } else if (settings_current.joystick_gcw0_output) {
+
+    /* GCW0 Keyboard */
+    } else if ( settings_current.joystick_gcw0_output ) {
+      input_event_type event_type = event->type;
       keyboard_key_name key = 0;
       nevent.types.key.spectrum_key = 0;
-      switch (event->types.key.native_key) {
-      case INPUT_KEY_Up:
-        key = settings_current.joystick_gcw0_up;
-        break;
 
-      case INPUT_KEY_Down:
-        key = settings_current.joystick_gcw0_down;
-        break;
+      /* Left stick to GCW0 Keyboard pad */
+      if ( settings_current.od_left_stick_to_gcw0_keyboard &&
+          ( event->type == INPUT_EVENT_JOYSTICK_PRESS ||
+            event->type == INPUT_EVENT_JOYSTICK_RELEASE ) &&
+           event->types.joystick.which == 0 ) {
+        switch ( event->types.joystick.button ) {
+        case INPUT_JOYSTICK_UP:
+          key = settings_current.joystick_gcw0_up;
+          break;
 
-      case INPUT_KEY_Left:
-        key = settings_current.joystick_gcw0_left;
-        break;
+        case INPUT_JOYSTICK_DOWN:
+          key = settings_current.joystick_gcw0_down;
+          break;
 
-      case INPUT_KEY_Right:
-        key = settings_current.joystick_gcw0_right;
-        break;
+        case INPUT_JOYSTICK_LEFT:
+          key = settings_current.joystick_gcw0_left;
+          break;
 
-      case INPUT_KEY_Control_L:
-        key = settings_current.joystick_gcw0_a;
-        break; /* A */
+        case INPUT_JOYSTICK_RIGHT:
+          key = settings_current.joystick_gcw0_right;
+          break;
 
-      case INPUT_KEY_Alt_L:
-        key = settings_current.joystick_gcw0_b;
-        break; /* B */
+        default:
+          break;
+        }
 
-      case INPUT_KEY_space:
-        key = settings_current.joystick_gcw0_x;
-        break; /* X */
+        switch ( event->type ) {
+        case INPUT_EVENT_JOYSTICK_PRESS:
+          event_type = INPUT_EVENT_KEYPRESS;
+          break;
 
-      case INPUT_KEY_Shift_L:
-        key = settings_current.joystick_gcw0_y;
-        break; /* Y */
+        case INPUT_EVENT_JOYSTICK_RELEASE:
+          event_type = INPUT_EVENT_KEYRELEASE;
+          break;
 
-      case INPUT_KEY_Tab:
-        key = settings_current.joystick_gcw0_l1;
-        break; /* L1 */
+        default:
+          break;
+        }
+      } else {
+        switch ( event->types.key.native_key ) {
+        case INPUT_KEY_Up:
+          key = settings_current.joystick_gcw0_up;
+          break;
 
-      case INPUT_KEY_BackSpace:
-        key = settings_current.joystick_gcw0_r1;
-        break; /* R1 */
+        case INPUT_KEY_Down:
+          key = settings_current.joystick_gcw0_down;
+          break;
 
-      case INPUT_KEY_Page_Up:
-        key = settings_current.joystick_gcw0_l2;
-        break; /* L2 */
+        case INPUT_KEY_Left:
+          key = settings_current.joystick_gcw0_left;
+          break;
 
-      case INPUT_KEY_Page_Down:
-        key = settings_current.joystick_gcw0_r2;
-        break; /* R2 */
+        case INPUT_KEY_Right:
+          key = settings_current.joystick_gcw0_right;
+          break;
 
-      case INPUT_KEY_Return:
-        key = settings_current.joystick_gcw0_start;
-        break; /* Start */
+        case INPUT_KEY_Control_L:
+          key = settings_current.joystick_gcw0_a;
+          break; /* A */
 
-      case INPUT_KEY_Escape:
-        key = settings_current.joystick_gcw0_select;
-        break; /* Select */
+        case INPUT_KEY_Alt_L:
+          key = settings_current.joystick_gcw0_b;
+          break; /* B */
 
-      case INPUT_KEY_slash: /* Translated unicode key */
-        key = settings_current.joystick_gcw0_l3;
-        break; /* L3 */
+        case INPUT_KEY_space:
+          key = settings_current.joystick_gcw0_x;
+          break; /* X */
 
-      case INPUT_KEY_period: /* Translated unicode key */
-        key = settings_current.joystick_gcw0_r3;
-        break; /* R3 */
+        case INPUT_KEY_Shift_L:
+          key = settings_current.joystick_gcw0_y;
+          break; /* Y */
 
-      default:
-        break;
+        case INPUT_KEY_Tab:
+          key = settings_current.joystick_gcw0_l1;
+          break; /* L1 */
+
+        case INPUT_KEY_BackSpace:
+          key = settings_current.joystick_gcw0_r1;
+          break; /* R1 */
+
+        case INPUT_KEY_Page_Up:
+          key = settings_current.joystick_gcw0_l2;
+          break; /* L2 */
+
+        case INPUT_KEY_Page_Down:
+          key = settings_current.joystick_gcw0_r2;
+          break; /* R2 */
+
+        case INPUT_KEY_Return:
+          key = settings_current.joystick_gcw0_start;
+          break; /* Start */
+
+        case INPUT_KEY_Escape:
+          key = settings_current.joystick_gcw0_select;
+          break; /* Select */
+
+        case INPUT_KEY_slash: /* Translated unicode key */
+          key = settings_current.joystick_gcw0_l3;
+          break; /* L3 */
+
+        case INPUT_KEY_period: /* Translated unicode key */
+          key = settings_current.joystick_gcw0_r3;
+          break; /* R3 */
+
+        default:
+          break;
+        }
       }
-      if (key) {
-        switch (event->type) {
-        case INPUT_EVENT_KEYPRESS: keyboard_press(key);
+
+      if ( key ) {
+        switch ( event_type ) {
+        case INPUT_EVENT_KEYPRESS:
+          keyboard_press( key );
           return 0;
-        case INPUT_EVENT_KEYRELEASE: keyboard_release(key);
+
+        case INPUT_EVENT_KEYRELEASE:
+          keyboard_release( key );
           return 0;
-        default: break;
+
+        default:
+          break;
         }
       }
     }

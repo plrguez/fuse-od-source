@@ -35,6 +35,7 @@ Checkbox, Confir(m) overwrite files, od_confirm_overwrite_files, INPUT_KEY_m
 Checkbox, Show hi(d)den files, od_hidden_files, INPUT_KEY_d
 Checkbox, Hot(k)ey combos, od_hotkey_combos, INPUT_KEY_k
 Checkbox, Sa(v)e last visited directory, od_save_last_directory, INPUT_KEY_v
+Checkbox, Map (l)eft stick to DPad for GCW0 keyboard mapping, od_left_stick_to_gcw0_keyboard, INPUT_KEY_l
 #endif
 
 media

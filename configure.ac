@@ -332,7 +332,8 @@ if test -z "$UI"; then
   AC_MSG_RESULT($retrofw)
   if test "$retrofw" = yes; then
     if test "$sdl_available" = yes; then
-      AC_DEFINE([GCWZERO], 1, [Defined if RetroFW is in use])
+      AC_DEFINE([GCWZERO], 1, [Defined if GCW ZERO is in use])
+      AC_DEFINE([RETROFW], 1, [Defined if RetroFW is in use])
       UI=sdl
       WIDGET=widget
       use_sdl=yes

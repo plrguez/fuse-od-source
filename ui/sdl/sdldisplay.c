@@ -272,8 +272,10 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
 void
 uidisplay_od_init( SDL_Rect **modes )
 {
+#ifdef RETROFW
   char line[100];
   char* ptok;
+#endif
 
 /* On OpenDingux/RetroFW fix Full Screen */
   settings_current.full_screen = 1;
@@ -324,33 +326,31 @@ uidisplay_od_init( SDL_Rect **modes )
  *    VERSION_ID=2014.08
  *    PRETTY_NAME="Buildroot 2014.08"
  */
-  FILE* allow_downscaling = fopen( "/sys/devices/platform/jz-lcd.0/allow_downscaling", "r" );
-  if ( !allow_downscaling ) {
-    /* We are on RetroFW */
-    FILE* os_release = fopen( "/etc/os-release", "r" );
-    if ( os_release ) {
-      while ( fgets(line, sizeof( line ), os_release ) != NULL ) {
-        ptok = strtok( line, "=" );
-        if ( strcmp( ptok, "NAME" ) == 0 ) {
-          ptok = strtok( NULL, "=" );
-          /* And we are on RetroFW 1.X */
-          if ( strcmp( ptok, "Buildroot\n" ) == 0) {
-            settings_current.sdl_fullscreen_mode = utils_safe_strdup( "320x240" );
-            sdldisplay_od_system_type = RETROFW_1;
-          } else {
-            sdldisplay_od_system_type = RETROFW_2;
-          }
-          break;
-        }
-      }
-      fclose( os_release );
-    }
 
-  /* We are on OpenDingux */
-  } else {
-    fclose( allow_downscaling );
-    sdldisplay_od_system_type = OPENDINGUX;
+#ifdef RETROFW
+  /* We are on RetroFW */
+  FILE* os_release = fopen( "/etc/os-release", "r" );
+  if ( os_release ) {
+    while ( fgets(line, sizeof( line ), os_release ) != NULL ) {
+      ptok = strtok( line, "=" );
+      if ( strcmp( ptok, "NAME" ) == 0 ) {
+        ptok = strtok( NULL, "=" );
+        /* And we are on RetroFW 1.X */
+        if ( strcmp( ptok, "Buildroot\n" ) == 0) {
+          settings_current.sdl_fullscreen_mode = utils_safe_strdup( "320x240" );
+          sdldisplay_od_system_type = RETROFW_1;
+        } else {
+          sdldisplay_od_system_type = RETROFW_2;
+        }
+        break;
+      }
+    }
+    fclose( os_release );
   }
+#else
+/* We are on OpenDingux */
+  sdldisplay_od_system_type = OPENDINGUX;
+#endif
 }
 #endif
 
@@ -580,10 +580,11 @@ sdldisplay_load_gfx_mode( void )
 #ifdef GCWZERO
   Uint32 flags;
   if (settings_current.od_triple_buffer) {
-    if ( sdldisplay_od_system_type == OPENDINGUX )
-      sdldisplay_flips_triple_buffer = 0;
-    else
-      sdldisplay_flips_triple_buffer = 1;
+#ifdef RETROFW
+    sdldisplay_flips_triple_buffer = 1;
+#else
+    sdldisplay_flips_triple_buffer = 0;
+#endif
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
     : (SDL_HWSURFACE | SDL_TRIPLEBUF);
   } else {
