@@ -33,7 +33,7 @@
 int widget_init( void );
 int widget_end( void );
 #ifdef GCWZERO
-void widget_statusbar_update_info( float speed );
+size_t widget_statusbar_update_info( float speed );
 void widget_statusbar_print_info( void );
 #endif
 

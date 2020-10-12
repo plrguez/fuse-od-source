@@ -44,6 +44,13 @@
 #if VKEYBOARD
 #include "ui/vkeyboard.h"
 #endif
+#ifdef GCWZERO
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+#include "options.h"
+#endif
 
 SDL_Surface *sdldisplay_gc = NULL;   /* Hardware screen */
 static SDL_Surface *tmp_screen=NULL; /* Temporary screen for scalers */
@@ -53,20 +60,58 @@ static SDL_Surface *keyb_screen = NULL;
 static SDL_Surface *keyb_screen_save = NULL;
 static int init_vkeyboard_canvas = 0;
 static SDL_Rect vkeyboard_position[6] = {
-  {16,   16,  0, 0},
-  {144,  16,  0, 0},
-  {16,   172, 0, 0},
-  {144,  172, 0, 0},
-  {80,   138,  0, 0},
+  {8,    8,   0, 0},
+  {148,  8,   0, 0},
+  {8,    176, 0, 0},
+  {148,  176, 0, 0},
+  {80,   138, 0, 0},
   {80,   64,  0, 0},
 };
 #define VKEYB_WIDTH  168
-#define VKEYB_HEIGHT 56
+#define VKEYB_HEIGHT 48
+
+#ifdef GCWZERO
+/* Positions for GCWZERO scaling (Border option) */
+static SDL_Rect vkeyboard_position_no_border[4] = {
+  {32,   24,  0, 0},
+  {121,  24,  0, 0},
+  {32,   170, 0, 0},
+  {121,  170, 0, 0},
+};
+static SDL_Rect vkeyboard_position_small_border[4] = {
+  {28,   22,  0, 0},
+  {125,  22,  0, 0},
+  {28,   172, 0, 0},
+  {125,  172, 0, 0},
+};
+static SDL_Rect vkeyboard_position_medium_border[4] = {
+  {22,   18,  0, 0},
+  {131,  18,  0, 0},
+  {22,   176, 0, 0},
+  {131,  176, 0, 0},
+};
+static SDL_Rect vkeyboard_position_large_border[4] = {
+  {14,   12,  0, 0},
+  {140,  12,  0, 0},
+  {14,   182, 0, 0},
+  {140,  182, 0, 0},
+};
+#endif
 #endif /* VKEYBOARD */
 
+#ifdef GCWZERO
+size_t od_info_length;
+static SDL_Surface *od_status_line_ovelay;
+static SDL_Rect od_status_line_position = { 5, 225, 242, 10 };
+static SDL_Surface *red_cassette[4], *green_cassette[4];
+static SDL_Surface *red_mdr[4], *green_mdr[4];
+static SDL_Surface *red_disk[4], *green_disk[4];
+#define SWAP_ICONS(a, b) b = a[1]; a[1] = a[3]; a[3] = b; b = a[0]; a[0] = a[2]; a[2] = b;
+#else
 static SDL_Surface *red_cassette[2], *green_cassette[2];
 static SDL_Surface *red_mdr[2], *green_mdr[2];
 static SDL_Surface *red_disk[2], *green_disk[2];
+#endif
 
 static ui_statusbar_state sdl_disk_state, sdl_mdr_state, sdl_tape_state;
 static int sdl_status_updated;
@@ -96,10 +141,10 @@ static SDL_Color colour_palette[] = {
 
 static Uint32 bw_values[16];
 
-#if VKEYBOARD
-static Uint32 colour_values_a[17];
-static Uint32 bw_values_a[17];
-static int use_alpha_values = 0;
+#if defined(VKEYBOARD) || defined(GCWZERO)
+static SDL_Surface *overlay_alpha_surface = NULL;
+static Uint32 colour_values_a[20];
+static Uint32 bw_values_a[20];
 #endif
 
 /* This is a rule of thumb for the maximum number of rects that can be updated
@@ -121,6 +166,48 @@ static float sdldisplay_current_size = 1;
 static libspectrum_byte sdldisplay_is_full_screen = 0;
 
 #ifdef GCWZERO
+typedef enum sdldisplay_od_boder_types {
+  Full,
+  Large,
+  Medium,
+  Small,
+  None,
+  End
+} sdldisplay_t_od_border;
+
+typedef struct od_screen_scaling {
+  sdldisplay_t_od_border border_type;
+  Uint16       w;
+  Uint16       h;
+  SDL_Rect*    vkeyboard;
+} od_t_screen_scaling;
+
+static od_t_screen_scaling od_screen_scalings_2x[] = {
+  { Full,    320, 240, &vkeyboard_position[0] },
+  { Large,   304, 228, &vkeyboard_position_large_border[0] },
+  { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
+  { Small,   272, 204, &vkeyboard_position_small_border[0] },
+  { None,    256, 192, &vkeyboard_position_no_border[0] },
+};
+#ifndef RETROFW
+static od_t_screen_scaling od_screen_scalings_1x_640[] = {
+  { Full,    320, 240, &vkeyboard_position[0] },
+  { Large,   300, 225, &vkeyboard_position_large_border[0] }, /* No 4:3 AR */
+  { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
+  { Small,   272, 208, &vkeyboard_position_small_border[0] }, /* No 4:3 AR */
+  { None,    256, 192, &vkeyboard_position_no_border[0] },
+};
+static od_t_screen_scaling od_screen_scalings_1x_480[] = {
+  { Full,    320, 240, &vkeyboard_position[0] },
+  { Large,   304, 224, &vkeyboard_position_large_border[0] }, /* No 4:3 AR */
+  { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
+  { Small,   272, 208, &vkeyboard_position_small_border[0] }, /* No 4:3 AR */
+  { None,    256, 192, &vkeyboard_position_no_border[0] },
+};
+#endif
+static sdldisplay_t_od_border sdldisplay_last_od_border = Full;
+static sdldisplay_t_od_border sdldisplay_current_od_border = Full;
+static SDL_Rect clip_area;
 static libspectrum_byte sdldisplay_is_triple_buffer = 0;
 static libspectrum_byte sdldisplay_flips_triple_buffer = 0;
 typedef enum sdldisplay_od_system_types {
@@ -129,6 +216,14 @@ typedef enum sdldisplay_od_system_types {
       RETROFW_2
 } sdldisplay_t_od_system;
 static sdldisplay_t_od_system sdldisplay_od_system_type = OPENDINGUX;
+#ifndef RETROFW
+typedef enum sdldisplay_od_panel_types {
+      P320240,
+      P640480,
+      P480320
+} sdldisplay_t_od_panel_type;
+static sdldisplay_t_od_panel_type sdl_od_panel_type = P320240;
+#endif
 #endif
 
 static int image_width;
@@ -143,6 +238,9 @@ static int sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
 static int sdldisplay_allocate_colours_alpha( int numColours, Uint32 *colour_values,
                                              Uint32 *bw_values );
 #endif
+#if GCWZERO
+static void uidisplay_status_overlay( void );
+#endif
 
 static int sdldisplay_load_gfx_mode( void );
 
@@ -152,18 +250,20 @@ init_scalers( void )
   scaler_register_clear();
 
   scaler_register( SCALER_NORMAL );
+#ifndef GCWZERO
   scaler_register( SCALER_2XSAI );
   scaler_register( SCALER_SUPER2XSAI );
   scaler_register( SCALER_SUPEREAGLE );
   scaler_register( SCALER_ADVMAME2X );
-#ifndef GCWZERO
   scaler_register( SCALER_ADVMAME3X );
-#endif
   scaler_register( SCALER_DOTMATRIX );
   scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
+#else
+  scaler_register( SCALER_PALTV );
+#endif
   if( machine_current->timex ) {
-    scaler_register( SCALER_HALF ); 
+    scaler_register( SCALER_HALF );
     scaler_register( SCALER_HALFSKIP );
     scaler_register( SCALER_TIMEXTV );
 #ifndef GCWZERO
@@ -172,9 +272,15 @@ init_scalers( void )
 #endif
   } else {
 #ifdef GCWZERO
+    scaler_register( SCALER_DOTMATRIX );
     scaler_register( SCALER_DOUBLESIZE );
     scaler_register( SCALER_TV2X );
     scaler_register( SCALER_PALTV2X );
+    scaler_register( SCALER_2XSAI );
+    scaler_register( SCALER_SUPER2XSAI );
+    scaler_register( SCALER_SUPEREAGLE );
+    scaler_register( SCALER_ADVMAME2X );
+    scaler_register( SCALER_HQ2X );
 #else
     scaler_register( SCALER_DOUBLESIZE );
     scaler_register( SCALER_TRIPLESIZE );
@@ -215,6 +321,9 @@ sdl_convert_icon( SDL_Surface *source, SDL_Surface **icon, int red )
   SDL_SetPalette( copy, SDL_LOGPAL, colors, 0, i );
 
   icon[0] = SDL_ConvertSurface( copy, tmp_screen->format, SDL_SWSURFACE );
+#ifdef GCWZERO
+  icon[3] = SDL_ConvertSurface( copy, tmp_screen->format, SDL_SWSURFACE );
+#endif
 
   SDL_FreeSurface( copy );
 
@@ -233,6 +342,24 @@ sdl_convert_icon( SDL_Surface *source, SDL_Surface **icon, int red )
         (libspectrum_byte*)icon[1]->pixels,
         icon[1]->pitch, icon[0]->w, icon[0]->h
       );
+
+#ifdef GCWZERO
+  icon[2] = SDL_CreateRGBSurface( SDL_SWSURFACE,
+                                  ((icon[0]->w)>>1) + 1, ((icon[0]->h)>>1) + 1,
+                                  icon[0]->format->BitsPerPixel,
+                                  icon[0]->format->Rmask,
+                                  icon[0]->format->Gmask,
+                                  icon[0]->format->Bmask,
+                                  icon[0]->format->Amask
+                                );
+
+  ( scaler_get_proc16( SCALER_HALF ) )(
+        (libspectrum_byte*)icon[0]->pixels,
+        icon[0]->pitch,
+        (libspectrum_byte*)icon[2]->pixels,
+        icon[2]->pitch, icon[0]->w, icon[0]->h
+      );
+#endif
 
   return 0;
 }
@@ -272,11 +399,6 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
 void
 uidisplay_od_init( SDL_Rect **modes )
 {
-#ifdef RETROFW
-  char line[100];
-  char* ptok;
-#endif
-
 /* On OpenDingux/RetroFW fix Full Screen */
   settings_current.full_screen = 1;
   settings_current.sdl_fullscreen_mode = utils_safe_strdup( '\0' );
@@ -329,10 +451,11 @@ uidisplay_od_init( SDL_Rect **modes )
 
 #ifdef RETROFW
   /* We are on RetroFW */
+  char line[100];
   FILE* os_release = fopen( "/etc/os-release", "r" );
   if ( os_release ) {
     while ( fgets(line, sizeof( line ), os_release ) != NULL ) {
-      ptok = strtok( line, "=" );
+      char* ptok = strtok( line, "=" );
       if ( strcmp( ptok, "NAME" ) == 0 ) {
         ptok = strtok( NULL, "=" );
         /* And we are on RetroFW 1.X */
@@ -453,6 +576,18 @@ uidisplay_init( int width, int height )
   sdl_load_status_icon( "microdrive.bmp", red_mdr, green_mdr );
   sdl_load_status_icon( "plus3disk.bmp", red_disk, green_disk );
 
+#if GCWZERO
+  if (sdldisplay_current_od_border) {
+    SDL_Surface *swap;
+    SWAP_ICONS( red_cassette, swap );
+    SWAP_ICONS( green_cassette, swap );
+    SWAP_ICONS( red_mdr, swap );
+    SWAP_ICONS( green_mdr, swap );
+    SWAP_ICONS( red_disk, swap );
+    SWAP_ICONS( green_disk, swap );
+  }
+#endif
+
   return 0;
 }
 
@@ -479,7 +614,7 @@ sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
   return 0;
 }
 
-#if VKEYBOARD
+#if defined(VKEYBOARD) || defined(GCWZERO)
 static int
 sdldisplay_allocate_colours_alpha( int numColours, Uint32 *colour_values,
                                   Uint32 *bw_values ) {
@@ -505,6 +640,27 @@ sdldisplay_allocate_colours_alpha( int numColours, Uint32 *colour_values,
    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
   colour_values[16] = SDL_MapRGBA( keyb_screen->format,  red, green, blue, 0x50 );
   bw_values[16]     = SDL_MapRGBA( keyb_screen->format, grey,  grey, grey, 0x50 );
+
+    red = 0x1f;
+  green = 0xad;
+   blue = 0xe1;
+   grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+  colour_values[17] = SDL_MapRGBA( keyb_screen->format,  red, green, blue, 0x50 );
+  bw_values[17]     = SDL_MapRGBA( keyb_screen->format, grey,  grey, grey, 0x50 );
+
+    red = 0xff;
+  green = 0xff;
+   blue = 0xff;
+   grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+  colour_values[18] = SDL_MapRGBA( keyb_screen->format,  red, green, blue, 0x00 );
+  bw_values[18]     = SDL_MapRGBA( keyb_screen->format, grey,  grey, grey, 0x00 );
+
+    red = 0xff;
+  green = 0xff;
+   blue = 0xff;
+   grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+  colour_values[19] = SDL_MapRGBA( keyb_screen->format,  red, green, blue, 0xff );
+  bw_values[19]     = SDL_MapRGBA( keyb_screen->format, grey,  grey, grey, 0xff );
 
   return 0;
 }
@@ -570,6 +726,13 @@ sdldisplay_load_gfx_mode( void )
   }
 #endif
 
+#ifdef GCWZERO
+  if ( od_status_line_ovelay ) {
+    SDL_FreeSurface( od_status_line_ovelay );
+    od_status_line_ovelay = NULL;
+  }
+#endif
+
   tmp_screen_width = (image_width + 3);
 
   sdldisplay_current_size = scaler_get_scaling_factor( current_scaler );
@@ -593,20 +756,75 @@ sdldisplay_load_gfx_mode( void )
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
     : SDL_HWSURFACE;
   }
+
+  int display_width, display_height;
+#ifndef RETROFW
+  sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
 #endif
+  sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
+  if ( ( sdldisplay_current_od_border && !sdldisplay_last_od_border ) ||
+       ( !sdldisplay_current_od_border && sdldisplay_last_od_border ) ) {
+    SDL_Surface *swap;
+    SWAP_ICONS( red_cassette, swap );
+    SWAP_ICONS( green_cassette, swap );
+    SWAP_ICONS( red_mdr, swap );
+    SWAP_ICONS( green_mdr, swap );
+    SWAP_ICONS( red_disk, swap );
+    SWAP_ICONS( green_disk, swap );
+  }
+  if ( sdldisplay_current_od_border ) {
+    int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
+    od_t_screen_scaling *ssc = &od_screen_scalings_2x[0];
+
+#ifndef RETROFW
+    if ( sdldisplay_current_size <= 1 )
+      switch (sdl_od_panel_type) {
+      case P640480:
+        ssc = &od_screen_scalings_1x_640[0];
+        break;
+      case P480320:
+        ssc = &od_screen_scalings_1x_480[0];
+		FILE* integer_scaling_file = fopen("/sys/class/graphics/fb0/device/integer_scaling", "w");
+		if (integer_scaling_file) {
+			fwrite("N", 1, 1, integer_scaling_file);
+			fclose(integer_scaling_file);
+		}
+        break;
+      default:
+        break;
+      }
+#endif /* ifndef RETROFW */
+
+    clip_area.x = ( DISPLAY_ASPECT_WIDTH - ssc[sdldisplay_current_od_border].w ) * scale / 2;
+    clip_area.y = ( DISPLAY_SCREEN_HEIGHT - ssc[sdldisplay_current_od_border].h ) * scale / 2;
+
+    clip_area.w = ssc[sdldisplay_current_od_border].w * scale;
+    clip_area.h = ssc[sdldisplay_current_od_border].h * scale;
+
+    display_width = clip_area.w * sdldisplay_current_size;
+    display_height = clip_area.h * sdldisplay_current_size;
+
+  /* Full Border */
+  } else {
+    display_width =  settings_current.full_screen && fullscreen_width
+        ? fullscreen_width
+        : image_width * sdldisplay_current_size;
+    display_height = settings_current.full_screen && fullscreen_width
+        ? max_fullscreen_height
+        : image_height * sdldisplay_current_size;
+  }
+  sdldisplay_gc = SDL_SetVideoMode( display_width, display_height, 16, flags );
+#else
   sdldisplay_gc = SDL_SetVideoMode(
     settings_current.full_screen && fullscreen_width ? fullscreen_width :
       image_width * sdldisplay_current_size,
     settings_current.full_screen && fullscreen_width ? max_fullscreen_height :
       image_height * sdldisplay_current_size,
     16,
-#ifdef GCWZERO
-    flags
-#else
     settings_current.full_screen ? (SDL_FULLSCREEN|SDL_SWSURFACE)
                                  : SDL_SWSURFACE
-#endif
   );
+#endif
   if( !sdldisplay_gc ) {
     fprintf( stderr, "%s: couldn't create SDL graphics context\n", fuse_progname );
     fuse_abort();
@@ -619,6 +837,8 @@ sdldisplay_load_gfx_mode( void )
 #ifdef GCWZERO
   settings_current.od_triple_buffer = !!( sdldisplay_gc->flags & SDL_TRIPLEBUF );
   sdldisplay_is_triple_buffer = settings_current.od_triple_buffer;
+
+  sdldisplay_last_od_border = sdldisplay_current_od_border;
 #endif
 
   /* Distinguish 555 and 565 mode */
@@ -664,13 +884,32 @@ sdldisplay_load_gfx_mode( void )
   SDL_FreeSurface( swap_screen );
 #endif
 
+#ifdef GCWZERO
+  /* Create the surface that contains status in scaling */
+  SDL_Surface *od_tmp_screen;
+  od_tmp_screen = SDL_CreateRGBSurface(SDL_HWSURFACE,
+                                       machine_current->timex ? od_status_line_position.w * 2 : od_status_line_position.w,
+                                       machine_current->timex ? od_status_line_position.h * 2 : od_status_line_position.h,
+                                       16,
+                                       sdldisplay_gc->format->Rmask,
+                                       sdldisplay_gc->format->Gmask,
+                                       sdldisplay_gc->format->Bmask,
+                                       ( SDL_BYTEORDER == SDL_BIG_ENDIAN ? 0x000000ff : 0xff000000 ) );
+  if ( !od_tmp_screen ) {
+    fprintf( stderr, "%s: couldn't create status line overlay screen\n", fuse_progname );
+    fuse_abort();
+  }
+  od_status_line_ovelay = SDL_DisplayFormatAlpha( od_tmp_screen );
+  SDL_FreeSurface( od_tmp_screen );
+#endif
+
   fullscreen_x_off = ( sdldisplay_gc->w - image_width * sdldisplay_current_size ) *
                      sdldisplay_is_full_screen  / 2;
   fullscreen_y_off = ( sdldisplay_gc->h - image_height * sdldisplay_current_size ) *
                      sdldisplay_is_full_screen / 2;
 
   sdldisplay_allocate_colours( 16, colour_values, bw_values );
-#if VKEYBOARD
+#if defined(VKEYBOARD) || defined(GCWZERO)
   sdldisplay_allocate_colours_alpha( 16, colour_values_a, bw_values_a );
 #endif
 
@@ -695,6 +934,13 @@ uidisplay_hotswap_gfx_mode( void )
   if ( keyb_screen ) {
     SDL_FreeSurface( keyb_screen );
     keyb_screen = NULL;
+  }
+#endif
+
+#ifdef GCWZERO
+  if ( od_status_line_ovelay ) {
+    SDL_FreeSurface( od_status_line_ovelay );
+    od_status_line_ovelay = NULL;
   }
 #endif
 
@@ -802,6 +1048,29 @@ static void
 sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
 {
   SDL_Rect r = { 243, 218, red_disk[0]->w, red_disk[0]->h };
+#ifdef GCWZERO
+  switch (sdldisplay_current_od_border) {
+  case None:
+    r.x = 252;
+    r.y = 204;
+    break;
+  case Small:
+    r.x = 260;
+    r.y = 210;
+    break;
+  case Medium:
+    r.x = 268;
+    r.y = 216;
+    break;
+  case Large:
+    r.x = 274;
+    r.y = 222;
+    break;
+  case Full:
+  default:
+    break;
+  }
+#endif
 
   switch( sdl_disk_state ) {
   case UI_STATUSBAR_STATE_ACTIVE:
@@ -816,6 +1085,29 @@ sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
 
   r.x = 264;
   r.y = 218;
+#ifdef GCWZERO
+  switch (sdldisplay_current_od_border) {
+  case None:
+    r.x = 262;
+    r.y = 204;
+    break;
+  case Small:
+    r.x = 270;
+    r.y = 210;
+    break;
+  case Medium:
+    r.x = 278;
+    r.y = 216;
+    break;
+  case Large:
+    r.x = 284;
+    r.y = 222;
+    break;
+  case Full:
+  default:
+    break;
+  }
+#endif
   r.w = red_mdr[0]->w;
   r.h = red_mdr[0]->h;
 
@@ -832,6 +1124,29 @@ sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
 
   r.x = 285;
   r.y = 220;
+#ifdef GCWZERO
+  switch (sdldisplay_current_od_border) {
+  case None:
+    r.x = 272;
+    r.y = 206;
+    break;
+  case Small:
+    r.x = 280;
+    r.y = 212;
+    break;
+  case Medium:
+    r.x = 288;
+    r.y = 218;
+    break;
+  case Large:
+    r.x = 294;
+    r.y = 224;
+    break;
+  case Full:
+  default:
+    break;
+  }
+#endif
   r.w = red_cassette[0]->w;
   r.h = red_cassette[0]->h;
 
@@ -854,8 +1169,8 @@ uidisplay_putpixel( int x, int y, int colour )
 {
   libspectrum_word *dest_base, *dest;
 
-#if VKEYBOARD
-  if (use_alpha_values) {
+#if defined(VKEYBOARD) || defined(GCWZERO)
+  if ( overlay_alpha_surface ) {
     uidisplay_putpixel_alpha(x - DISPLAY_BORDER_ASPECT_WIDTH, y - DISPLAY_BORDER_HEIGHT,
                              colour);
     return;
@@ -890,51 +1205,126 @@ uidisplay_putpixel( int x, int y, int colour )
   }
 }
 
-#if VKEYBOARD
+#if defined(VKEYBOARD) || defined(GCWZERO)
 /* Set one pixel in the display */
 void
 uidisplay_putpixel_alpha( int x, int y, int colour ) {
   libspectrum_dword *dest_base, *dest;
-  Uint32 *palette_values = settings_current.bw_tv ? bw_values_a :
-      colour_values_a;
+  Uint32 *palette_values = settings_current.bw_tv ? bw_values_a : colour_values_a;
   Uint32 palette_colour = palette_values[ colour ];
 
   if ( machine_current->timex ) {
     x <<= 1;
     y <<= 1;
     dest_base = dest =
-        (libspectrum_dword*) ( (libspectrum_byte*) keyb_screen->pixels +
-        (x) * keyb_screen->format->BytesPerPixel +
-        (y) * keyb_screen->pitch);
+        (libspectrum_dword*) ( (libspectrum_byte*) overlay_alpha_surface->pixels +
+        (x) * overlay_alpha_surface->format->BytesPerPixel +
+        (y) * overlay_alpha_surface->pitch);
 
     *(dest++) = palette_colour;
     *(dest++) = palette_colour;
     dest = (libspectrum_dword*)
-        ( (libspectrum_byte*) dest_base + keyb_screen->pitch);
+        ( (libspectrum_byte*) dest_base + overlay_alpha_surface->pitch);
     *(dest++) = palette_colour;
     *(dest++) = palette_colour;
   } else {
     dest =
-        (libspectrum_dword*) ( (libspectrum_byte*) keyb_screen->pixels +
-        (x) * keyb_screen->format->BytesPerPixel +
-        (y) * keyb_screen->pitch);
+        (libspectrum_dword*) ( (libspectrum_byte*) overlay_alpha_surface->pixels +
+        (x) * overlay_alpha_surface->format->BytesPerPixel +
+        (y) * overlay_alpha_surface->pitch);
 
     *dest = palette_colour;
   }
 }
 
+static void
+uidisplay_status_overlay( void ) {
+  SDL_Rect current_positions = od_status_line_position;
+
+  switch (sdldisplay_current_od_border) {
+  case Large:
+    current_positions.x += 6;
+    current_positions.y -= 2;
+    break;
+
+  case Medium:
+    current_positions.x += 14;
+    current_positions.y -= 7;
+    break;
+
+  case Small:
+    current_positions.x += 22;
+    current_positions.y -= 13;
+    break;
+
+  case None:
+    current_positions.x += 30;
+    current_positions.y -= 19;
+    break;
+
+  default:
+    break;
+  }
+
+  int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
+
+  SDL_Rect r1 = { current_positions.x * scale, current_positions.y * scale,
+                  current_positions.w * scale, current_positions.h * scale };
+
+  SDL_Rect r2 = { 0, 0, ( od_info_length + 3 ) * scale, current_positions.h * scale };
+
+  SDL_FillRect(od_status_line_ovelay, NULL, settings_current.bw_tv ? bw_values_a[18] : colour_values_a[18]);
+  SDL_FillRect(od_status_line_ovelay, &r2, settings_current.bw_tv ? bw_values_a[17] : colour_values_a[17]);
+
+  overlay_alpha_surface = od_status_line_ovelay;
+  ui_widget_statusbar_print_info();
+  overlay_alpha_surface = NULL;
+
+  SDL_BlitSurface(od_status_line_ovelay, NULL, tmp_screen, &r1);
+
+  updated_rects[num_rects].x = r1.x;
+  updated_rects[num_rects].y = r1.y;
+  updated_rects[num_rects].w = r1.w;
+  updated_rects[num_rects].h = r1.h;
+  num_rects++;
+
+  display_refresh_rect( r1.x - 1 * scale, r1.y - 1 * scale, r1.w + 8 * scale, r1.h );
+}
+#endif
+
+#if VKEYBOARD
 void
 uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
   static int old_position = -1;
   int current_position;
+  SDL_Rect *current_positions = &vkeyboard_position[0];
+
+#ifdef GCWZERO
+  od_t_screen_scaling* ssc = &od_screen_scalings_2x[0];
+#ifndef RETROFW
+  if ( sdldisplay_current_size <= 1 )
+    switch (sdl_od_panel_type) {
+    case P640480:
+      ssc = &od_screen_scalings_1x_640[0];
+      break;
+    case P480320:
+      ssc = &od_screen_scalings_1x_480[0];
+      break;
+    default:
+      break;
+    }
+#endif
+  if ( ui_widget_level == -1 )
+    current_positions = ssc[sdldisplay_current_od_border].vkeyboard;
+#endif
 
   if (ui_widget_level >= 0)
     current_position = 4;
   else
     current_position = position;
 
-  SDL_Rect r1 = { machine_current->timex ? vkeyboard_position[current_position].x * 2 : vkeyboard_position[current_position].x,
-                  machine_current->timex ? vkeyboard_position[current_position].y * 2 : vkeyboard_position[current_position].y,
+  SDL_Rect r1 = { machine_current->timex ? current_positions[current_position].x * 2 : current_positions[current_position].x,
+                  machine_current->timex ? current_positions[current_position].y * 2 : current_positions[current_position].y,
                   machine_current->timex ? VKEYB_WIDTH * 2  : VKEYB_WIDTH,
                   machine_current->timex ? VKEYB_HEIGHT * 2 : VKEYB_HEIGHT };
 
@@ -958,9 +1348,9 @@ uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
       SDL_BlitSurface(keyb_screen_save, NULL, tmp_screen, &r1);
   }
 
-  use_alpha_values = 1;
+  overlay_alpha_surface = keyb_screen;
   print_fn();
-  use_alpha_values = 0;
+  overlay_alpha_surface = NULL;
 
   SDL_BlitSurface(keyb_screen, NULL, tmp_screen, &r1);
 
@@ -971,10 +1361,11 @@ uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
   num_rects++;
 
   if (ui_widget_level == -1) {
+    int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
     if (old_position != position)
       display_refresh_all();
     else
-      display_refresh_rect(r1.x, r1.y, r1.w, r1.h );
+      display_refresh_rect( r1.x -1, r1.y - 1, r1.w + 8 * scale, r1.h + 1 * scale );
     old_position = position;
   }
 }
@@ -1128,7 +1519,8 @@ uidisplay_frame_end( void )
      the switch to fullscreen (e.g. Mac OS X) */
 #ifdef GCWZERO
   if ( ( sdldisplay_is_full_screen != settings_current.full_screen  ||
-      sdldisplay_is_triple_buffer != settings_current.od_triple_buffer ) &&
+      sdldisplay_is_triple_buffer != settings_current.od_triple_buffer ||
+      sdldisplay_last_od_border != sdldisplay_current_od_border ) &&
 #else
   if( sdldisplay_is_full_screen != settings_current.full_screen &&
 #endif
@@ -1143,13 +1535,15 @@ uidisplay_frame_end( void )
 #endif
 
 #ifdef GCWZERO
-  if ( settings_current.statusbar )
-    ui_widget_statusbar_print_info();
+  if ( settings_current.statusbar && ui_widget_level == -1 )
+    if ( !sdldisplay_current_od_border || settings_current.od_statusbar_with_border )
+      uidisplay_status_overlay();
 #endif
 
   /* Force a full redraw if requested */
 #ifdef GCWZERO
-  if ( sdldisplay_force_full_refresh || sdldisplay_is_triple_buffer ) {
+  if ( sdldisplay_force_full_refresh || sdldisplay_is_triple_buffer ||
+       sdldisplay_current_od_border ) {
 #else
   if ( sdldisplay_force_full_refresh ) {
 #endif
@@ -1173,10 +1567,29 @@ uidisplay_frame_end( void )
   last_rect = updated_rects + num_rects;
 
   for( r = updated_rects; r != last_rect; r++ ) {
+#ifdef GCWZERO
+    int dst_y;
+    int dst_h;
+    int dst_x;
+    if ( sdldisplay_current_od_border ) {
+      r->x = clip_area.x;
+      r->y = clip_area.y;
+      r->w = clip_area.w;
+      r->h = clip_area.h;
 
+      dst_y = 0;
+      dst_h = r->h;
+      dst_x = 0;
+    } else {
+      dst_y = r->y * sdldisplay_current_size + fullscreen_y_off;
+      dst_h = r->h;
+      dst_x = r->x * sdldisplay_current_size + fullscreen_x_off;
+    }
+#else
     int dst_y = r->y * sdldisplay_current_size + fullscreen_y_off;
     int dst_h = r->h;
     int dst_x = r->x * sdldisplay_current_size + fullscreen_x_off;
+#endif
 
     scaler_proc16(
       (libspectrum_byte*)tmp_screen->pixels +
@@ -1196,7 +1609,11 @@ uidisplay_frame_end( void )
     r->h = dst_h * sdldisplay_current_size;
   }
 
+#ifdef GCWZERO
+  if ( settings_current.statusbar && (!sdldisplay_current_od_border || settings_current.od_statusbar_with_border) )
+#else
   if ( settings_current.statusbar )
+#endif
     sdl_icon_overlay( tmp_screen_pitch, dstPitch );
 
   if( SDL_MUSTLOCK( sdldisplay_gc ) ) SDL_UnlockSurface( sdldisplay_gc );
@@ -1261,7 +1678,18 @@ uidisplay_end( void )
   }
 #endif
 
+#ifdef GCWZERO
+  if ( od_status_line_ovelay ) {
+    SDL_FreeSurface( od_status_line_ovelay );
+    od_status_line_ovelay = NULL;
+  }
+#endif
+
+#ifdef GCWZERO
+  for( i=0; i<4; i++ ) {
+#else
   for( i=0; i<2; i++ ) {
+#endif
     if ( red_cassette[i] ) {
       SDL_FreeSurface( red_cassette[i] ); red_cassette[i] = NULL;
     }

@@ -545,18 +545,24 @@ int widget_end( void )
 }
 
 #ifdef GCWZERO
-#define WIDGET_MAX_INFO_LENGTH 60
-#define WIDGET_COL_INFO 5
-#define WIDGET_ROW_INFO 225
-#define WIDGET_RELATIVE_COL_INFO (WIDGET_COL_INFO - DISPLAY_BORDER_ASPECT_WIDTH)
-#define WIDGET_RELATIVE_ROW_INFO (WIDGET_ROW_INFO - DISPLAY_BORDER_HEIGHT)
+#define WIDGET_MAX_INFO_LENGTH 45
 static char status_info[WIDGET_MAX_INFO_LENGTH];
-static int  info_len = 0;
-static int  info_sc  = 1;
-void widget_statusbar_update_info( float speed ) {
+
+static char* od_machine_name( libspectrum_machine type ) {
+  char* name = utils_safe_strdup( libspectrum_machine_name( type ) );
+
+  char* token = strtok( name, " " );
+  if ( strncmp( token, "Pentagon", 8 ) == 0 ) {
+    char* pentagon = utils_safe_strdup( "P" );
+    return strncat( pentagon, strtok( NULL, "" ), 5 );
+  } else
+    return strtok( NULL, "" );
+}
+
+size_t widget_statusbar_update_info( float speed ) {
   snprintf(status_info, WIDGET_MAX_INFO_LENGTH,
            settings_current.od_show_fps ? "%s - %3.0ffps (1:%d)" : "%s - %3.0f%% (1:%d)",
-           libspectrum_machine_name( machine_current->machine ),
+           od_machine_name( machine_current->machine ),
            speed,
            settings_current.frame_rate);
   if ( settings_current.joystick_1_output || settings_current.joystick_gcw0_output )
@@ -572,21 +578,18 @@ void widget_statusbar_update_info( float speed ) {
     snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
              status_info,
              "B");
+
+  return widget_stringwidth( status_info );
 }
 
 void widget_statusbar_print_info(void) {
-  int sc = machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ? 2 : 1;
-  int len = widget_stringwidth(status_info);
-  if (len>0) {
-    if (info_len && len < info_len) {
-      widget_rectangle(WIDGET_RELATIVE_COL_INFO, WIDGET_RELATIVE_ROW_INFO, info_len, 8, WIDGET_COLOUR_DISABLED);
-      uidisplay_area(WIDGET_COL_INFO*info_sc, WIDGET_ROW_INFO*info_sc, info_len*info_sc, 8 * info_sc);
-    }
-    info_len = len;
-    info_sc = sc;
-    widget_rectangle(WIDGET_RELATIVE_COL_INFO, WIDGET_RELATIVE_ROW_INFO, info_len, 8, 5);
-    widget_printstring(WIDGET_RELATIVE_COL_INFO, WIDGET_RELATIVE_ROW_INFO, 10, status_info);
-    uidisplay_area(WIDGET_COL_INFO*info_sc, WIDGET_ROW_INFO*info_sc, info_len*info_sc, 8*info_sc);
+  int length = widget_stringwidth(status_info);
+
+  if ( length > 0 ) {
+    int scale = machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ? 2 : 1;
+
+    widget_printstring(1, 1, 19, status_info);
+    uidisplay_area(1 * scale, 1 * scale, length * scale, 8 * scale);
   }
 }
 #endif

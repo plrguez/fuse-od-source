@@ -810,16 +810,15 @@ ui_widget_end( void )
 
 #ifdef GCWZERO
 #ifdef USE_WIDGET
-void ui_widget_statusbar_update_info( float speed ) {
-  widget_statusbar_update_info( speed );
+size_t ui_widget_statusbar_update_info( float speed ) {
+  return widget_statusbar_update_info( speed );
 }
 
 void ui_widget_statusbar_print_info( void ) {
   widget_statusbar_print_info();
 }
 
-void ui_widget_set_file_filter_for_class( int filter_class, int saving )
-{
+void ui_widget_set_file_filter_for_class( int filter_class, int saving ) {
   widget_filesel_set_filter_for_class( filter_class, saving );
 }
 #endif

@@ -1,4 +1,4 @@
-/* binary.c: The binary load/save widgets
+/* vkeyboard.c: Virtual keyboard widget
    Copyright (c) 2020 Pedro Luis Rodríguez González
 
    This program is free software; you can redistribute it and/or modify
@@ -116,8 +116,8 @@ void widget_print_key( int row, int key, int active )
   else
     paper = NOT_SELECTED_KEY;
   ink = (ui_widget_level >= 0) ? INK_KEY_OPTIONS : INK_KEY;
-  x = key * 16 + 5;
-  y = row * 10 + 5;
+  x = key * 16 + 4;
+  y = row * 10 + 4;
 
   widget_rectangle(x, y, 16, 10, paper);
   widget_printstring(x + 2, y + 1, ink,
@@ -357,7 +357,6 @@ widget_release_keyboard( input_key key )
           if (one_time_fixed_keys[r][k]) {
             widget_vkeyboard_input(vkeyboard[r][k].spectrum_key,0);
             one_time_fixed_keys[r][k] = 0;
-            widget_print_key(r,k,0);
           }
       widget_vkeyboard_input(vkeyboard[actual_row][actual_key].spectrum_key,0);
     }

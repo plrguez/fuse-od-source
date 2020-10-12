@@ -183,7 +183,7 @@ ui_statusbar_update_speed( float speed )
 
 #ifdef GCWZERO
   if ( settings_current.statusbar )
-    ui_widget_statusbar_update_info( speed );
+    od_info_length = ui_widget_statusbar_update_info( speed );
 #endif
   /* FIXME: Icon caption should be snapshot name? */
   SDL_WM_SetCaption( buffer, fuse );

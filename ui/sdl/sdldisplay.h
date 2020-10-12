@@ -26,4 +26,8 @@
 
 extern SDL_Surface *sdldisplay_gc;    /* Hardware screen */
 
+#if GCWZERO
+extern size_t od_info_length;
+#endif
+
 #endif			/* #ifndef FUSE_SDLDISPLAY_H */

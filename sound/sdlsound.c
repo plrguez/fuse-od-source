@@ -93,11 +93,21 @@ sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
      speed to about 2000% on my Mac, 100Hz allows up to 5000% for me) */
   if( hz > 100.0 ) hz = 100.0;
   sound_framesiz = *freqptr / hz;
-#if defined(__FreeBSD__) || defined(GCWZERO)
+#ifdef __FreeBSD__
   requested.samples = pow( 2.0, floor( log2( sound_framesiz ) ) );
 #else			/* #ifdef __FreeBSD__ */
+#ifdef GCWZERO
+  /* Increase frame buffer with triple buffer or screen scaling (Border option)
+     With this options the screen is fully refreshed anf this can produce some
+     audible pops */
+  if ( settings_current.od_triple_buffer || strncmp(settings_current.od_border,"Full", 4 ) )
+    requested.samples = pow( 2.0, ceil( log2( sound_framesiz ) ) );
+  else
+    requested.samples = pow( 2.0, floor( log2( sound_framesiz ) ) );
+#else			/* #ifdef GCWZER0 */
   requested.samples = sound_framesiz;
 #endif			/* #ifdef __FreeBSD__ */
+#endif
 
   if ( SDL_OpenAudio( &requested, &received ) < 0 ) {
     settings_current.sound = 0;

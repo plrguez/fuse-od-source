@@ -26,7 +26,9 @@
 #include <SDL.h>
 #include "settings.h"
 #include "ui/ui.h"
+#include "ui/uidisplay.h"
 #include "ui/hotkeys.h"
+#include "options.h"
 
 #ifdef GCWZERO
 #define MAX_COMBO_KEYS_PENDING 10
@@ -36,6 +38,16 @@ static int last_combo_key = 0;
 static int push_combo_event( Uint8* flags );
 static int filter_combo_done( const SDL_Event *event );
 static int is_combo_possible( const SDL_Event *event );
+
+static const char * const od_border[] = {
+  "Full",
+  "Large",
+  "Medium",
+  "Small",
+  "None",
+  NULL
+};
+
 
 /* I allways forget what is push and what is drop */
 #define DROP_EVENT 0
@@ -55,6 +67,7 @@ static int is_combo_possible( const SDL_Event *event );
 
 /*
   Combos currently are mapped to Fx functions used in Fuse:
+    L1 + R1 + A      Toggle Full/None border size
     L1 + R1 + B      Toggle triple buffer
     L1 + R1 + X      Joystick
 
@@ -73,6 +86,7 @@ static int is_combo_possible( const SDL_Event *event );
 
 #define OPEN_JOYSTICK   (FLAG_L1|FLAG_R1|FLAG_X)
 #define TRIPLE_BUFFER   (FLAG_L1|FLAG_R1|FLAG_B)
+#define CHANGE_BORDER   (FLAG_L1|FLAG_R1|FLAG_A)
 
 #define TAPE_PLAY       (FLAG_L1|FLAG_SELECT|FLAG_X)
 
@@ -141,6 +155,7 @@ push_combo_event( Uint8* flags )
   SDL_Event combo_event;
   SDLKey combo_key = 0;
   int toggle_triple_buffer = 0;
+  int change_border = 0;
 
   /* Nothing to do */
   if ( !flags ) return 0;
@@ -150,6 +165,9 @@ push_combo_event( Uint8* flags )
   switch (*flags) {
   case OPEN_JOYSTICK:
     combo_key = SDLK_F12; break;
+
+  case CHANGE_BORDER:
+    change_border = 1; break;
 
   case TRIPLE_BUFFER:
     toggle_triple_buffer = 1; break;
@@ -211,6 +229,21 @@ push_combo_event( Uint8* flags )
     combo_done = 1;
     return 1;
 
+  /* Change border */
+  } else if ( change_border ) {
+    int current_border = option_enumerate_general_gcw0_od_border();
+    /* Swith between Full and None border */
+    current_border = current_border ? 0 : 4;
+    if ( settings_current.od_border ) free( settings_current.od_border );
+    settings_current.od_border = strdup(od_border[current_border]);
+
+    /* Clean flags and mark combo as done */
+    *flags = 0x00;
+    combo_done = 1;
+
+    /* make the needed UI changes */
+    uidisplay_hotswap_gfx_mode();
+    return 1;
   /* Nothing to do */
   } else
     return 0;
