@@ -57,8 +57,8 @@ while(<>) {
 			configfile => $configfile };
 }
 
-print Fuse::GPL( 'settings.c: Handling configuration settings',
-		 '2002 Philip Kendall' );
+print Fuse::GPL( 'controlmappingsettings.c: Handling control mapping settings',
+		 '2002 Philip Kendall & 2020 Pedro Luis RodrÃ­guez GonzÃ¡lez' );
 
 print hashline( __LINE__ ), << 'CODE';
 
