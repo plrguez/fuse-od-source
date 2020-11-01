@@ -1288,7 +1288,7 @@ uidisplay_status_overlay( void ) {
   updated_rects[num_rects].h = r1.h;
   num_rects++;
 
-  display_refresh_rect( r1.x - 1 * scale, r1.y - 1 * scale, r1.w + 8 * scale, r1.h );
+  display_refresh_rect( r1.x - 1 * scale, r1.y - 1 * scale, r1.w + 8 * scale, r1.h + 1 * scale, 1 );
 }
 #endif
 
@@ -1365,7 +1365,7 @@ uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
     if (old_position != position)
       display_refresh_all();
     else
-      display_refresh_rect( r1.x -1, r1.y - 1, r1.w + 8 * scale, r1.h + 1 * scale );
+      display_refresh_rect( r1.x -1, r1.y - 1, r1.w + 8 * scale, r1.h + 1 * scale, 0 );
     old_position = position;
   }
 }
@@ -1389,7 +1389,7 @@ uidisplay_vkeyboard_end( void ) {
   }
   /*
      Don't refresh display from the use of keyboard in other Widgets
-     The function widget_do already do a display_refresh_call at his end
+     The function widget_do already do a display_refresh_all at his end
      And the call here will affect to some operations like save screens
    */
   if (ui_widget_level == -1)
@@ -1535,9 +1535,9 @@ uidisplay_frame_end( void )
 #endif
 
 #ifdef GCWZERO
-  if ( settings_current.statusbar && ui_widget_level == -1 )
-    if ( !sdldisplay_current_od_border || settings_current.od_statusbar_with_border )
-      uidisplay_status_overlay();
+  if ( settings_current.statusbar && ui_widget_level == -1 &&
+       ( !sdldisplay_current_od_border || settings_current.od_statusbar_with_border ) )
+    uidisplay_status_overlay();
 #endif
 
   /* Force a full redraw if requested */

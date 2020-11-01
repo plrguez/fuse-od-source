@@ -1027,7 +1027,16 @@ void display_refresh_all(void)
           * sizeof(libspectrum_dword) );
 }
 
-#if VKEYBOARD
+#if defined(VKEYBOARD) || defined(GCWZERO)
+typedef struct od_t_last_screen {
+  int index;
+  libspectrum_dword value;
+} od_t_last_screen;
+
+static od_t_last_screen od_save_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ] = {
+  { -1, 0 }
+};
+
 void display_refresh_main_screen_rect( int x, int y, int w, int h )
 {
   size_t i;
@@ -1050,9 +1059,9 @@ void display_refresh_main_screen_rect( int x, int y, int w, int h )
     display_maybe_dirty[i] |= dirty;
 }
 
-void display_refresh_rect( int x, int y, int w, int h )
+void display_refresh_rect( int x, int y, int w, int h, int save )
 {
-  size_t i, j;
+  size_t i, j, k = 0;
   int index;
   int column = machine_current->timex ? x >> 4 : x >> 3;
   int bytes  = machine_current->timex ? w >> 4 : w >> 3 ;
@@ -1070,9 +1079,23 @@ void display_refresh_rect( int x, int y, int w, int h )
     display_is_dirty[i] |= dirty;
     for ( j = column; j < column + bytes; j++) {
       index = j + i * DISPLAY_SCREEN_WIDTH_COLS;
+      if ( save ) {
+        od_save_last_screen[k].index = index;
+        od_save_last_screen[k].value = display_last_screen[index];
+        k++;
+      }
       display_last_screen[index] = 0xffffffff;
     }
   }
+  if ( save )
+    od_save_last_screen[k].index = -1;
+}
+
+void od_restore_last_saved_display_rect( void ) {
+  int i;
+  for ( i = 0; od_save_last_screen[i].index != -1; i++ )
+    display_last_screen[od_save_last_screen[i].index] = od_save_last_screen[i].value;
+  od_save_last_screen[0].index = -1;
 }
 #endif
 

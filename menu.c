@@ -824,6 +824,10 @@ MENU_CALLBACK( menu_file_screenshot_savescreenasscr )
   filename = ui_get_save_filename( "Fuse - Save Screenshot as SCR" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
+#if USE_WIDGET && GCWZERO
+  if ( settings_current.statusbar )
+    od_restore_last_saved_display_rect();
+#endif
   screenshot_scr_write( filename );
 
   libspectrum_free( filename );
@@ -852,6 +856,10 @@ MENU_CALLBACK( menu_file_screenshot_savescreenasmlt )
   filename = ui_get_save_filename( "Fuse - Save Screenshot as MLT" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
+#if USE_WIDGET && GCWZERO
+  if ( settings_current.statusbar )
+    od_restore_last_saved_display_rect();
+#endif
   screenshot_mlt_write( filename );
 
   libspectrum_free( filename );
@@ -883,6 +891,10 @@ MENU_CALLBACK( menu_file_screenshot_savescreenaspng )
     ui_get_save_filename( "Fuse - Save Screenshot as PNG" );
   if( !filename ) { fuse_emulation_unpause(); return; }
 
+#if USE_WIDGET && GCWZERO
+  if ( settings_current.statusbar )
+    od_restore_last_saved_display_rect();
+#endif
   screenshot_write( filename, scaler );
 
   libspectrum_free( filename );
