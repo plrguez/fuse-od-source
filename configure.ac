@@ -561,8 +561,12 @@ if test "$libpng" = yes; then
     [PNG],
     [libpng14],
     [AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng])],
-    [AC_MSG_WARN([libpng not found - saving screenshots disabled])
-     libpng=no]
+    [PKG_CHECK_MODULES(
+      [PNG],
+      [libpng],
+      [AC_DEFINE([USE_LIBPNG], 1, [Defined if we're going to be using the installed libpng])],
+      [AC_MSG_WARN([libpng not found - saving screenshots disabled])
+       libpng=no])]
   )
   else
   PKG_CHECK_MODULES(

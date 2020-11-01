@@ -446,16 +446,13 @@ widget_menu_keyhandler( input_key key )
 #endif
 
 #ifdef GCWZERO
-  case INPUT_KEY_Home: /* Power */
-  case INPUT_KEY_End:  /* RetroFW */
-#ifdef GCWZERO
+  case INPUT_KEY_Escape: /* Select */
     widgets_to_end = 0;
     last_mapping_button_line = 0;
     if ( in_control_mapping_defaults ) {
       controlmapping_menu_exit_from_defaults();
     }
     in_control_mapping_defaults = 0;
-#endif
     widget_end_all( WIDGET_FINISHED_CANCEL );
     return;
 #endif

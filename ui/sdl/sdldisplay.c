@@ -102,7 +102,6 @@ static SDL_Rect vkeyboard_position_large_border[4] = {
 #ifdef GCWZERO
 size_t od_info_length;
 static SDL_Surface *od_status_line_ovelay;
-static SDL_Rect od_status_line_position = { 5, 225, 242, 10 };
 static SDL_Surface *red_cassette[4], *green_cassette[4];
 static SDL_Surface *red_mdr[4], *green_mdr[4];
 static SDL_Surface *red_disk[4], *green_disk[4];
@@ -192,9 +191,16 @@ static od_t_screen_scaling od_screen_scalings_2x[] = {
 #ifndef RETROFW
 static od_t_screen_scaling od_screen_scalings_1x_640[] = {
   { Full,    320, 240, &vkeyboard_position[0] },
-  { Large,   300, 225, &vkeyboard_position_large_border[0] }, /* No 4:3 AR */
+  { Large,   300, 225, &vkeyboard_position_large_border[0] },
   { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
   { Small,   272, 208, &vkeyboard_position_small_border[0] }, /* No 4:3 AR */
+  { None,    256, 192, &vkeyboard_position_no_border[0] },
+};
+static od_t_screen_scaling od_screen_scalings_1x_640_new[] = {
+  { Full,    320, 240, &vkeyboard_position[0] },
+  { Large,   288, 224, &vkeyboard_position_large_border[0] }, /* No 4:3 AR */
+  { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
+  { Small,   280, 210, &vkeyboard_position_small_border[0] },
   { None,    256, 192, &vkeyboard_position_no_border[0] },
 };
 static od_t_screen_scaling od_screen_scalings_1x_480[] = {
@@ -211,11 +217,17 @@ static SDL_Rect clip_area;
 static libspectrum_byte sdldisplay_is_triple_buffer = 0;
 static libspectrum_byte sdldisplay_flips_triple_buffer = 0;
 typedef enum sdldisplay_od_system_types {
+      OPENDINGUX_2014,
       OPENDINGUX,
       RETROFW_1,
       RETROFW_2
 } sdldisplay_t_od_system;
-static sdldisplay_t_od_system sdldisplay_od_system_type = OPENDINGUX;
+static sdldisplay_t_od_system sdldisplay_od_system_type =
+#ifdef RETROFW
+RETROFW_2;
+#else
+OPENDINGUX_2014;
+#endif
 #ifndef RETROFW
 typedef enum sdldisplay_od_panel_types {
       P320240,
@@ -224,6 +236,34 @@ typedef enum sdldisplay_od_panel_types {
 } sdldisplay_t_od_panel_type;
 static sdldisplay_t_od_panel_type sdl_od_panel_type = P320240;
 #endif
+
+typedef struct od_s_icon_positions {
+  sdldisplay_t_od_border border_type;
+  SDL_Rect     icon_disk;
+  SDL_Rect     icon_mdr;
+  SDL_Rect     icon_cassette;
+  SDL_Rect     status_line;
+} od_t_icon_positions;
+
+static od_t_icon_positions od_icon_positions[] = {
+  { Full,   { 243, 218, 0, 0 }, { 264, 218, 0, 0 }, { 285, 220, 0, 0 }, { 5,  225, 242, 10 } },
+  { Large,  { 274, 222, 0, 0 }, { 284, 222, 0, 0 }, { 294, 224, 0, 0 }, { 11, 223, 242, 10 } },
+  { Medium, { 268, 216, 0, 0 }, { 278, 216, 0, 0 }, { 288, 218, 0, 0 }, { 19, 218, 242, 10 } },
+  { Small,  { 260, 210, 0, 0 }, { 270, 210, 0, 0 }, { 280, 212, 0, 0 }, { 27, 212, 242, 10 } },
+  { None,   { 252, 204, 0, 0 }, { 262, 204, 0, 0 }, { 272, 206, 0, 0 }, { 35, 206, 242, 10 } },
+};
+
+#ifndef RETROFW
+static od_t_icon_positions od_icon_positions_new[] = {
+  { Full,   { 243, 218, 0, 0 }, { 264, 218, 0, 0 }, { 285, 220, 0, 0 }, { 5,  225, 242, 10 } },
+  { Large,  { 266, 220, 0, 0 }, { 276, 220, 0, 0 }, { 286, 222, 0, 0 }, { 19, 221, 242, 10 } },
+  { Medium, { 268, 216, 0, 0 }, { 278, 216, 0, 0 }, { 288, 218, 0, 0 }, { 19, 218, 242, 10 } },
+  { Small,  { 264, 212, 0, 0 }, { 274, 212, 0, 0 }, { 284, 214, 0, 0 }, { 24, 214, 242, 10 } },
+  { None,   { 252, 204, 0, 0 }, { 262, 204, 0, 0 }, { 272, 206, 0, 0 }, { 35, 206, 242, 10 } },
+};
+#endif
+
+static od_t_icon_positions od_icon_position;
 #endif
 
 static int image_width;
@@ -395,6 +435,58 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
 }
 
 #ifdef GCWZERO
+#ifndef RETROFW
+#define OD_MODE320240 0x01
+#define OD_MODE640480 0x02
+
+#define OD_ADD_MODE( mode, width, height ) \
+  if ( add_mode & mode ) { \
+    modes[i] = malloc( sizeof (SDL_Rect) ); \
+    if ( modes[i] ) { \
+      modes[i]->x = modes[i]->y = 0; \
+      modes[i]->w = width; \
+      modes[i]->h = height; \
+    } \
+    i++; \
+  }
+
+static int
+od_compare_rects( const void *r1, const void *r2 ) {
+  SDL_Rect *cr1 = *((SDL_Rect**) r1);
+  SDL_Rect *cr2 = *((SDL_Rect**) r2);
+
+  /* Sort descending by height */
+  return cr2->h - cr1->h;
+}
+
+static void
+od_complete_modes( SDL_Rect **modes ) {
+  /* SDL in main OD firmware do not inform for other modes than native */
+  /* Complete with 320x240 and 640x480 */
+  int i;
+  int add_mode = OD_MODE320240 | OD_MODE640480;
+  for ( i = 0; modes[i]; i++ ) {
+    switch ( modes[i]->h ) {
+    case 240:
+      add_mode &= ~OD_MODE320240;
+      break;
+    case 480:
+      add_mode &= ~OD_MODE640480;
+      break;
+    default:
+      break;
+    }
+  }
+
+  OD_ADD_MODE( OD_MODE640480, 640, 480 );
+  OD_ADD_MODE( OD_MODE320240, 320, 240 );
+
+  /* Sort if something was added */
+  if ( add_mode )
+    qsort( modes, i, sizeof modes[0], od_compare_rects);
+}
+#endif /* #ifndef RETROFW */
+
 /* Initializations for OpenDingux/RetroFW */
 void
 uidisplay_od_init( SDL_Rect **modes )
@@ -440,15 +532,22 @@ uidisplay_od_init( SDL_Rect **modes )
  *    ID=buildroot
  *    VERSION_ID=2018.02.11
  *    PRETTY_NAME="Buildroot 2018.02.11"
-*
- * For OpenDingux:
+ *
+ * For classic OpenDingux:
  *    NAME=Buildroot
  *    VERSION=2014.08-g156cb719e
  *    ID=buildroot
  *    VERSION_ID=2014.08
  *    PRETTY_NAME="Buildroot 2014.08"
+ *
+ * For mainline OpenDingux:
+ *    NAME=Buildroot
+ *    VERSION=od-rs90-2020.10.04-9-gb1f24b975e
+ *    ID=buildroot
+ *    VERSION_ID=2020.08
+ *    PRETTY_NAME="Buildroot 2020.08"
+ *
  */
-
 #ifdef RETROFW
   /* We are on RetroFW */
   char line[100];
@@ -471,11 +570,17 @@ uidisplay_od_init( SDL_Rect **modes )
     fclose( os_release );
   }
 #else
-/* We are on OpenDingux */
-  sdldisplay_od_system_type = OPENDINGUX;
-#endif
+  char driver[10];
+
+  SDL_VideoDriverName( &driver[0], 10 );
+  if ( strncmp( &driver[0], "kmsdrm", 6 ) == 0 ) {
+    sdldisplay_od_system_type = OPENDINGUX;
+    od_complete_modes( modes );
+  } else
+    sdldisplay_od_system_type = OPENDINGUX_2014;
+#endif /* #ifdef RETROFW */
 }
-#endif
+#endif /* #ifdef GCWZERO */
 
 int
 uidisplay_init( int width, int height )
@@ -751,8 +856,10 @@ sdldisplay_load_gfx_mode( void )
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
     : (SDL_HWSURFACE | SDL_TRIPLEBUF);
   } else {
-    while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
-      SDL_Flip( sdldisplay_gc );
+    /* On new kmsdrm driver no need to Flip page to deactivate triple buffer */
+    if ( sdldisplay_od_system_type != OPENDINGUX )
+      while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
+        SDL_Flip( sdldisplay_gc );
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
     : SDL_HWSURFACE;
   }
@@ -762,6 +869,8 @@ sdldisplay_load_gfx_mode( void )
   sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
 #endif
   sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
+  od_icon_position = od_icon_positions[sdldisplay_current_od_border];  
+
   if ( ( sdldisplay_current_od_border && !sdldisplay_last_od_border ) ||
        ( !sdldisplay_current_od_border && sdldisplay_last_od_border ) ) {
     SDL_Surface *swap;
@@ -780,7 +889,12 @@ sdldisplay_load_gfx_mode( void )
     if ( sdldisplay_current_size <= 1 )
       switch (sdl_od_panel_type) {
       case P640480:
-        ssc = &od_screen_scalings_1x_640[0];
+        if ( sdldisplay_od_system_type == OPENDINGUX ) {
+          ssc = &od_screen_scalings_1x_640_new[0];
+          od_icon_position = od_icon_positions_new[sdldisplay_current_od_border];
+        } else {
+          ssc = &od_screen_scalings_1x_640[0];
+        }
         break;
       case P480320:
         ssc = &od_screen_scalings_1x_480[0];
@@ -888,8 +1002,8 @@ sdldisplay_load_gfx_mode( void )
   /* Create the surface that contains status in scaling */
   SDL_Surface *od_tmp_screen;
   od_tmp_screen = SDL_CreateRGBSurface(SDL_HWSURFACE,
-                                       machine_current->timex ? od_status_line_position.w * 2 : od_status_line_position.w,
-                                       machine_current->timex ? od_status_line_position.h * 2 : od_status_line_position.h,
+                                       machine_current->timex ? od_icon_position.status_line.w * 2 : od_icon_position.status_line.w,
+                                       machine_current->timex ? od_icon_position.status_line.h * 2 : od_icon_position.status_line.h,
                                        16,
                                        sdldisplay_gc->format->Rmask,
                                        sdldisplay_gc->format->Gmask,
@@ -1049,26 +1163,9 @@ sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
 {
   SDL_Rect r = { 243, 218, red_disk[0]->w, red_disk[0]->h };
 #ifdef GCWZERO
-  switch (sdldisplay_current_od_border) {
-  case None:
-    r.x = 252;
-    r.y = 204;
-    break;
-  case Small:
-    r.x = 260;
-    r.y = 210;
-    break;
-  case Medium:
-    r.x = 268;
-    r.y = 216;
-    break;
-  case Large:
-    r.x = 274;
-    r.y = 222;
-    break;
-  case Full:
-  default:
-    break;
+  if ( sdldisplay_current_od_border != Full ) {
+    r.x = od_icon_position.icon_disk.x;
+    r.y = od_icon_position.icon_disk.y;
   }
 #endif
 
@@ -1086,26 +1183,9 @@ sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
   r.x = 264;
   r.y = 218;
 #ifdef GCWZERO
-  switch (sdldisplay_current_od_border) {
-  case None:
-    r.x = 262;
-    r.y = 204;
-    break;
-  case Small:
-    r.x = 270;
-    r.y = 210;
-    break;
-  case Medium:
-    r.x = 278;
-    r.y = 216;
-    break;
-  case Large:
-    r.x = 284;
-    r.y = 222;
-    break;
-  case Full:
-  default:
-    break;
+  if ( sdldisplay_current_od_border != Full ) {
+    r.x = od_icon_position.icon_mdr.x;
+    r.y = od_icon_position.icon_mdr.y;
   }
 #endif
   r.w = red_mdr[0]->w;
@@ -1125,26 +1205,9 @@ sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
   r.x = 285;
   r.y = 220;
 #ifdef GCWZERO
-  switch (sdldisplay_current_od_border) {
-  case None:
-    r.x = 272;
-    r.y = 206;
-    break;
-  case Small:
-    r.x = 280;
-    r.y = 212;
-    break;
-  case Medium:
-    r.x = 288;
-    r.y = 218;
-    break;
-  case Large:
-    r.x = 294;
-    r.y = 224;
-    break;
-  case Full:
-  default:
-    break;
+  if ( sdldisplay_current_od_border != Full ) {
+    r.x = od_icon_position.icon_cassette.x;
+    r.y = od_icon_position.icon_cassette.y;
   }
 #endif
   r.w = red_cassette[0]->w;
@@ -1239,39 +1302,12 @@ uidisplay_putpixel_alpha( int x, int y, int colour ) {
 
 static void
 uidisplay_status_overlay( void ) {
-  SDL_Rect current_positions = od_status_line_position;
-
-  switch (sdldisplay_current_od_border) {
-  case Large:
-    current_positions.x += 6;
-    current_positions.y -= 2;
-    break;
-
-  case Medium:
-    current_positions.x += 14;
-    current_positions.y -= 7;
-    break;
-
-  case Small:
-    current_positions.x += 22;
-    current_positions.y -= 13;
-    break;
-
-  case None:
-    current_positions.x += 30;
-    current_positions.y -= 19;
-    break;
-
-  default:
-    break;
-  }
-
   int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
 
-  SDL_Rect r1 = { current_positions.x * scale, current_positions.y * scale,
-                  current_positions.w * scale, current_positions.h * scale };
+  SDL_Rect r1 = { od_icon_position.status_line.x * scale, od_icon_position.status_line.y * scale,
+                  od_icon_position.status_line.w * scale, od_icon_position.status_line.h * scale };
 
-  SDL_Rect r2 = { 0, 0, ( od_info_length + 3 ) * scale, current_positions.h * scale };
+  SDL_Rect r2 = { 0, 0, ( od_info_length + 3 ) * scale, od_icon_position.status_line.h * scale };
 
   SDL_FillRect(od_status_line_ovelay, NULL, settings_current.bw_tv ? bw_values_a[18] : colour_values_a[18]);
   SDL_FillRect(od_status_line_ovelay, &r2, settings_current.bw_tv ? bw_values_a[17] : colour_values_a[17]);
@@ -1305,7 +1341,10 @@ uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
   if ( sdldisplay_current_size <= 1 )
     switch (sdl_od_panel_type) {
     case P640480:
-      ssc = &od_screen_scalings_1x_640[0];
+      if ( sdldisplay_od_system_type == OPENDINGUX )
+        ssc = &od_screen_scalings_1x_640_new[0];
+      else
+        ssc = &od_screen_scalings_1x_640[0];
       break;
     case P480320:
       ssc = &od_screen_scalings_1x_480[0];
@@ -1616,7 +1655,9 @@ uidisplay_frame_end( void )
 #ifdef GCWZERO
   if ( sdldisplay_is_triple_buffer ) {
     SDL_Flip( sdldisplay_gc );
-    if ( ++sdldisplay_flips_triple_buffer >= 3 ) sdldisplay_flips_triple_buffer = 0;
+    /* On new kmsdrm driver no need to Flip page to deactivate triple buffer */
+    if ( sdldisplay_od_system_type != OPENDINGUX )
+      if ( ++sdldisplay_flips_triple_buffer >= 3 ) sdldisplay_flips_triple_buffer = 0;
   } else
 #endif
   SDL_UpdateRects( sdldisplay_gc, num_rects, updated_rects );

@@ -532,7 +532,7 @@ void utils_set_last_loaded_file( const char *filename, libspectrum_class_t class
 
   /* Change current working directory to the path of last loaded file */
   if ( change_to_path ) {
-    strncpy( buffer, filename, PATH_MAX );
+    strncpy( buffer, filename, PATH_MAX - 1);
     path = dirname(buffer);
     if (path && path[0] != '\0') {
       chdir(path);

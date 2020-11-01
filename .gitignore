@@ -110,8 +110,8 @@ tags
 /Platform/GCW0/build/
 /Platform/RETROFW2.0/build/
 /Platform/RETROFW1.0/build/
-/Platform/GCW0/gdbinit
-/Platform/RETROFW1.0/gdbinit
-/Platform/RETROFW2.0/gdbinit
+/Platform/GCW0/gdbinit*
+/Platform/RETROFW1.0/gdbinit*
+/Platform/RETROFW2.0/gdbinit*
 /controlmapping/controlmappingsettings.c
 /controlmapping/controlmappingsettings.h

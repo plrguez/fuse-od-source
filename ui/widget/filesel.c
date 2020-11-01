@@ -141,10 +141,10 @@ static widget_file_filter_t widget_file_filters[FILTER_CLASS_GENERAL+1] = {
 #else
   { FILTER_CLASS_COMPRESSED,
                           NULL, "gz;zip" },
-#elseif LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
+#endif
+#elif LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
   { FILTER_CLASS_COMPRESSED,
                           NULL, "bz2" },
-#endif
 #endif
   { FILTER_CLASS_RECORDING,
                           "rzx", "rzx" },
@@ -206,9 +206,9 @@ static widget_last_positions_t last_known_positions[ FILTER_CLASS_GENERAL+1 ] = 
   { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
 #else
   { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
-#elseif LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
-  { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
 #endif
+#elif LIBSPECTRUM_SUPPORTS_BZ2_COMPRESSION
+  { FILTER_CLASS_COMPRESSED,      0, 0, 1, NULL },
 #endif
   { FILTER_CLASS_RECORDING,       0, 0, 1, NULL },
   { FILTER_CLASS_SCREENSHOT,      0, 0, 1, NULL },
@@ -1273,8 +1273,8 @@ widget_filesel_keyhandler( input_key key )
 	        return;
           }
           /* Append the leafname and return it */
-          strncat( fn, FUSE_DIR_SEP_STR, 1 );
-          strncat( fn, default_name, strlen( default_name ) );
+          strlcat( fn, FUSE_DIR_SEP_STR, strlen( fn ) + 1 + strlen( FUSE_DIR_SEP_STR ) + 1 );
+          strlcat( fn, default_name, strlen( fn ) + 1 + strlen( default_name ) + 1 );
         /* absolute name */
         } else {
 	      fn = utils_safe_strdup( default_name );

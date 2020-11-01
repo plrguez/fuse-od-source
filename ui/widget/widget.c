@@ -545,7 +545,7 @@ int widget_end( void )
 }
 
 #ifdef GCWZERO
-#define WIDGET_MAX_INFO_LENGTH 45
+#define WIDGET_MAX_INFO_LENGTH 48
 static char status_info[WIDGET_MAX_INFO_LENGTH];
 
 static char* od_machine_name( libspectrum_machine type ) {
@@ -560,24 +560,27 @@ static char* od_machine_name( libspectrum_machine type ) {
 }
 
 size_t widget_statusbar_update_info( float speed ) {
+  char suffix[14];
   snprintf(status_info, WIDGET_MAX_INFO_LENGTH,
            settings_current.od_show_fps ? "%s - %3.0ffps (1:%d)" : "%s - %3.0f%% (1:%d)",
            od_machine_name( machine_current->machine ),
            speed,
            settings_current.frame_rate);
-  if ( settings_current.joystick_1_output || settings_current.joystick_gcw0_output )
-    snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
-             status_info,
+  if ( settings_current.joystick_1_output || settings_current.joystick_gcw0_output ) {
+    snprintf(suffix, 14, " [%s]",
              settings_current.joystick_1_output ? joystick_name[settings_current.joystick_1_output]
                                                 : "Keyboard" );
-  if ( settings_current.joystick_2_output )
-    snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
-             status_info,
+    strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
+  }
+  if ( settings_current.joystick_2_output ) {
+    snprintf(suffix, 14, " [%s]",
              joystick_name[settings_current.joystick_2_output] );
-  if ( settings_current.od_triple_buffer )
-    snprintf(status_info, WIDGET_MAX_INFO_LENGTH, "%s [%s]",
-             status_info,
-             "B");
+    strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
+  }
+  if ( settings_current.od_triple_buffer ) {
+    snprintf(suffix, 5, " [%s]", "B");
+    strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
+  }
 
   return widget_stringwidth( status_info );
 }
