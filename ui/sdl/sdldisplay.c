@@ -1542,8 +1542,7 @@ uidisplay_frame_end( void )
 
   /* Force a full redraw if requested */
 #ifdef GCWZERO
-  if ( sdldisplay_force_full_refresh || sdldisplay_is_triple_buffer ||
-       sdldisplay_current_od_border ) {
+  if ( sdldisplay_force_full_refresh || sdldisplay_is_triple_buffer ) {
 #else
   if ( sdldisplay_force_full_refresh ) {
 #endif
@@ -1568,28 +1567,23 @@ uidisplay_frame_end( void )
 
   for( r = updated_rects; r != last_rect; r++ ) {
 #ifdef GCWZERO
-    int dst_y;
-    int dst_h;
-    int dst_x;
     if ( sdldisplay_current_od_border ) {
-      r->x = clip_area.x;
-      r->y = clip_area.y;
-      r->w = clip_area.w;
-      r->h = clip_area.h;
-
-      dst_y = 0;
-      dst_h = r->h;
-      dst_x = 0;
-    } else {
-      dst_y = r->y * sdldisplay_current_size + fullscreen_y_off;
-      dst_h = r->h;
-      dst_x = r->x * sdldisplay_current_size + fullscreen_x_off;
+      if ( ( r->x > clip_area.x + clip_area.w ) ||
+           ( r->y > clip_area.y + clip_area.h ) )
+        continue;
+      if ( r->x < clip_area.x )
+        r->x = clip_area.x;
+      if ( r->y < clip_area.y )
+        r->y = clip_area.y;
+      if ( r->x + r->w > clip_area.x + clip_area.w )
+        r->w = clip_area.w - ( r->x - clip_area.x );
+      if ( r->y + r->h > clip_area.y + clip_area.h )
+        r->h = clip_area.h - ( r->y - clip_area.y );
     }
-#else
+#endif
     int dst_y = r->y * sdldisplay_current_size + fullscreen_y_off;
     int dst_h = r->h;
     int dst_x = r->x * sdldisplay_current_size + fullscreen_x_off;
-#endif
 
     scaler_proc16(
       (libspectrum_byte*)tmp_screen->pixels +

@@ -1281,7 +1281,7 @@ menu_control_mapping_load_detail( void )
   ui_menu_item_set_active( path,
                            controlmapping_something_changed( &settings_current ) ? 1 : 0 );
 
-  filename = utils_last_filename( controlmapping_get_filename(), 0 );
+  filename = utils_last_filename( controlmapping_get_filename(), 1 );
   buffer   = strndup( filename, 20 );
   if ( strlen(filename) > 20 )
     memcpy( &(buffer[19]), ">", 1 );
@@ -1303,7 +1303,7 @@ menu_control_mapping_save_detail( void )
     return NULL;
 
   mapfile = controlmapping_get_filename();
-  filename = utils_last_filename( mapfile,0 );
+  filename = utils_last_filename( mapfile, 1 );
   if (filename) {
     buffer = strndup( filename, 20 );
     if ( strlen(filename) > 20 )
