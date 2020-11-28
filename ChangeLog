@@ -36,6 +36,8 @@
             (Jools Wills).
           * WidgetUI: Enable HOME and END keys in menus on widget UIs (Gergely
             Szasz).
+	  * Timex: don't abort if the Timex dock cartridge image is not
+	    found (Alberto Garcia).
 
 2018-12-09  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 

@@ -178,6 +178,7 @@ tc2068_reset( void )
   if( error ) {
     ui_error( UI_ERROR_INFO, "Ignoring Timex dock file '%s'",
             settings_current.dck_file );
+    settings_set_string( &settings_current.dck_file, NULL );
   }
 
   return 0;
