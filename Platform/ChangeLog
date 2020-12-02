@@ -2,15 +2,17 @@
 
     * Fixed wrong calculations of dirty blocks for the border scalings.
 
+    * Fixed Pal TV Filter segfaults when border scaling is in use.
+
     * Beta OpenDingux new options:
       * General GCW0:
-        Â· 'Adjust screen refresh rate' (default disabled).
-        Â· 'Dynamic sound rate' (default disabled).
+        · 'Adjust screen refresh rate' (default disabled).
+        · 'Dynamic sound rate' (default disabled).
 
       'Adjust screen refresh rate'. Set the screen refresh rate depending
       on selected machine:
-        Â· 60Hz for Spectrum 48K NTSC and Timex TS2068 models
-        Â· 50Hz for all other models
+        · 60Hz for Spectrum 48K NTSC and Timex TS2068 models
+        · 50Hz for all other models
 
       'Dynamic sound rate' adjust the rate used in the blip buffer to
       create sound samples to avoid sound pops.
