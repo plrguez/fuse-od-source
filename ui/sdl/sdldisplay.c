@@ -45,10 +45,6 @@
 #include "ui/vkeyboard.h"
 #endif
 #ifdef GCWZERO
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/fb.h>
 #include "options.h"
 #endif
 
@@ -216,13 +212,7 @@ static sdldisplay_t_od_border sdldisplay_current_od_border = Full;
 static SDL_Rect clip_area;
 static libspectrum_byte sdldisplay_is_triple_buffer = 0;
 static libspectrum_byte sdldisplay_flips_triple_buffer = 0;
-typedef enum sdldisplay_od_system_types {
-      OPENDINGUX_2014,
-      OPENDINGUX,
-      RETROFW_1,
-      RETROFW_2
-} sdldisplay_t_od_system;
-static sdldisplay_t_od_system sdldisplay_od_system_type =
+sdldisplay_t_od_system sdldisplay_od_system_type =
 #ifdef RETROFW
 RETROFW_2;
 #else
@@ -852,7 +842,7 @@ sdldisplay_load_gfx_mode( void )
     sdldisplay_flips_triple_buffer = 1;
 #else
     sdldisplay_flips_triple_buffer = 0;
-#endif
+#endif /* #ifdef RETROFW */
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
     : (SDL_HWSURFACE | SDL_TRIPLEBUF);
   } else {
@@ -867,7 +857,18 @@ sdldisplay_load_gfx_mode( void )
   int display_width, display_height;
 #ifndef RETROFW
   sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
-#endif
+  if ( sdldisplay_od_system_type == OPENDINGUX ) {
+    int refresh_rate = 60;
+    char crefresh_rate[3];
+
+    if ( settings_current.od_adjust_refresh_rate ) {
+      refresh_rate = machine_current->timings.processor_speed /
+                     machine_current->timings.tstates_per_frame;
+    }
+    snprintf(crefresh_rate, 3, "%2d", refresh_rate);
+    setenv("SDL_VIDEO_REFRESHRATE", &crefresh_rate[0], 1);
+  }
+#endif /* #ifndef RETROFW */
   sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
   od_icon_position = od_icon_positions[sdldisplay_current_od_border];  
 
@@ -1608,12 +1609,18 @@ uidisplay_frame_end( void )
 #ifdef GCWZERO
     if ( sdldisplay_current_od_border ) {
       if ( ( r->x > clip_area.x + clip_area.w ) ||
-           ( r->y > clip_area.y + clip_area.h ) )
+           ( r->y > clip_area.y + clip_area.h ) ||
+           ( r->x + r->w < clip_area.x ) ||
+           ( r->y + r->h < clip_area.y ) )
         continue;
-      if ( r->x < clip_area.x )
+      if ( r->x < clip_area.x ) {
+        r->w = r->w - ( clip_area.x - r->x );
         r->x = clip_area.x;
-      if ( r->y < clip_area.y )
+      }
+      if ( r->y < clip_area.y ) {
+        r->h = r->h - ( clip_area.y - r->y );
         r->y = clip_area.y;
+      }
       if ( r->x + r->w > clip_area.x + clip_area.w )
         r->w = clip_area.w - ( r->x - clip_area.x );
       if ( r->y + r->h > clip_area.y + clip_area.h )

@@ -69,6 +69,7 @@ static const char * const od_border[] = {
   Combos currently are mapped to Fx functions used in Fuse:
     L1 + R1 + A      Toggle Full/None border size
     L1 + R1 + B      Toggle triple buffer
+    L1 + R1 + Y      Toggle refresh rate adjust
     L1 + R1 + X      Joystick
 
     L1 + Select + Y  Tape play (F8)
@@ -85,6 +86,7 @@ static const char * const od_border[] = {
 */
 
 #define OPEN_JOYSTICK   (FLAG_L1|FLAG_R1|FLAG_X)
+#define REFRESH_RATE    (FLAG_L1|FLAG_R1|FLAG_Y)
 #define TRIPLE_BUFFER   (FLAG_L1|FLAG_R1|FLAG_B)
 #define CHANGE_BORDER   (FLAG_L1|FLAG_R1|FLAG_A)
 
@@ -155,6 +157,7 @@ push_combo_event( Uint8* flags )
   SDL_Event combo_event;
   SDLKey combo_key = 0;
   int toggle_triple_buffer = 0;
+  int toggle_refresh_rate = 0;
   int change_border = 0;
 
   /* Nothing to do */
@@ -171,6 +174,9 @@ push_combo_event( Uint8* flags )
 
   case TRIPLE_BUFFER:
     toggle_triple_buffer = 1; break;
+
+  case REFRESH_RATE:
+    toggle_refresh_rate = 1; break;
 
   case TAPE_PLAY:
     combo_key = SDLK_F8; break;
@@ -227,6 +233,17 @@ push_combo_event( Uint8* flags )
     /* Clean flags and mark combo as done */
     *flags = 0x00;
     combo_done = 1;
+    return 1;
+
+  /* Toggle refresh rate */
+  } else if ( toggle_refresh_rate ) {
+    settings_current.od_adjust_refresh_rate = !settings_current.od_adjust_refresh_rate;
+
+    /* Clean flags and mark combo as done */
+    *flags = 0x00;
+    combo_done = 1;
+    /* make the needed UI changes */
+    uidisplay_hotswap_gfx_mode();
     return 1;
 
   /* Change border */

@@ -96,15 +96,15 @@ sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
 #ifdef __FreeBSD__
   requested.samples = pow( 2.0, floor( log2( sound_framesiz ) ) );
 #else			/* #ifdef __FreeBSD__ */
-#ifdef GCWZERO
-  /* Increase frame buffer with triple buffer or screen scaling (Border option)
-     With this options the screen is fully refreshed anf this can produce some
+#if defined RETROFW || defined GCWZERO
+  /* Increase frame buffer with triple buffer.
+     With this option the screen is fully refreshed and this can produce some
      audible pops */
-  if ( settings_current.od_triple_buffer || strncmp(settings_current.od_border,"Full", 4 ) )
+  if ( settings_current.od_triple_buffer )
     requested.samples = pow( 2.0, ceil( log2( sound_framesiz ) ) );
   else
     requested.samples = pow( 2.0, floor( log2( sound_framesiz ) ) );
-#else			/* #ifdef GCWZER0 */
+#else			/* #if defined RETROFW || defined GCWZERO */
   requested.samples = sound_framesiz;
 #endif			/* #ifdef __FreeBSD__ */
 #endif
@@ -218,3 +218,11 @@ sdlwrite( void *userdata, Uint8 *stream, int len )
   /* If we ran out of sound, do nothing else as SDL has prefilled
      the output buffer with silence :( */
 }
+
+#ifdef GCWZERO
+double
+sound_fill_level( void )
+{
+  return (double) ( sound_fifo.size - sfifo_space( &sound_fifo ) ) / sound_fifo.size;
+}
+#endif

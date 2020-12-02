@@ -43,6 +43,17 @@
 #include "svg.h"
 #include "ui/scaler/scaler.h"
 
+
+#ifdef GCWZERO
+typedef enum sdldisplay_od_system_types {
+      OPENDINGUX_2014,
+      OPENDINGUX,
+      RETROFW_1,
+      RETROFW_2
+} sdldisplay_t_od_system;
+extern sdldisplay_t_od_system sdldisplay_od_system_type;
+#endif /* #ifdef GCWZERO */
+
 /* The various severities of error level, increasing downwards */
 typedef enum ui_error_level {
 

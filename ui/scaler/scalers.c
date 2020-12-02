@@ -1554,7 +1554,12 @@ FUNCTION( scaler_PalTV )( const libspectrum_byte *srcPtr,
             RGB_TO_U( r1, g1, b1 ) ) >> 2;
     v1 = ( RGB_TO_V( r2, g2, b2 ) + 2 * RGB_TO_V( r0, g0, b0 ) +
             RGB_TO_V( r1, g1, b1 ) ) >> 2;
+#ifdef GCWZERO
+    /* With odd width values i could have negative values and segfault errors will occur */
+    for( i = width; i>0; i -= 2 ) {
+#else
     for( i = width; i; i -= 2 ) {
+#endif
 #if SCALER_DATA_SIZE == 2
       /* 1.a. RGB => RGB */
       r2 = R_TO_R( *p );

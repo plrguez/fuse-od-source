@@ -53,6 +53,12 @@ typedef struct machine_timings {
   /* Frame timing */
   libspectrum_dword tstates_per_frame;
 
+#ifdef GCWZERO
+  /* Processor speed adjusted to vsync */
+  libspectrum_dword processor_speed_vsync;
+  libspectrum_dword processor_speed_real;
+#endif
+
 } machine_timings;
 
 typedef struct fuse_machine_info {
