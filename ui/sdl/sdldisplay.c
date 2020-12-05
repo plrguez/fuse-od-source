@@ -186,18 +186,19 @@ static od_t_screen_scaling od_screen_scalings_2x[] = {
 };
 #ifndef RETROFW
 static od_t_screen_scaling od_screen_scalings_1x_640[] = {
-  { Full,    320, 240, &vkeyboard_position[0] },
-  { Large,   300, 225, &vkeyboard_position_large_border[0] },
-  { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
-  { Small,   272, 208, &vkeyboard_position_small_border[0] }, /* No 4:3 AR */
-  { None,    256, 192, &vkeyboard_position_no_border[0] },
-};
-static od_t_screen_scaling od_screen_scalings_1x_640_new[] = {
+#ifdef OPENDINGUX_KMSDRM
   { Full,    320, 240, &vkeyboard_position[0] },
   { Large,   288, 224, &vkeyboard_position_large_border[0] }, /* No 4:3 AR */
   { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
   { Small,   280, 210, &vkeyboard_position_small_border[0] },
   { None,    256, 192, &vkeyboard_position_no_border[0] },
+#else
+  { Full,    320, 240, &vkeyboard_position[0] },
+  { Large,   300, 225, &vkeyboard_position_large_border[0] },
+  { Medium,  288, 216, &vkeyboard_position_medium_border[0] },
+  { Small,   272, 208, &vkeyboard_position_small_border[0] }, /* No 4:3 AR */
+  { None,    256, 192, &vkeyboard_position_no_border[0] },
+#endif /* #ifdef OPENDINGUX_KSMDRM */
 };
 static od_t_screen_scaling od_screen_scalings_1x_480[] = {
   { Full,    320, 240, &vkeyboard_position[0] },
@@ -206,15 +207,19 @@ static od_t_screen_scaling od_screen_scalings_1x_480[] = {
   { Small,   272, 208, &vkeyboard_position_small_border[0] }, /* No 4:3 AR */
   { None,    256, 192, &vkeyboard_position_no_border[0] },
 };
-#endif
+#endif /* #ifndef RETROFW */
 static sdldisplay_t_od_border sdldisplay_last_od_border = Full;
 static sdldisplay_t_od_border sdldisplay_current_od_border = Full;
 static SDL_Rect clip_area;
 static libspectrum_byte sdldisplay_is_triple_buffer = 0;
+#ifndef OPENDINGUX_KMSDRM
 static libspectrum_byte sdldisplay_flips_triple_buffer = 0;
+#endif /* #ifndef OPENDINGUX_KMSDRM */
 sdldisplay_t_od_system sdldisplay_od_system_type =
 #ifdef RETROFW
 RETROFW_2;
+#elif defined(OPENDINGUX_KMSDRM)
+OPENDINGUX;
 #else
 OPENDINGUX_2014;
 #endif
@@ -243,8 +248,8 @@ static od_t_icon_positions od_icon_positions[] = {
   { None,   { 252, 204, 0, 0 }, { 262, 204, 0, 0 }, { 272, 206, 0, 0 }, { 35, 206, 242, 10 } },
 };
 
-#ifndef RETROFW
-static od_t_icon_positions od_icon_positions_new[] = {
+#ifdef OPENDINGUX_KMSDRM
+static od_t_icon_positions od_icon_positions_640480[] = {
   { Full,   { 243, 218, 0, 0 }, { 264, 218, 0, 0 }, { 285, 220, 0, 0 }, { 5,  225, 242, 10 } },
   { Large,  { 266, 220, 0, 0 }, { 276, 220, 0, 0 }, { 286, 222, 0, 0 }, { 19, 221, 242, 10 } },
   { Medium, { 268, 216, 0, 0 }, { 278, 216, 0, 0 }, { 288, 218, 0, 0 }, { 19, 218, 242, 10 } },
@@ -425,7 +430,7 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
 }
 
 #ifdef GCWZERO
-#ifndef RETROFW
+#ifdef OPENDINGUX_KMSDRM
 #define OD_MODE320240 0x01
 #define OD_MODE640480 0x02
 
@@ -475,7 +480,7 @@ od_complete_modes( SDL_Rect **modes ) {
   if ( add_mode )
     qsort( modes, i, sizeof modes[0], od_compare_rects);
 }
-#endif /* #ifndef RETROFW */
+#endif /* #ifdef OPENDINGUX_KMSDRM */
 
 /* Initializations for OpenDingux/RetroFW */
 void
@@ -559,15 +564,8 @@ uidisplay_od_init( SDL_Rect **modes )
     }
     fclose( os_release );
   }
-#else
-  char driver[10];
-
-  SDL_VideoDriverName( &driver[0], 10 );
-  if ( strncmp( &driver[0], "kmsdrm", 6 ) == 0 ) {
-    sdldisplay_od_system_type = OPENDINGUX;
-    od_complete_modes( modes );
-  } else
-    sdldisplay_od_system_type = OPENDINGUX_2014;
+#elif defined(OPENDINGUX_KMSDRM)
+  od_complete_modes( modes );
 #endif /* #ifdef RETROFW */
 }
 #endif /* #ifdef GCWZERO */
@@ -840,16 +838,16 @@ sdldisplay_load_gfx_mode( void )
   if (settings_current.od_triple_buffer) {
 #ifdef RETROFW
     sdldisplay_flips_triple_buffer = 1;
-#else
+#elif !defined(OPENDINGUX_KMSDRM)
     sdldisplay_flips_triple_buffer = 0;
 #endif /* #ifdef RETROFW */
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
     : (SDL_HWSURFACE | SDL_TRIPLEBUF);
   } else {
-    /* On new kmsdrm driver no need to Flip page to deactivate triple buffer */
-    if ( sdldisplay_od_system_type != OPENDINGUX )
-      while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
-        SDL_Flip( sdldisplay_gc );
+#ifndef OPENDINGUX_KMSDRM
+    while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
+      SDL_Flip( sdldisplay_gc );
+#endif /* #ifndef OPENDINGUX_KMSDRM */
     flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
     : SDL_HWSURFACE;
   }
@@ -857,17 +855,17 @@ sdldisplay_load_gfx_mode( void )
   int display_width, display_height;
 #ifndef RETROFW
   sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
-  if ( sdldisplay_od_system_type == OPENDINGUX ) {
-    int refresh_rate = 60;
-    char crefresh_rate[3];
+#ifdef OPENDINGUX_KMSDRM
+  int refresh_rate = 60;
+  char crefresh_rate[3];
 
-    if ( settings_current.od_adjust_refresh_rate ) {
-      refresh_rate = machine_current->timings.processor_speed /
-                     machine_current->timings.tstates_per_frame;
-    }
-    snprintf(crefresh_rate, 3, "%2d", refresh_rate);
-    setenv("SDL_VIDEO_REFRESHRATE", &crefresh_rate[0], 1);
+  if ( settings_current.od_adjust_refresh_rate ) {
+    refresh_rate = machine_current->timings.processor_speed /
+        machine_current->timings.tstates_per_frame;
   }
+  snprintf(crefresh_rate, 3, "%2d", refresh_rate);
+  setenv("SDL_VIDEO_REFRESHRATE", &crefresh_rate[0], 1);
+#endif /* #ifdef OPENDINGUX_KMSDRM */
 #endif /* #ifndef RETROFW */
   sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
   od_icon_position = od_icon_positions[sdldisplay_current_od_border];  
@@ -890,12 +888,10 @@ sdldisplay_load_gfx_mode( void )
     if ( sdldisplay_current_size <= 1 )
       switch (sdl_od_panel_type) {
       case P640480:
-        if ( sdldisplay_od_system_type == OPENDINGUX ) {
-          ssc = &od_screen_scalings_1x_640_new[0];
-          od_icon_position = od_icon_positions_new[sdldisplay_current_od_border];
-        } else {
-          ssc = &od_screen_scalings_1x_640[0];
-        }
+        ssc = &od_screen_scalings_1x_640[0];
+#ifdef OPENDINGUX_KMSDRM
+        od_icon_position = od_icon_positions_640480[sdldisplay_current_od_border];
+#endif
         break;
       case P480320:
         ssc = &od_screen_scalings_1x_480[0];
@@ -1342,10 +1338,7 @@ uidisplay_vkeyboard( void (*print_fn)(void), int position ) {
   if ( sdldisplay_current_size <= 1 )
     switch (sdl_od_panel_type) {
     case P640480:
-      if ( sdldisplay_od_system_type == OPENDINGUX )
-        ssc = &od_screen_scalings_1x_640_new[0];
-      else
-        ssc = &od_screen_scalings_1x_640[0];
+      ssc = &od_screen_scalings_1x_640[0];
       break;
     case P480320:
       ssc = &od_screen_scalings_1x_480[0];
@@ -1662,11 +1655,11 @@ uidisplay_frame_end( void )
 #ifdef GCWZERO
   if ( sdldisplay_is_triple_buffer ) {
     SDL_Flip( sdldisplay_gc );
-    /* On new kmsdrm driver no need to Flip page to deactivate triple buffer */
-    if ( sdldisplay_od_system_type != OPENDINGUX )
-      if ( ++sdldisplay_flips_triple_buffer >= 3 ) sdldisplay_flips_triple_buffer = 0;
+#ifndef OPENDINGUX_KMSDRM
+    if ( ++sdldisplay_flips_triple_buffer >= 3 ) sdldisplay_flips_triple_buffer = 0;
+#endif /* #ifndef OPENDINGUX_KMSDRM */
   } else
-#endif
+#endif /* #ifdef GCWZERO */
   SDL_UpdateRects( sdldisplay_gc, num_rects, updated_rects );
 
   num_rects = 0;

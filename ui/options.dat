@@ -28,7 +28,7 @@ Checkbox, A(u)to-save settings, autosave_settings, INPUT_KEY_u
 general_gcw0
 General GCW0 Options
 Checkbox, Triple Bu(f)fer, od_triple_buffer, INPUT_KEY_f
-#ifndef RETROFW
+#ifdef OPENDINGUX_KMSDRM
 Checkbox, Adjust screen (r)efresh rate, od_adjust_refresh_rate, INPUT_KEY_r
 Checkbox, D(y)namic sound rate, od_dynamic_sound_rate, INPUT_KEY_y
 #endif

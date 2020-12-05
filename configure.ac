@@ -349,6 +349,7 @@ if test "$gcw0" = "yes" -o "$retrofw" = "yes"; then
   AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
   AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
   AC_DEFINE([GCW0_VERSION], "m4_normalize(m4_include(Platform/VERSION)) for OpenDingux/RetroFW", [OpenDingux/RetroFW Version])
+  AC_CHECK_HEADERS(libdrm/drm.h libkms/libkms.h,AC_DEFINE([OPENDINGUX_KMSDRM], 1, [Defined if the beta OpenDingux detected]))
 fi
 
 dnl Look for null UI (default=no)

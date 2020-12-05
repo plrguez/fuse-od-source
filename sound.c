@@ -39,7 +39,7 @@
 #include "timer/timer.h"
 #include "ui/ui.h"
 #include "sound/blipbuffer.h"
-#ifdef GCWZERO
+#ifdef OPENDINGUX_KMSDRM
 #include <math.h>
 #endif
 
@@ -111,7 +111,7 @@ struct speaker_type_tag
 static struct speaker_type_tag speaker_type[] =
   { { 200, -37.0 }, { 1000, -67.0 }, { 0, 0.0 } };
 
-#ifdef GCWZERO
+#ifdef OPENDINGUX_KMSDRM
 static libspectrum_dword
 od_get_processor_speed_for_vsync( void ) {
   return ( machine_current->timings.tstates_per_frame *
@@ -141,18 +141,16 @@ static int
 sound_init_blip( Blip_Buffer **buf, Blip_Synth **synth )
 {
   *buf = new_Blip_Buffer();
-#ifdef GCWZERO
+#ifdef OPENDINGUX_KMSDRM
   libspectrum_dword cpu_speed;
-  if ( sdldisplay_od_system_type == OPENDINGUX && 
-       settings_current.od_adjust_refresh_rate &&
-       settings_current.od_dynamic_sound_rate )
+  if ( settings_current.od_adjust_refresh_rate && settings_current.od_dynamic_sound_rate )
     cpu_speed = od_get_processor_speed_for_vsync();
   else
     cpu_speed = sound_get_effective_processor_speed();
   blip_buffer_set_clock_rate( *buf, cpu_speed );
 #else
   blip_buffer_set_clock_rate( *buf, sound_get_effective_processor_speed() );
-#endif
+#endif /* #ifdef OPENDINGUX_KMSDRM */
   /* Allow up to 1s of playback buffer - this allows us to cope with slowing
      down to 2% of speed where a single Speccy frame generates just under 1s
      of sound */
@@ -341,11 +339,9 @@ sound_init( const char *device )
   /* Adjust relative processor speed to deal with adjusting sound generation
      frequency against emulation speed (more flexible than adjusting generated
      sample rate) */
-#ifdef GCWZERO
+#ifdef OPENDINGUX_KMSDRM
   libspectrum_dword cpu_speed;
-  if ( sdldisplay_od_system_type == OPENDINGUX &&
-       settings_current.od_adjust_refresh_rate &&
-       settings_current.od_dynamic_sound_rate )
+  if ( settings_current.od_adjust_refresh_rate && settings_current.od_dynamic_sound_rate )
     cpu_speed = od_get_processor_speed_for_vsync();
   else
     cpu_speed = sound_get_effective_processor_speed();
@@ -730,14 +726,12 @@ sound_frame( void )
   if( !sound_enabled )
     return;
 
-#ifdef GCWZERO
+#ifdef OPENDINGUX_KMSDRM
   const double max_delta = 0.005;
   long dynamic_frequency = left_buf->clock_rate_;
   static int frames_to_adjust = 10;
 
-  int dynamic_sound_adjust = ( sdldisplay_od_system_type == OPENDINGUX &&
-                               settings_current.od_adjust_refresh_rate &&
-                               settings_current.od_dynamic_sound_rate ) ? 1 : 0;
+  int dynamic_sound_adjust = ( settings_current.od_adjust_refresh_rate && settings_current.od_dynamic_sound_rate ) ? 1 : 0;
   if ( dynamic_sound_adjust ) {
     frames_to_adjust--;
     if (!frames_to_adjust) {
@@ -750,7 +744,7 @@ sound_frame( void )
 */
     }
   }
-#endif
+#endif /* #ifdef OPENDINGUX_KMSDRM */
 
   /* overlay AY sound */
   sound_ay_overlay();
@@ -776,7 +770,7 @@ sound_frame( void )
       movie_add_sound( samples, count );
   ay_change_count = 0;
 
-#ifdef GCWZERO
+#ifdef OPENDINGUX_KMSDRM
   if ( dynamic_sound_adjust && !frames_to_adjust ) {
     frames_to_adjust = 10;
     blip_buffer_set_clock_rate( left_buf, dynamic_frequency );
@@ -787,7 +781,7 @@ sound_frame( void )
     printf(" samples: %lu/%d\n", left_buf->factor_, sound_framesiz);
 */
   }
-#endif
+#endif /* #ifdef OPENDINGUX_KMSDRM */
 }
 
 void
