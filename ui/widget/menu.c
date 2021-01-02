@@ -505,6 +505,16 @@ widget_menu_keyhandler( input_key key )
     if ( highlight_line ) {
       new_highlight_line = highlight_line - 1;
       cursor_pressed = 1;
+#ifdef GCWZERO
+    } else {
+      new_highlight_line = (ptrdiff_t)count - 1;
+      ptr = &menu[1 + new_highlight_line];
+      while( new_highlight_line > 0 && ptr->inactive ) {
+      new_highlight_line -= 1;
+      ptr = &menu[1 + new_highlight_line];
+      }
+      cursor_pressed = 1;
+#endif
     }
     break;
 
@@ -514,6 +524,16 @@ widget_menu_keyhandler( input_key key )
     if ( highlight_line + 1 < (ptrdiff_t)count ) {
       new_highlight_line = highlight_line + 1;
       cursor_pressed = 1;
+#ifdef GCWZERO
+    } else {
+      new_highlight_line = 0;
+      ptr = &menu[1 + new_highlight_line];
+      while( new_highlight_line < (ptrdiff_t)count - 1 && ptr->inactive ) {
+        new_highlight_line += 1;
+        ptr = &menu[1 + new_highlight_line];
+      }
+      cursor_pressed = 1;
+#endif
     }
     break;
 
