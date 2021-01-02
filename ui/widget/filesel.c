@@ -1178,6 +1178,9 @@ widget_filesel_keyhandler( input_key key )
   case INPUT_KEY_j:
   case INPUT_JOYSTICK_DOWN:
     if( current_file+2 < widget_numfiles ) new_current_file += 2;
+#ifdef GCWZERO
+    else new_current_file = 0;
+#endif
     break;
 
   case INPUT_KEY_Up:
@@ -1185,6 +1188,9 @@ widget_filesel_keyhandler( input_key key )
   case INPUT_KEY_k:
   case INPUT_JOYSTICK_UP:
     if( current_file > 1                 ) new_current_file -= 2;
+#ifdef GCWZERO
+    else new_current_file = widget_numfiles - 1;
+#endif
     break;
 
   case INPUT_KEY_Right:
