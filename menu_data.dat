@@ -533,3 +533,7 @@ Media/IDE/ZXMMC/_Eject, Item,, menu_media_ide_eject,, 9
 _Help, Branch
 Help/_Keyboard..., Item
 Help/_About..., Item
+
+#ifdef GCWZERO
+E_xit..., Item, F10
+#endif
