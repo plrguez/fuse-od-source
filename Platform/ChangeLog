@@ -1,3 +1,38 @@
+2021-01-xx Fuse 1.5.4 OpenDingux/RetroFW v0.0.6-wip
+
+    * Added Exit option to main menu
+
+    * Circular navigation in menus and selection widgets
+
+    * In options entries for numbers (as savestate slot) left and right
+      cursors can be used to increase and decrease values.
+
+    * Savestates:
+      * Savestate options added:
+        · 100 slots per game
+        · Format for savestates: SZX, Z80, SNA. Default is SZX.
+        · Savestates per machine model. Enabled by default.
+
+      * Some programs work for different models. By default the savestates use
+        different locations for every model. This behaviour can be changed
+        but this can bring to strange situations.
+        For example:
+        · load a program for a 48k model
+        · Create a savestate
+        · Change the model to +2A and load again the same program
+        · Load the savestate
+        The result is that the savestate load restore the 48k model in what
+        it was saved.
+
+      * Location for save states is:
+         $HOME/.fuse/savestates/<MODEL>/<PROGRAM NAME>
+
+        · <MODEL> is the name for machine model as informed by libspectrum.
+        · <PROGRAM NAME> is the name of the program with an attempt to remove
+          any info about side/disk/part.
+        · The name for the savestate will be the slot number with the extension
+          for the format configurated.
+
 2020-12-05 Fuse 1.5.4 OpenDingux/RetroFW v0.0.5
 
     * Fixed wrong calculations of dirty blocks for the border scalings.

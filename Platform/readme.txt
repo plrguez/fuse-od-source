@@ -56,6 +56,53 @@ then Fuse will create it at start.
 
 For the OpenDingux/RetroFW port some additional options had been added.
 
+Savestate options
+-----------------
+
+  - Current slot
+    ------------
+    Default 0. Maximum 99.
+
+    Number of slot used for quick saves and load states.
+
+  - Savestate format
+    ----------------
+    SZX, Z80, SNA. Default SZX.
+
+    Format used for the savestates.
+
+    For Z80 or SNA formats a warning will be emmited.
+
+  - Savestates per machine model
+    ----------------------------
+    Default enabled.
+
+    Some programs work for different models. By default the savestates use
+    different locations for every model.
+
+    This behaviour can be changed disabling this option but this can bring
+    to strange situations. For example:
+        · load a program for a 48k model
+        · Create a savestate
+        · Change the model to +2A and load again the same program
+        · Load the savestate
+        The result is that the savestate load restore the 48k model in what
+        it was saved.
+
+    * Location for save states is:
+      $HOME/.fuse/savestates/<MODEL>/<PROGRAM NAME>
+
+      · <MODEL> is the name for machine model as informed by libspectrum.
+      · <PROGRAM NAME> is the name of the program with an attempt to remove
+        any info about side/disk/part.
+      · The name for the savestate will be the slot number with the extension
+        for the format configurated.
+
+    * For programs with diferent tape or disk sides an attempt is made to
+      remove this info from the name so the save states will be the same.
+      In next sessions you can load directly the last used tape/side and load
+      your savestate.
+
 Options - General GCW0
 ----------------------
 
