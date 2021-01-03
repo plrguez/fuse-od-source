@@ -37,6 +37,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "ui/ui.h"
+#include "savestates/savestates.h"
 
 #ifdef GCWZERO
 
@@ -56,7 +57,7 @@ quicksave_get_current_dir(void)
   /* Don't exist config path, no error but do nothing */
   cfgdir = compat_get_config_path(); if( !cfgdir ) return NULL;
 
-  filename = compat_chop_expressions( re_expressions, utils_last_filename( last_filename, 1 ) );
+  filename = quicksave_get_current_program();
 
   if (settings_current.od_quicksave_per_machine) {
       snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%s"FUSE_DIR_SEP_STR"%s"FUSE_DIR_SEP_STR"%s",
@@ -97,6 +98,29 @@ quicksave_create_dir(void)
   libspectrum_free( savestate_dir );
 
   return 0;
+}
+
+char*
+quicksave_get_current_program(void)
+{
+  if ( !last_filename ) return NULL;
+
+  return compat_chop_expressions( re_expressions, utils_last_filename( last_filename, 1 ) );
+}
+
+int
+check_if_exist_current_savestate(void)
+{
+  char* filename;
+  int exist = 0;
+
+  filename = quicksave_get_filename();
+  if (filename) {
+    exist = compat_file_exists( filename ) ? 1 : 0;
+    libspectrum_free(filename);
+  }
+
+  return exist;
 }
 
 char*

@@ -29,6 +29,8 @@
 #include "settings.h"
 
 char* quicksave_get_filename(void);
+char* quicksave_get_current_program(void);
+int check_if_exist_current_savestate(void);
 int quicksave_load(void);
 int quicksave_save(void);
 
