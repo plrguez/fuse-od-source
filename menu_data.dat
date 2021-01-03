@@ -535,5 +535,5 @@ Help/_Keyboard..., Item
 Help/_About..., Item
 
 #ifdef GCWZERO
-E_xit..., Item, F10
+E_xit..., Item, F10, menu_file_exit
 #endif

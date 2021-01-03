@@ -653,14 +653,6 @@ menu_file_exit( int action )
   widget_end_all( WIDGET_FINISHED_OK );
 }
 
-#ifdef GCWZERO
-void
-menu_exit( int action )
-{
-  menu_file_exit(action);
-}
-#endif
-
 void
 menu_options_general( int action )
 {
