@@ -156,6 +156,12 @@ widget_select_keyhandler( input_key key )
       new_highlight_line = highlight_line - 1;
       cursor_pressed = 1;
     }
+#ifdef GCWZERO
+    else {
+      new_highlight_line = (ptrdiff_t)count - 1;
+      cursor_pressed = 1;
+    }
+#endif
     break;
 
   case INPUT_KEY_Down:
@@ -165,6 +171,12 @@ widget_select_keyhandler( input_key key )
       new_highlight_line = highlight_line + 1;
       cursor_pressed = 1;
     }
+#ifdef GCWZERO
+    else {
+      new_highlight_line = 0;
+      cursor_pressed = 1;
+    }
+#endif
     break;
 
 #ifdef GCWZERO

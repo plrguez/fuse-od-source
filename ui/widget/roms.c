@@ -217,6 +217,9 @@ widget_roms_keyhandler( input_key key )
     if ( highlight_line ) {
       new_highlight_line = highlight_line - 1;
       cursor_pressed = 1;
+    } else {
+      new_highlight_line = rom_count - 1;
+      cursor_pressed = 1;
     }
     break;
 
@@ -224,6 +227,9 @@ widget_roms_keyhandler( input_key key )
   case INPUT_JOYSTICK_DOWN:
     if ( highlight_line + 1 < rom_count ) {
       new_highlight_line = highlight_line + 1;
+      cursor_pressed = 1;
+    } else {
+      new_highlight_line = 0;
       cursor_pressed = 1;
     }
     break;
@@ -234,7 +240,7 @@ widget_roms_keyhandler( input_key key )
     break;
 
   case INPUT_KEY_BackSpace: /* R1 */
-    new_highlight_line = rom_count;
+    new_highlight_line = rom_count - 1;
     cursor_pressed = 1;
     break;
 
