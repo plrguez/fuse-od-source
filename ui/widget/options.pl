@@ -46,6 +46,9 @@ print Fuse::GPL( 'options.c: options dialog boxes',
 
 #include <stdio.h>
 #include <string.h>
+#ifdef GCWZERO
+#include <math.h>
+#endif
 
 #include "display.h"
 #include "fuse.h"
@@ -60,6 +63,10 @@ struct widget_option_entry;
 /* A generic click function */
 typedef void (*widget_option_click_fn)( void );
 typedef void (*widget_option_draw_fn)( int left_edge, int width, struct widget_option_entry *menu, settings_info *show );
+#ifdef GCWZERO
+typedef void (*widget_option_slidedown_fn)( void );
+typedef void (*widget_option_slideup_fn)( void );
+#endif
 
 /* A general menu */
 typedef struct widget_option_entry {
@@ -71,6 +78,10 @@ typedef struct widget_option_entry {
 
   widget_option_click_fn click;
   widget_option_draw_fn draw;
+#ifdef GCWZERO
+  widget_option_slidedown_fn slidedown;
+  widget_option_slideup_fn slideup;
+#endif
 } widget_option_entry;
 
 static void
@@ -167,6 +178,14 @@ foreach( @dialogs ) {
 static void widget_$widget->{value}_click( void );
 static void widget_option_$widget->{value}_draw( int left_edge, int width, struct widget_option_entry *menu, settings_info *show );
 CODE
+          if ( $widget->{type} eq "Entry" ) {
+	    print << "CODE";
+#ifdef GCWZERO
+static void widget_$widget->{value}_slidedown( void );
+static void widget_$widget->{value}_slideup( void );
+#endif
+CODE
+          }
 	} else {
 	    die "Unknown type `$widget->{type}'";
 	}
@@ -198,7 +217,11 @@ CODE
         } elsif( $widget->{type} eq "Entry" ) {
 
 	    print << "CODE";
+#ifdef GCWZERO
+  \{ "$text", $which, $widget->{key}, "$widget->{data2}", NULL, widget_$widget->{value}_click, widget_option_$widget->{value}_draw, widget_$widget->{value}_slidedown, widget_$widget->{value}_slideup \},
+#else
   \{ "$text", $which, $widget->{key}, "$widget->{data2}", NULL, widget_$widget->{value}_click, widget_option_$widget->{value}_draw \},
+#endif
 CODE
         } elsif( $widget->{type} eq "Combo" ) {
 
@@ -468,6 +491,33 @@ CODE
     my $which = 0;
     foreach my $widget ( @{ $_->{widgets} } ) {
 
+	if( $widget->{type} eq "Entry" ) {
+
+	    print << "CODE";
+#ifdef GCWZERO
+static void
+widget_$widget->{value}_slideup( void )
+\{
+    int i;
+    long max_value = 0;
+
+    for (i=0;i<$widget->{data1};i++)
+      max_value += 9*pow(10,i);
+
+    if (widget_options_settings.$widget->{value} < max_value)
+      widget_options_settings.$widget->{value}++;
+\}
+
+static void
+widget_$widget->{value}_slidedown( void )
+\{
+    if (widget_options_settings.$widget->{value})
+      widget_options_settings.$widget->{value}--;
+\}
+#endif
+
+CODE
+        }
 	if( $widget->{type} eq "Checkbox" ) {
 
 	    print << "CODE";
@@ -642,6 +692,24 @@ widget_$_->{name}_keyhandler( input_key key )
       cursor_pressed = 1;
     }
     break;
+
+#ifdef GCWZERO
+  case INPUT_KEY_Left:
+    if (options_$_->{name}\[highlight_line+1\].suffix) {
+      options_$_->{name}\[highlight_line+1\].slidedown();
+      options_$_->{name}\[highlight_line+1\].draw( menu_left_edge_x, menu_width, options_$_->{name} + highlight_line + 1, &widget_options_settings );
+      return;
+    }
+    break;
+
+  case INPUT_KEY_Right:
+    if (options_$_->{name}\[highlight_line+1\].suffix) {
+      options_$_->{name}\[highlight_line+1\].slideup();
+      options_$_->{name}\[highlight_line+1\].draw( menu_left_edge_x, menu_width, options_$_->{name} + highlight_line + 1, &widget_options_settings );
+      return;
+    }
+    break;
+#endif
 
   case INPUT_KEY_space:
   case INPUT_KEY_0:
