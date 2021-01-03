@@ -535,5 +535,8 @@ Help/_Keyboard..., Item
 Help/_About..., Item
 
 #ifdef GCWZERO
+Quick _save, Item,,,menu_quicksave_detail, 1
+Quick _load, Item,,,menu_quickload_detail, 2
+Sa_vestate Options..., item
 E_xit..., Item, F10, menu_file_exit
 #endif

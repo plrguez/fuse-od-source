@@ -177,3 +177,11 @@ Checkbox, No(t) detached defaults, control_mapping_not_detached_defaults, INPUT_
 Checkbox, No cut/transfor(m) filenames, control_mapping_no_transform_filename, INPUT_KEY_M
 Checkbox, Enable (K)empston Joystick if needed, control_mapping_enable_kempston_joy, INPUT_KEY_K
 #endif
+
+#ifdef GCWZERO
+savestate_options
+Savestate Options
+Entry, Current s(l)ot, od_quicksave_slot, INPUT_KEY_l, 2
+Combo, Quicksave (f)ormat, od_quicksave_format, INPUT_KEY_f, *.szx|.z80|.sna
+Checkbox, Quicksaves per (m)achine model, od_quicksave_per_machine, INPUT_KEY_m
+#endif

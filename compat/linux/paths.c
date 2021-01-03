@@ -73,6 +73,7 @@ int create_config_path( const char *config_path )
 int
 compat_create_config_paths( const char *config_path ) {
   char next_path[ PATH_MAX ];
+  libspectrum_machine machine;
 
   if ( create_config_path( config_path ) )
     return 1;
@@ -84,6 +85,19 @@ compat_create_config_paths( const char *config_path ) {
   snprintf( next_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", config_path, "mappings" );
   if ( create_config_path( next_path ) )
     return 1;
+
+  snprintf( next_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", config_path, "savestates" );
+  if ( create_config_path( next_path ) )
+    return 1;
+
+  /* Directory for savestate per machine */
+  for( machine = LIBSPECTRUM_MACHINE_48; machine < LIBSPECTRUM_MACHINE_128E + 1; machine++ ) {
+    if (machine == LIBSPECTRUM_MACHINE_UNKNOWN ) continue;
+    snprintf( next_path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s" FUSE_DIR_SEP_STR "%s",
+	      config_path, "savestates", libspectrum_machine_name( machine ) );
+    if ( create_config_path( next_path ) )
+      return 1;
+  }
 
   return 0;
 }

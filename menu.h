@@ -164,6 +164,11 @@ MENU_DETAIL( menu_keyboard_joystick_detail );
 MENU_DETAIL( menu_joystick_1_detail );
 MENU_DETAIL( menu_joystick_2_detail );
 #ifdef GCWZERO
+MENU_CALLBACK_WITH_ACTION( menu_quicksave );
+MENU_DETAIL( menu_quicksave_detail );
+MENU_CALLBACK_WITH_ACTION( menu_quickload );
+MENU_DETAIL( menu_quickload_detail );
+MENU_CALLBACK( menu_savestateoptions );
 MENU_CALLBACK( menu_options_generalgcw0 );
 MENU_DETAIL( menu_gcw0_keyboard_detail );
 MENU_DETAIL( menu_control_mapping_detail );

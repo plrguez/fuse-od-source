@@ -221,4 +221,5 @@ include unittests/Makefile.am
 include z80/Makefile.am
 if BUILD_GCWZERO
 include controlmapping/Makefile.am
+include savestates/Makefile.am
 endif

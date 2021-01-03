@@ -326,6 +326,9 @@ od_panel_type, string, "320x240"
 od_statusbar_with_border, boolean, 1
 od_adjust_refresh_rate, boolean, 0
 od_dynamic_sound_rate, boolean, 0
+od_quicksave_format, string, ".szx"
+od_quicksave_slot, numeric, 0
+od_quicksave_per_machine, boolean, 1
 
 od_auto_load_with_custom_roms, boolean, 0
 

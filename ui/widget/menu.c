@@ -50,6 +50,7 @@
 #include "widget.h"
 #ifdef GCWZERO
 #include "controlmapping/controlmapping.h"
+#include "savestates/savestates.h"
 #endif
 
 widget_menu_entry *menu;
@@ -843,6 +844,30 @@ set_joystick_type( int action )
 }
 
 #ifdef GCWZERO
+void
+menu_quicksave( int action )
+{
+  if (quicksave_save())
+    ui_error( UI_ERROR_ERROR, "Error saving state");
+
+  widget_end_all( WIDGET_FINISHED_OK );
+}
+
+void
+menu_quickload( int action )
+{
+  if (quicksave_load())
+    ui_error( UI_ERROR_ERROR, "Error loading state");
+
+  widget_end_all( WIDGET_FINISHED_OK );
+}
+
+void
+menu_savestateoptions( int action )
+{
+  widget_do_savestate();
+}
+
 void
 menu_options_generalgcw0( int action )
 {

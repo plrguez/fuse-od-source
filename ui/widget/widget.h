@@ -82,6 +82,7 @@ typedef enum widget_type {
 #ifdef GCWZERO
   WIDGET_TYPE_JOYSTICKS_CONTROLMAPPING, /* Control mapping */
   WIDGET_TYPE_GENERALGCW0,		/* General GCW0 options */
+  WIDGET_TYPE_SAVESTATE,                /* Savestate GCW0 options */
 #endif
 } widget_type;
 
@@ -224,6 +225,12 @@ static inline int widget_do_vkeyboard( void )
 #endif
 
 #ifdef GCWZERO
+/* Quicksave options for GCW0 */
+static inline int widget_do_savestate( void )
+{
+  return widget_do( WIDGET_TYPE_SAVESTATE, NULL );
+}
+
 /* General options for GCW0 */
 static inline int widget_do_generalgcw0( void )
 {

@@ -65,6 +65,7 @@
 #include "z80/z80.h"
 #ifdef GCWZERO
 #include "controlmapping/controlmapping.h"
+#include "savestates/savestates.h"
 #endif
 
 static int menu_select_machine_roms( libspectrum_machine machine, size_t start,
@@ -1268,6 +1269,58 @@ menu_joystick_2_detail( void )
 }
 
 #ifdef GCWZERO
+const char*
+menu_quicksave_detail( void )
+{
+  const char* path = "/Quick save";
+  const char* filename;
+  char* buffer;
+
+  if ( !last_filename ) {
+    ui_menu_item_set_active( path , 0);
+    return NULL;
+  }
+
+  ui_menu_item_set_active( path , 1);
+
+  filename = utils_last_filename( quicksave_get_filename(), 1 );
+  buffer   = strndup( filename, 20 );
+  if ( strlen(filename) > 20 )
+    memcpy( &(buffer[19]), ">", 1 );
+
+  return buffer;
+}
+
+const char*
+menu_quickload_detail( void )
+{
+  const char* path = "/Quick load";
+  const char* filename;
+  char* buffer;
+
+  if ( !last_filename ) {
+    ui_menu_item_set_active( path , 0);
+    return NULL;
+  }
+
+  /* If don't exist savestate don't show for load*/
+  filename = quicksave_get_filename();
+  if ( !compat_file_exists( filename ) ) {
+    ui_menu_item_set_active( path , 0);
+    return NULL;
+  }
+
+  ui_menu_item_set_active( path , 1);
+
+
+  filename = utils_last_filename( quicksave_get_filename(), 1 );
+  buffer   = strndup( filename, 20 );
+  if ( strlen(filename) > 20 )
+    memcpy( &(buffer[19]), ">", 1 );
+
+  return buffer;
+}
+
 const char*
 menu_control_mapping_detail( void )
 {

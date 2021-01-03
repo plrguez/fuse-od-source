@@ -823,6 +823,7 @@ widget_t widget_data[] = {
 #ifdef GCWZERO
   { widget_control_mapping_draw, widget_control_mapping_finish, widget_control_mapping_keyhandler  },
   { widget_general_gcw0_draw,  widget_options_finish, widget_general_gcw0_keyhandler  },
+  { widget_savestate_options_draw, widget_options_finish, widget_savestate_options_keyhandler  },
 #endif
 };
 
