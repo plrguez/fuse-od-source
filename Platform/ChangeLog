@@ -33,6 +33,12 @@
         · The name for the savestate will be the slot number with the extension
           for the format configurated.
 
+      * Hotkeys assigned for savestates
+        · L1 + Cursor down    Quicksave state for current slot
+        · R1 + Cursor up      Quickload state for current slot
+        · R1 + Cursor right   Increase slot to use
+        · R1 + Cursor left    Decrease slot to use
+
 2020-12-05 Fuse 1.5.4 OpenDingux/RetroFW v0.0.5
 
     * Fixed wrong calculations of dirty blocks for the border scalings.

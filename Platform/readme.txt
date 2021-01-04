@@ -103,6 +103,9 @@ Savestate options
       In next sessions you can load directly the last used tape/side and load
       your savestate.
 
+    * See section 'Hotkey combinations' for info about key combinations to
+      savestates.
+
 Options - General GCW0
 ----------------------
 
@@ -842,18 +845,23 @@ will be used to start the hotkey combinations.
 The implemented hotkeys correspond to Fx key functions in Fuse's SDL
 implementation:
 
-    L1 + R1 + A      Switch between Full and None border
-    L1 + R1 + B      Toggle triple buffer
-    L1 + R1 + X      JoystickS
-    L1 + Select + Y  Tape play (F8)
-    L1 + A           Tape open (F7)
-    L1 + B           Save file (F2)
-    L1 + X           Open file (F3)
-    L1 + Y           Media menu
-    R1 + A           General options (F4)
-    R1 + B           Reset machine (F5)
-    R1 + X           Exit fuse (F10)
-    R1 + Y           Machine select (F9)
+    L1 + R1 + A		Switch between Full and None border
+    L1 + R1 + B		Toggle triple buffer
+    L1 + R1 + X		JoystickS
+    L1 + Select + Y	Tape play (F8)
+    L1 + A		Tape open (F7)
+    L1 + B		Save file (F2)
+    L1 + X		Open file (F3)
+    L1 + Y		Media menu
+    R1 + A		General options (F4)
+    R1 + B		Reset machine (F5)
+    R1 + X		Exit fuse (F10)
+    R1 + Y              Machine select (F9)
+
+    L1 + Cursor down    Quicksave state for current slot
+    R1 + Cursor Up      Quickload state for current slot
+    R1 + Cursor right   Increase slot to use
+    R1 + Cursor left    Decrease slot to use
 
 ---------------------
 ### Media options ###

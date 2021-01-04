@@ -834,7 +834,8 @@ size_t ui_widget_show_msg_update_info( const char* format, ... ) {
 
   od_show_msg_info = 1;
   frames_since_last_overlay_message_info = 0;
-  return widget_show_msg_update_info( msg );
+  od_msg_info_length = widget_show_msg_update_info( msg );
+  return od_msg_info_length;
 }
 
 void ui_widget_show_msg_info( void ) {

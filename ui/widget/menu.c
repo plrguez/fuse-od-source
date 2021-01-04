@@ -847,33 +847,14 @@ set_joystick_type( int action )
 void
 menu_quicksave( int action )
 {
-  char* filename;
-
-  filename = utils_last_filename( quicksave_get_filename(), 1 );
-  if (quicksave_save())
-    ui_error( UI_ERROR_ERROR, "Error saving state to slot %s", filename );
-  else
-    od_msg_info_length = ui_widget_show_msg_update_info( "Saved to slot %s", filename );
-
-  libspectrum_free(filename);
-
+  quicksave_save();
   widget_end_all( WIDGET_FINISHED_OK );
 }
 
 void
 menu_quickload( int action )
-{
-  char* filename;
-
-  filename = utils_last_filename( quicksave_get_filename(), 1 );
-  
-  if (quicksave_load())
-    ui_error( UI_ERROR_ERROR, "Error loading state from slot %s", filename );
-  else
-    od_msg_info_length = ui_widget_show_msg_update_info("Loaded from slot %s", filename);
-
-  libspectrum_free(filename);
-
+{ 
+  quicksave_load();
   widget_end_all( WIDGET_FINISHED_OK );
 }
 

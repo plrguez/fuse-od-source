@@ -185,6 +185,10 @@ int
 quicksave_load(void)
 {
   char* filename;
+  char* slot;
+
+  /* If don't exist savestate return but don't mark error */
+  if (!check_if_exist_current_savestate()) return 0;
 
   fuse_emulation_pause();
 
@@ -198,7 +202,14 @@ quicksave_load(void)
    */
   int error = utils_open_file( filename, 9, NULL );
 
+  slot = utils_last_filename( filename, 1 );
+  if (error)
+    ui_error( UI_ERROR_ERROR, "Error loading state from slot %s", slot );
+  else
+    ui_widget_show_msg_update_info("Loaded from slot %s", slot);
+
   libspectrum_free( filename );
+  libspectrum_free( slot );
 
   display_refresh_all();
 
@@ -211,6 +222,7 @@ int
 quicksave_save(void)
 {
   char* filename;
+  char* slot;
 
   fuse_emulation_pause();
 
@@ -221,7 +233,14 @@ quicksave_save(void)
 
   int error = snapshot_write( filename );
 
+  slot = utils_last_filename( filename, 1 );
+  if (error)
+    ui_error( UI_ERROR_ERROR, "Error saving state to slot %s", slot );
+  else
+    ui_widget_show_msg_update_info( "Saved to slot %s", slot );
+
   libspectrum_free( filename );
+  libspectrum_free( slot );
 
   fuse_emulation_unpause();
 
