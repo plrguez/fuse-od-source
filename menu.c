@@ -1273,48 +1273,26 @@ const char*
 menu_quicksave_detail( void )
 {
   const char* path = "/Quick save";
-  char* filename;
-  char* current_program;
-  char* buffer;
 
-  /* If no program is loaded don't show for load */
-  current_program = quicksave_get_current_program();
-  if ( !current_program ) {
+  /* If no program is loaded don't show for save */
+  if ( !check_if_savestate_possible() ) {
     ui_menu_item_set_active( path , 0);
     return NULL;
   }
 
+  /* Activate menú entry for save */
   ui_menu_item_set_active( path , 1);
 
-  filename = utils_last_filename( quicksave_get_filename(), 1 );
-  buffer = libspectrum_new(char, 20);
-  snprintf(buffer,20,"%s: %s",filename,current_program);
-  if ( strlen(current_program) > 16 )
-    memcpy( &(buffer[18]), ">\0", 2 );
-
-  libspectrum_free(filename);
-  libspectrum_free(current_program);
-
-  return buffer;
+  return quicksave_get_label();
 }
 
 const char*
 menu_quickload_detail( void )
 {
   const char* path = "/Quick load";
-  char* filename;
-  char* current_program;
-  char* buffer;
 
-  /* If no program is loaded don't show for load */
-  current_program = quicksave_get_current_program();
-  if ( !current_program ) {
-    ui_menu_item_set_active( path , 0);
-    return NULL;
-  }
-
-  /* If don't exist savestate don't show for load*/
-  if (!check_if_exist_current_savestate()) {
+  /* If no program is loaded or not savestate exist don't show for load */
+  if ( !check_if_savestate_possible() || !check_if_exist_current_savestate() ) {
     ui_menu_item_set_active( path , 0);
     return NULL;
   }
@@ -1322,16 +1300,7 @@ menu_quickload_detail( void )
   /* Activate menú entry for load */
   ui_menu_item_set_active( path , 1);
 
-  filename = utils_last_filename( quicksave_get_filename(), 1 );
-  buffer = libspectrum_new(char, 20);
-  snprintf(buffer,20,"%s: %s",filename,current_program);
-  if ( strlen(current_program) > 16 )
-    memcpy( &(buffer[18]), ">\0", 2 );
-
-  libspectrum_free(filename);
-  libspectrum_free(current_program);
-
-  return buffer;
+  return quicksave_get_label();
 }
 
 const char*

@@ -108,6 +108,33 @@ quicksave_get_current_program(void)
   return compat_chop_expressions( re_expressions, utils_last_filename( last_filename, 1 ) );
 }
 
+char*
+quicksave_get_label(void)
+{
+  char* current_program;
+  char* filename;
+  char* label;
+
+  current_program = quicksave_get_current_program();
+  if ( !current_program ) return NULL;
+
+  filename = utils_last_filename( quicksave_get_filename(), 1 );
+  if ( !filename ) {
+    libspectrum_free(current_program);
+    return NULL;
+  }
+
+  label = libspectrum_new(char, 20);
+  snprintf(label,20,"%s: %s",filename,current_program);
+  if ( strlen(current_program) > 15 )
+    memcpy( &(label[18]), ">\0", 2 );
+
+  libspectrum_free(filename);
+  libspectrum_free(current_program);
+
+  return label;
+}
+
 int
 check_if_exist_current_savestate(void)
 {
@@ -121,6 +148,20 @@ check_if_exist_current_savestate(void)
   }
 
   return exist;
+}
+
+int
+check_if_savestate_possible(void)
+{
+  char* current_program;
+  int possible = 0;
+
+  current_program = quicksave_get_current_program();
+  if (current_program) {
+    possible = 1;
+    libspectrum_free( current_program );
+  }
+  return possible;
 }
 
 char*
