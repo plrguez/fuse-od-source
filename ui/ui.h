@@ -318,8 +318,12 @@ int ui_widget_init( void );
 int ui_widget_end( void );
 #ifdef GCWZERO
 #ifdef USE_WIDGET
+extern int od_show_msg_info;
+extern size_t od_msg_info_length;
 size_t ui_widget_statusbar_update_info( float speed );
+size_t ui_widget_show_msg_update_info( const char* msg, ... );
 void ui_widget_statusbar_print_info( void );
+void ui_widget_show_msg_info( void );
 void ui_widget_set_file_filter_for_class( int filter_class, int saving );
 #endif
 #endif

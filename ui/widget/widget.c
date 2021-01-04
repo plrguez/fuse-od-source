@@ -545,7 +545,9 @@ int widget_end( void )
 }
 
 #ifdef GCWZERO
+#define WIDGET_MAX_MSG_INFO_LENGTH 80
 #define WIDGET_MAX_INFO_LENGTH 48
+static char msg_info[WIDGET_MAX_MSG_INFO_LENGTH];
 static char status_info[WIDGET_MAX_INFO_LENGTH];
 
 static char* od_machine_name( libspectrum_machine type ) {
@@ -592,6 +594,22 @@ void widget_statusbar_print_info(void) {
     int scale = machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ? 2 : 1;
 
     widget_printstring(1, 1, 19, status_info);
+    uidisplay_area(1 * scale, 1 * scale, length * scale, 8 * scale);
+  }
+}
+
+size_t widget_show_msg_update_info(const char* msg) {
+  snprintf(msg_info, WIDGET_MAX_MSG_INFO_LENGTH, "%s", msg );
+  return widget_stringwidth( msg_info );
+}
+
+void widget_show_msg_print_info(void) {
+  int length = widget_stringwidth(msg_info);
+
+  if ( length > 0 ) {
+    int scale = machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ? 2 : 1;
+
+    widget_printstring(1, 1, 19, msg_info);
     uidisplay_area(1 * scale, 1 * scale, length * scale, 8 * scale);
   }
 }

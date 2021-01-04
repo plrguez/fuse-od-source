@@ -50,6 +50,9 @@ int ui_widget_level = -1;
 
 static char last_message[ MESSAGE_MAX_LENGTH ] = "";
 static size_t frames_since_last_message = 0;
+#ifdef GCWZERO
+extern size_t frames_since_last_overlay_message_info;
+#endif
 
 static int
 print_error_to_stderr( ui_error_level severity, const char *message );
@@ -156,6 +159,9 @@ void
 ui_error_frame( void )
 {
   frames_since_last_message++;
+#ifdef GCWZERO
+  frames_since_last_overlay_message_info++;
+#endif
 }
 
 int ui_mouse_present = 0;
@@ -816,6 +822,23 @@ size_t ui_widget_statusbar_update_info( float speed ) {
 
 void ui_widget_statusbar_print_info( void ) {
   widget_statusbar_print_info();
+}
+
+size_t ui_widget_show_msg_update_info( const char* format, ... ) {
+  char msg[80];
+  va_list argv;
+
+  va_start( argv, format );
+  vsnprintf( msg, 80, format, argv);
+  va_end( argv );
+
+  od_show_msg_info = 1;
+  frames_since_last_overlay_message_info = 0;
+  return widget_show_msg_update_info( msg );
+}
+
+void ui_widget_show_msg_info( void ) {
+  widget_show_msg_print_info();
 }
 
 void ui_widget_set_file_filter_for_class( int filter_class, int saving ) {

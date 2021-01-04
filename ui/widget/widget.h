@@ -34,7 +34,9 @@ int widget_init( void );
 int widget_end( void );
 #ifdef GCWZERO
 size_t widget_statusbar_update_info( float speed );
+size_t widget_show_msg_update_info( const char* msg );
 void widget_statusbar_print_info( void );
+void widget_show_msg_print_info( void );
 #endif
 
 #ifdef VKEYBOARD

@@ -97,7 +97,9 @@ static SDL_Rect vkeyboard_position_large_border[4] = {
 
 #ifdef GCWZERO
 size_t od_info_length;
-static SDL_Surface *od_status_line_ovelay;
+size_t od_msg_info_length;
+size_t frames_since_last_overlay_message_info = 0;
+static SDL_Surface *od_status_line_overlay;
 static SDL_Surface *red_cassette[4], *green_cassette[4];
 static SDL_Surface *red_mdr[4], *green_mdr[4];
 static SDL_Surface *red_disk[4], *green_disk[4];
@@ -259,6 +261,8 @@ static od_t_icon_positions od_icon_positions_640480[] = {
 #endif
 
 static od_t_icon_positions od_icon_position;
+
+int od_show_msg_info = 0;
 #endif
 
 static int image_width;
@@ -274,7 +278,10 @@ static int sdldisplay_allocate_colours_alpha( int numColours, Uint32 *colour_val
                                              Uint32 *bw_values );
 #endif
 #if GCWZERO
+typedef void (*widget_overlay_callback_fn)( void );
+static void uidisplay_area_overlay( SDL_Surface* area, int length, widget_overlay_callback_fn print_info );
 static void uidisplay_status_overlay( void );
+static void uidisplay_show_msg_info_overlay( void );
 #endif
 
 static int sdldisplay_load_gfx_mode( void );
@@ -820,9 +827,9 @@ sdldisplay_load_gfx_mode( void )
 #endif
 
 #ifdef GCWZERO
-  if ( od_status_line_ovelay ) {
-    SDL_FreeSurface( od_status_line_ovelay );
-    od_status_line_ovelay = NULL;
+  if ( od_status_line_overlay ) {
+    SDL_FreeSurface( od_status_line_overlay );
+    od_status_line_overlay = NULL;
   }
 #endif
 
@@ -1010,7 +1017,7 @@ sdldisplay_load_gfx_mode( void )
     fprintf( stderr, "%s: couldn't create status line overlay screen\n", fuse_progname );
     fuse_abort();
   }
-  od_status_line_ovelay = SDL_DisplayFormatAlpha( od_tmp_screen );
+  od_status_line_overlay = SDL_DisplayFormatAlpha( od_tmp_screen );
   SDL_FreeSurface( od_tmp_screen );
 #endif
 
@@ -1049,9 +1056,9 @@ uidisplay_hotswap_gfx_mode( void )
 #endif
 
 #ifdef GCWZERO
-  if ( od_status_line_ovelay ) {
-    SDL_FreeSurface( od_status_line_ovelay );
-    od_status_line_ovelay = NULL;
+  if ( od_status_line_overlay ) {
+    SDL_FreeSurface( od_status_line_overlay );
+    od_status_line_overlay = NULL;
   }
 #endif
 
@@ -1298,22 +1305,22 @@ uidisplay_putpixel_alpha( int x, int y, int colour ) {
 }
 
 static void
-uidisplay_status_overlay( void ) {
+uidisplay_area_overlay( SDL_Surface* area, int length, widget_overlay_callback_fn print_info ) {
   int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
 
   SDL_Rect r1 = { od_icon_position.status_line.x * scale, od_icon_position.status_line.y * scale,
                   od_icon_position.status_line.w * scale, od_icon_position.status_line.h * scale };
 
-  SDL_Rect r2 = { 0, 0, ( od_info_length + 3 ) * scale, od_icon_position.status_line.h * scale };
+  SDL_Rect r2 = { 0, 0, ( length + 3 ) * scale, od_icon_position.status_line.h * scale };
 
-  SDL_FillRect(od_status_line_ovelay, NULL, settings_current.bw_tv ? bw_values_a[18] : colour_values_a[18]);
-  SDL_FillRect(od_status_line_ovelay, &r2, settings_current.bw_tv ? bw_values_a[17] : colour_values_a[17]);
+  SDL_FillRect(od_status_line_overlay, NULL, settings_current.bw_tv ? bw_values_a[18] : colour_values_a[18]);
+  SDL_FillRect(od_status_line_overlay, &r2, settings_current.bw_tv ? bw_values_a[17] : colour_values_a[17]);
 
-  overlay_alpha_surface = od_status_line_ovelay;
-  ui_widget_statusbar_print_info();
+  overlay_alpha_surface = area;
+  print_info();
   overlay_alpha_surface = NULL;
 
-  SDL_BlitSurface(od_status_line_ovelay, NULL, tmp_screen, &r1);
+  SDL_BlitSurface(area, NULL, tmp_screen, &r1);
 
   updated_rects[num_rects].x = r1.x;
   updated_rects[num_rects].y = r1.y;
@@ -1322,6 +1329,22 @@ uidisplay_status_overlay( void ) {
   num_rects++;
 
   display_refresh_rect( r1.x - 1 * scale, r1.y - 1 * scale, r1.w + 8 * scale, r1.h + 1 * scale, 1 );
+}
+
+static void
+uidisplay_status_overlay( void ) {
+  uidisplay_area_overlay(od_status_line_overlay, od_info_length, widget_statusbar_print_info);
+}
+
+static void
+uidisplay_show_msg_info_overlay(void) {
+  /* 150 frames. 3 seconds */
+  if ( frames_since_last_overlay_message_info > 150 ) {
+    od_show_msg_info = 0;
+    return;
+  }
+
+  uidisplay_area_overlay(od_status_line_overlay, od_msg_info_length, widget_show_msg_print_info);
 }
 #endif
 
@@ -1568,7 +1591,9 @@ uidisplay_frame_end( void )
 #endif
 
 #ifdef GCWZERO
-  if ( settings_current.statusbar && ui_widget_level == -1 &&
+  if (od_show_msg_info)
+    uidisplay_show_msg_info_overlay();
+  else if ( settings_current.statusbar && ui_widget_level == -1 &&
        ( !sdldisplay_current_od_border || settings_current.od_statusbar_with_border ) )
     uidisplay_status_overlay();
 #endif
@@ -1714,9 +1739,9 @@ uidisplay_end( void )
 #endif
 
 #ifdef GCWZERO
-  if ( od_status_line_ovelay ) {
-    SDL_FreeSurface( od_status_line_ovelay );
-    od_status_line_ovelay = NULL;
+  if ( od_status_line_overlay ) {
+    SDL_FreeSurface( od_status_line_overlay );
+    od_status_line_overlay = NULL;
   }
 #endif
 
