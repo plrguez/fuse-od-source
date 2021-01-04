@@ -35,6 +35,7 @@ int check_if_exist_current_savestate(void);
 int check_if_savestate_possible(void);
 int quicksave_load(void);
 int quicksave_save(void);
+char* get_savestate_last_chage(void);
 
 #endif /* FUSE_SAVESTATES_H */
 

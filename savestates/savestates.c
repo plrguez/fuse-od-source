@@ -181,6 +181,28 @@ quicksave_get_filename(void)
   return utils_safe_strdup( buffer );
 }
 
+char*
+get_savestate_last_chage(void) {
+  compat_fd save_state_fd;
+  char* last_change;
+
+  if ( !check_if_exist_current_savestate() )
+    return NULL;
+
+  save_state_fd = compat_file_open( quicksave_get_filename(), 0 );
+  if ( !save_state_fd )
+    return NULL;
+
+  last_change = compat_file_get_time_last_change( save_state_fd );
+  compat_file_close( save_state_fd );
+
+  /* Get rid of \n */
+  if ( last_change )
+    last_change[ strlen( last_change ) - 1 ] = '\0';
+
+  return last_change;
+}
+
 int
 quicksave_load(void)
 {

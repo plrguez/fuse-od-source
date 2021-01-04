@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "ui/ui.h"
 #ifdef GCWZERO
+#include <time.h>
 #include "settings.h"
 #endif
 
@@ -71,6 +72,21 @@ compat_file_get_length( compat_fd fd )
 
   return file_info.st_size;
 }
+
+#ifdef GCWZERO
+char*
+compat_file_get_time_last_change( compat_fd fd )
+{
+  struct stat file_info;
+
+  if( fstat( fileno( fd ), &file_info ) ) {
+    ui_error( UI_ERROR_ERROR, "couldn't stat file: %s", strerror( errno ) );
+    return NULL;
+  }
+
+  return ctime( &file_info.st_mtim.tv_sec );
+}
+#endif
 
 int
 compat_file_read( compat_fd fd, utils_file *file )
