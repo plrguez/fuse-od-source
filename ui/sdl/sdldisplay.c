@@ -1313,8 +1313,8 @@ uidisplay_area_overlay( SDL_Surface* area, int length, widget_overlay_callback_f
 
   SDL_Rect r2 = { 0, 0, ( length + 3 ) * scale, od_icon_position.status_line.h * scale };
 
-  SDL_FillRect(od_status_line_overlay, NULL, settings_current.bw_tv ? bw_values_a[18] : colour_values_a[18]);
-  SDL_FillRect(od_status_line_overlay, &r2, settings_current.bw_tv ? bw_values_a[17] : colour_values_a[17]);
+  SDL_FillRect(area, NULL, settings_current.bw_tv ? bw_values_a[18] : colour_values_a[18]);
+  SDL_FillRect(area, &r2, settings_current.bw_tv ? bw_values_a[17] : colour_values_a[17]);
 
   overlay_alpha_surface = area;
   print_info();
