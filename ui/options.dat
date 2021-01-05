@@ -182,6 +182,7 @@ Checkbox, Enable (K)empston Joystick if needed, control_mapping_enable_kempston_
 savestate_options
 Savestate Options
 Entry, Current s(l)ot, od_quicksave_slot, INPUT_KEY_l, 2
+Checkbox, S(h)ow slot in status bar, od_quicksave_show_slot_in_statusbar, INPUT_KEY_h
 Combo, Savestates (f)ormat, od_quicksave_format, INPUT_KEY_f, *.szx|.z80|.sna
 Checkbox, Savestates per (m)achine model, od_quicksave_per_machine, INPUT_KEY_m
 #endif

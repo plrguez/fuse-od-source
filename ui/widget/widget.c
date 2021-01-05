@@ -53,6 +53,7 @@
 #include "utils.h"
 #ifdef VKEYBOARD
 #include "ui/vkeyboard.h"
+#include "savestates/savestates.h"
 #endif
 
 #ifdef WIN32
@@ -581,6 +582,10 @@ size_t widget_statusbar_update_info( float speed ) {
   }
   if ( settings_current.od_triple_buffer ) {
     snprintf(suffix, 5, " [%s]", "B");
+    strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
+  }
+  if ( settings_current.od_quicksave_show_slot_in_statusbar && check_if_savestate_possible() ) {
+    snprintf(suffix, 6, " [%d]", settings_current.od_quicksave_slot);
     strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
   }
 
