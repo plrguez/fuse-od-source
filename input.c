@@ -116,11 +116,13 @@ input_event_gcw0( const input_event_t *event ) {
         break; /* Select */
 
       case INPUT_KEY_slash: /* Translated unicode key */
+      case INPUT_KEY_KP_Divide:
         if (settings_current.joystick_1_fire_11)
           nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_11;
         break; /* L3 */
 
       case INPUT_KEY_period: /* Translated unicode key */
+      case INPUT_KEY_KP_Period:
         if (settings_current.joystick_1_fire_12)
           nevent.types.joystick.button = INPUT_JOYSTICK_FIRE_12;
         break; /* R3 */
@@ -249,10 +251,12 @@ input_event_gcw0( const input_event_t *event ) {
           break; /* Select */
 
         case INPUT_KEY_slash: /* Translated unicode key */
+	case INPUT_KEY_KP_Divide:
           key = settings_current.joystick_gcw0_l3;
           break; /* L3 */
 
         case INPUT_KEY_period: /* Translated unicode key */
+	case INPUT_KEY_KP_Period:
           key = settings_current.joystick_gcw0_r3;
           break; /* R3 */
 
