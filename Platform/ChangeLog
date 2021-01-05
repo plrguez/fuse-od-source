@@ -1,5 +1,7 @@
 2021-01-xx Fuse 1.5.4 OpenDingux/RetroFW v0.0.6-wip
 
+    * OpenDingux beta. Fixed L3 & R3 mappings.
+
     * Added Exit option to main menu
 
     * Circular navigation in menus and selection widgets
