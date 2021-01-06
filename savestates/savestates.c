@@ -271,7 +271,6 @@ int
 quicksave_load(void)
 {
   char* filename;
-  char* slot;
 
   /* If don't exist savestate return but don't mark error */
   if (!check_current_savestate_exist(settings_current.od_quicksave_slot)) return 0;
@@ -288,14 +287,12 @@ quicksave_load(void)
    */
   int error = utils_open_file( filename, 9, NULL );
 
-  slot = utils_last_filename( filename, 1 );
   if (error)
-    ui_error( UI_ERROR_ERROR, "Error loading state from slot %s", slot );
+    ui_error( UI_ERROR_ERROR, "Error loading state from slot %02d", settings_current.od_quicksave_slot );
   else
-    ui_widget_show_msg_update_info( "Loaded slot %s (%s)", slot, get_savestate_last_change(atoi(slot)) );
+    ui_widget_show_msg_update_info( "Loaded slot %02d (%s)", settings_current.od_quicksave_slot, get_savestate_last_change(settings_current.od_quicksave_slot) );
 
   libspectrum_free( filename );
-  libspectrum_free( slot );
 
   display_refresh_all();
 
@@ -308,7 +305,6 @@ int
 quicksave_save(void)
 {
   char* filename;
-  char* slot;
 
   fuse_emulation_pause();
 
@@ -319,14 +315,12 @@ quicksave_save(void)
 
   int error = snapshot_write( filename );
 
-  slot = utils_last_filename( filename, 1 );
   if (error)
-    ui_error( UI_ERROR_ERROR, "Error saving state to slot %s", slot );
+    ui_error( UI_ERROR_ERROR, "Error saving state to slot %02d", settings_current.od_quicksave_slot );
   else
-    ui_widget_show_msg_update_info( "Saved to slot %s (%s)", slot, get_savestate_last_change(atoi(slot)) );
+    ui_widget_show_msg_update_info( "Saved to slot %02d (%s)", settings_current.od_quicksave_slot, get_savestate_last_change(settings_current.od_quicksave_slot) );
 
   libspectrum_free( filename );
-  libspectrum_free( slot );
 
   fuse_emulation_unpause();
 
@@ -359,9 +353,9 @@ savestate_read( const char *savestate )
    */
   int error = utils_open_file( filename, 9, NULL );
   if (error)
-    ui_error( UI_ERROR_ERROR, "Error loading state from slot %s", slot );
+    ui_error( UI_ERROR_ERROR, "Error loading state from slot %02d", settings_current.od_quicksave_slot );
   else
-    ui_widget_show_msg_update_info( "Loaded slot %s (%s)", slot, get_savestate_last_change(settings_current.od_quicksave_slot) );
+    ui_widget_show_msg_update_info( "Loaded slot %02d (%s)", settings_current.od_quicksave_slot, get_savestate_last_change(settings_current.od_quicksave_slot) );
 
   libspectrum_free( slot );
   libspectrum_free( filename );
@@ -389,9 +383,9 @@ savestate_write( const char *savestate )
 
   int error = snapshot_write( filename );
   if (error)
-    ui_error( UI_ERROR_ERROR, "Error saving state to slot %s", slot );
+    ui_error( UI_ERROR_ERROR, "Error saving state to slot %02d", settings_current.od_quicksave_slot );
   else
-    ui_widget_show_msg_update_info( "Saved to slot %s (%s)", slot, get_savestate_last_change(atoi(slot)) );
+    ui_widget_show_msg_update_info( "Saved to slot %02d (%s)", settings_current.od_quicksave_slot, get_savestate_last_change(settings_current.od_quicksave_slot) );
 
   libspectrum_free( slot );
   libspectrum_free( filename );
