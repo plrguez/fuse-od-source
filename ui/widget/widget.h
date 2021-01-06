@@ -85,6 +85,8 @@ typedef enum widget_type {
   WIDGET_TYPE_JOYSTICKS_CONTROLMAPPING, /* Control mapping */
   WIDGET_TYPE_GENERALGCW0,		/* General GCW0 options */
   WIDGET_TYPE_SAVESTATE,                /* Savestate GCW0 options */
+  WIDGET_TYPE_SAVESTATE_SELECTOR,       /* Savestate GCW0 selector for load */
+  WIDGET_TYPE_SAVESTATE_SELECTOR_SAVE,  /* Savestate GCW0 selector for save */
 #endif
 } widget_type;
 
@@ -231,6 +233,17 @@ static inline int widget_do_vkeyboard( void )
 static inline int widget_do_savestate( void )
 {
   return widget_do( WIDGET_TYPE_SAVESTATE, NULL );
+}
+
+/* Savestate selector (save) */
+static inline int widget_do_savestate_selector_save( widget_filesel_data *data )
+{
+  return widget_do( WIDGET_TYPE_SAVESTATE_SELECTOR_SAVE, data );
+}
+
+static inline int widget_do_savestate_selector( widget_filesel_data *data )
+{
+  return widget_do( WIDGET_TYPE_SAVESTATE_SELECTOR, data );
 }
 
 /* General options for GCW0 */

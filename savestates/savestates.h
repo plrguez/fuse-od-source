@@ -28,14 +28,22 @@
 #include <libspectrum.h>
 #include "settings.h"
 
-char* quicksave_get_filename(void);
+#define MAX_SAVESTATES 100
+
+int quicksave_create_dir(void);
+char* quicksave_get_filename(int slot);
 char* quicksave_get_current_program(void);
-char* quicksave_get_label(void);
-int check_if_exist_current_savestate(void);
+char* quicksave_get_current_dir(void);
+char* quicksave_get_label(int slot);
+int check_current_savestate_exist(int slot);
+int check_current_savestate_exist_savename(char* savename);
+int check_any_savestate_exist(void);
 int check_if_savestate_possible(void);
 int quicksave_load(void);
 int quicksave_save(void);
-char* get_savestate_last_chage(void);
+char* get_savestate_last_change(int slot);
+int savestate_write( const char *savestate );
+int savestate_read( const char *savestate );
 
 #endif /* FUSE_SAVESTATES_H */
 

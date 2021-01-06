@@ -293,9 +293,11 @@ push_combo_event( Uint16* flags )
       if ( settings_current.od_quicksave_slot < 99 ) settings_current.od_quicksave_slot++;
     } else if ( settings_current.od_quicksave_slot ) settings_current.od_quicksave_slot--;
 
-    ui_widget_show_msg_update_info("Slot set to %d (%s)",
+    ui_widget_show_msg_update_info( "Slot set to %d (%s)",
 	                           settings_current.od_quicksave_slot,
-	                           check_if_exist_current_savestate() ? get_savestate_last_chage() : "Empty");
+	                           check_current_savestate_exist(settings_current.od_quicksave_slot) 
+                                 ? get_savestate_last_change(settings_current.od_quicksave_slot)
+                                 : "Empty" );
 
     /* Clean flags and mark combo as done */
     *flags = 0x0000;

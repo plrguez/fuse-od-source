@@ -58,7 +58,8 @@ ui_widget_files = \
 if BUILD_GCWZERO
 ui_widget_files +=  \
                     ui/widget/vkeyboard.c \
-                    ui/widget/controlmapping.c
+                    ui/widget/controlmapping.c \
+                    ui/widget/savestate_sel.c
 endif
 
 ui_widget_built = \

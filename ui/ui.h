@@ -317,6 +317,8 @@ int ui_query( const char *message );
 int ui_widget_init( void );
 int ui_widget_end( void );
 #ifdef GCWZERO
+char *ui_get_open_savestate( const char *title );
+char *ui_get_save_savestate( const char *title );
 #ifdef USE_WIDGET
 extern int od_show_msg_info;
 extern size_t od_msg_info_length;

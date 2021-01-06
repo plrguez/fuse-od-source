@@ -78,13 +78,15 @@ char*
 compat_file_get_time_last_change( compat_fd fd )
 {
   struct stat file_info;
+  char last_change[26];
 
   if( fstat( fileno( fd ), &file_info ) ) {
     ui_error( UI_ERROR_ERROR, "couldn't stat file: %s", strerror( errno ) );
     return NULL;
   }
 
-  return ctime( &file_info.st_mtim.tv_sec );
+  ctime_r( &file_info.st_mtim.tv_sec, &last_change[0] );
+  return utils_safe_strdup( &last_change[0] );
 }
 #endif
 

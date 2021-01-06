@@ -45,7 +45,25 @@ static const char* re_expressions[] = {
     "(([[:space:]]|[-_])*)(([(]|[[])*[[:space:]]*)(disk|tape|side|part)(([[:space:]]|[[:punct:]])*)(([abcd1234])([[:space:]]*of[[:space:]]*[1234])*)([[:space:]]*([)]|[]])*)(([[:space:]]|[-_])*)",
     NULL };
 
-static char*
+static int
+check_dir_exist(char* dir)
+{
+  struct stat stat_info;
+
+  if( !dir ) return -1;
+
+  /* Check if not exist */
+  if( stat( dir, &stat_info ) ) {
+    if ( errno == ENOENT )
+      return 0;
+    else
+      return -1;
+  }
+
+  return 1;
+}
+
+char*
 quicksave_get_current_dir(void)
 {
   const char* cfgdir;
@@ -72,27 +90,25 @@ quicksave_get_current_dir(void)
   return utils_safe_strdup( buffer );
 }
 
-static int
+int
 quicksave_create_dir(void)
 {
   char* savestate_dir;
-  struct stat stat_info;
 
   /* Can not determine savestate_dir */
   savestate_dir = quicksave_get_current_dir();
   if( !savestate_dir ) return 1;
 
   /* Create if don't exist */
-  if( stat( savestate_dir, &stat_info ) ) {
-    if ( errno == ENOENT ) {
-      if ( compat_createdir( savestate_dir ) == -1 ) {
-        ui_error( UI_ERROR_ERROR, "error creating savestate directory '%s'", savestate_dir );
-        return 1;
-      }
-    } else {
-      ui_error( UI_ERROR_ERROR, "couldn't stat '%s': %s", savestate_dir, strerror( errno ) );
+  int exist = check_dir_exist( savestate_dir );
+  if( !exist ) {
+    if ( compat_createdir( savestate_dir ) == -1 ) {
+      ui_error( UI_ERROR_ERROR, "error creating savestate directory '%s'", savestate_dir );
       return 1;
     }
+  } else if ( exist == -1 ) {
+     ui_error( UI_ERROR_ERROR, "couldn't stat '%s': %s", savestate_dir, strerror( errno ) );
+     return 1;
   }
 
   libspectrum_free( savestate_dir );
@@ -109,7 +125,7 @@ quicksave_get_current_program(void)
 }
 
 char*
-quicksave_get_label(void)
+quicksave_get_label(int slot)
 {
   char* current_program;
   char* filename;
@@ -118,7 +134,7 @@ quicksave_get_label(void)
   current_program = quicksave_get_current_program();
   if ( !current_program ) return NULL;
 
-  filename = utils_last_filename( quicksave_get_filename(), 1 );
+  filename = utils_last_filename( quicksave_get_filename(slot), 1 );
   if ( !filename ) {
     libspectrum_free(current_program);
     return NULL;
@@ -136,15 +152,60 @@ quicksave_get_label(void)
 }
 
 int
-check_if_exist_current_savestate(void)
+check_current_savestate_exist(int slot)
 {
   char* filename;
   int exist = 0;
 
-  filename = quicksave_get_filename();
+  filename = quicksave_get_filename(slot);
   if (filename) {
     exist = compat_file_exists( filename ) ? 1 : 0;
     libspectrum_free(filename);
+  }
+
+  return exist;
+}
+
+int
+check_current_savestate_exist_savename( char* savename )
+{
+  int slot;
+  char* cslot;
+
+  if (!savename) return 0;
+
+  cslot = utils_last_filename( savename, 1 );
+  slot = atoi( cslot );
+  libspectrum_free( cslot );
+
+  return check_current_savestate_exist( slot );
+}
+
+int
+check_any_savestate_exist(void)
+{
+  char* filename;
+  char* savestate_dir;
+  int i;
+  int exist = 0;
+
+  /* Can not determine savestate_dir */
+  savestate_dir = quicksave_get_current_dir();
+  if( !savestate_dir ) return 0;
+
+  if ( !check_dir_exist(savestate_dir) ) {
+    libspectrum_free(savestate_dir);
+    return 0;
+  }
+  libspectrum_free(savestate_dir);
+
+  for ( i=0; i < 100; i++ ) {
+    filename = quicksave_get_filename(i);
+    if (filename) {
+      exist = compat_file_exists( filename ) ? 1 : 0;
+      libspectrum_free(filename);
+      if (exist) break;
+    }
   }
 
   return exist;
@@ -165,7 +226,7 @@ check_if_savestate_possible(void)
 }
 
 char*
-quicksave_get_filename(void)
+quicksave_get_filename(int slot)
 {
   char *current_dir;
   char buffer[ PATH_MAX ];
@@ -173,8 +234,8 @@ quicksave_get_filename(void)
   current_dir = quicksave_get_current_dir();
   if ( !current_dir ) return NULL;
 
-  snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%2d%s",
-            current_dir, settings_current.od_quicksave_slot, settings_current.od_quicksave_format );
+  snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%02d%s",
+            current_dir, slot, settings_current.od_quicksave_format );
 
   libspectrum_free( current_dir );
 
@@ -182,14 +243,17 @@ quicksave_get_filename(void)
 }
 
 char*
-get_savestate_last_chage(void) {
+get_savestate_last_change(int slot) {
   compat_fd save_state_fd;
   char* last_change;
+  char* filename;
 
-  if ( !check_if_exist_current_savestate() )
+  if ( !check_current_savestate_exist( slot ) )
     return NULL;
 
-  save_state_fd = compat_file_open( quicksave_get_filename(), 0 );
+  filename = quicksave_get_filename( slot );
+  save_state_fd = compat_file_open( filename, 0 );
+  libspectrum_free( filename );
   if ( !save_state_fd )
     return NULL;
 
@@ -210,11 +274,11 @@ quicksave_load(void)
   char* slot;
 
   /* If don't exist savestate return but don't mark error */
-  if (!check_if_exist_current_savestate()) return 0;
+  if (!check_current_savestate_exist(settings_current.od_quicksave_slot)) return 0;
 
   fuse_emulation_pause();
 
-  filename = quicksave_get_filename();
+  filename = quicksave_get_filename(settings_current.od_quicksave_slot);
   if (!filename) { fuse_emulation_unpause(); return 1; }
 
   /*
@@ -228,7 +292,7 @@ quicksave_load(void)
   if (error)
     ui_error( UI_ERROR_ERROR, "Error loading state from slot %s", slot );
   else
-    ui_widget_show_msg_update_info( "Loaded slot %s (%s)", slot, get_savestate_last_chage() );
+    ui_widget_show_msg_update_info( "Loaded slot %s (%s)", slot, get_savestate_last_change(atoi(slot)) );
 
   libspectrum_free( filename );
   libspectrum_free( slot );
@@ -248,7 +312,7 @@ quicksave_save(void)
 
   fuse_emulation_pause();
 
-  filename = quicksave_get_filename();
+  filename = quicksave_get_filename(settings_current.od_quicksave_slot);
   if (!filename) { fuse_emulation_unpause(); return 1; }
 
   if (quicksave_create_dir()) { fuse_emulation_unpause(); return 1; }
@@ -259,12 +323,78 @@ quicksave_save(void)
   if (error)
     ui_error( UI_ERROR_ERROR, "Error saving state to slot %s", slot );
   else
-    ui_widget_show_msg_update_info( "Saved to slot %s (%s)", slot, get_savestate_last_chage() );
+    ui_widget_show_msg_update_info( "Saved to slot %s (%s)", slot, get_savestate_last_change(atoi(slot)) );
 
   libspectrum_free( filename );
   libspectrum_free( slot );
 
   fuse_emulation_unpause();
+
+  return error;
+}
+
+int
+savestate_read( const char *savestate )
+{
+  char* slot;
+  char* filename;
+
+  slot = utils_last_filename( savestate, 1 );
+  if ( !slot ) return 1;
+
+  settings_current.od_quicksave_slot = atoi( slot );
+
+  /* If don't exist savestate return but don't mark error */
+  if (!check_current_savestate_exist(settings_current.od_quicksave_slot)) {
+    libspectrum_free( slot );
+    return 1;
+  }
+
+  filename = quicksave_get_filename(settings_current.od_quicksave_slot);
+
+  /*
+   * Dirty hack for savesstates.
+   * autoload is set to 9 for load from loadstates and avoid changing last
+   * loaded filename and controlmapping files
+   */
+  int error = utils_open_file( filename, 9, NULL );
+  if (error)
+    ui_error( UI_ERROR_ERROR, "Error loading state from slot %s", slot );
+  else
+    ui_widget_show_msg_update_info( "Loaded slot %s (%s)", slot, get_savestate_last_change(settings_current.od_quicksave_slot) );
+
+  libspectrum_free( slot );
+  libspectrum_free( filename );
+
+  return error;
+}
+
+int
+savestate_write( const char *savestate )
+{
+  char* slot;
+  char* filename;
+
+  slot = utils_last_filename( savestate, 1 );
+  if ( !slot ) return 1;
+
+  settings_current.od_quicksave_slot = atoi( slot );
+
+  if (quicksave_create_dir()) {
+    libspectrum_free( slot );
+    return 1;
+  }
+
+  filename = quicksave_get_filename(settings_current.od_quicksave_slot);
+
+  int error = snapshot_write( filename );
+  if (error)
+    ui_error( UI_ERROR_ERROR, "Error saving state to slot %s", slot );
+  else
+    ui_widget_show_msg_update_info( "Saved to slot %s (%s)", slot, get_savestate_last_change(atoi(slot)) );
+
+  libspectrum_free( slot );
+  libspectrum_free( filename );
 
   return error;
 }

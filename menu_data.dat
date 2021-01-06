@@ -537,6 +537,8 @@ Help/_About..., Item
 #ifdef GCWZERO
 Quick _save, Item,,,menu_quicksave_detail, 1
 Quick _load, Item,,,menu_quickload_detail, 2
+Save state..., Item,,menu_savestate_write, menu_savestate_save_detail, 3
+Load state..., Item,,menu_savestate_read, menu_savestate_load_detail, 4
 Sa_vestate Options..., item
 E_xit..., Item, F10, menu_file_exit
 #endif

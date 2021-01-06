@@ -164,6 +164,10 @@ MENU_DETAIL( menu_keyboard_joystick_detail );
 MENU_DETAIL( menu_joystick_1_detail );
 MENU_DETAIL( menu_joystick_2_detail );
 #ifdef GCWZERO
+MENU_CALLBACK( menu_savestate_write );
+MENU_CALLBACK( menu_savestate_read );
+MENU_DETAIL( menu_savestate_load_detail );
+MENU_DETAIL( menu_savestate_save_detail );
 MENU_CALLBACK_WITH_ACTION( menu_quicksave );
 MENU_DETAIL( menu_quicksave_detail );
 MENU_CALLBACK_WITH_ACTION( menu_quickload );

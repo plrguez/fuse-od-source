@@ -1269,6 +1269,42 @@ menu_joystick_2_detail( void )
 }
 
 #ifdef GCWZERO
+MENU_CALLBACK( menu_savestate_write )
+{
+  char *savestate;
+
+  ui_widget_finish();
+
+  fuse_emulation_pause();
+
+  savestate = ui_get_save_savestate( "Fuse - Save State" );
+  if( !savestate ) { fuse_emulation_unpause(); return; }
+
+  savestate_write( savestate );
+
+  libspectrum_free( savestate );
+
+  fuse_emulation_unpause();
+}
+
+MENU_CALLBACK( menu_savestate_read )
+{
+  char *savestate;
+
+  ui_widget_finish();
+
+  fuse_emulation_pause();
+
+  savestate = ui_get_open_savestate( "Fuse - Load State" );
+  if( !savestate ) { fuse_emulation_unpause(); return; }
+
+  savestate_read( savestate );
+
+  libspectrum_free( savestate );
+
+  fuse_emulation_unpause();
+}
+
 const char*
 menu_quicksave_detail( void )
 {
@@ -1283,7 +1319,7 @@ menu_quicksave_detail( void )
   /* Activate menú entry for save */
   ui_menu_item_set_active( path , 1);
 
-  return quicksave_get_label();
+  return quicksave_get_label(settings_current.od_quicksave_slot);
 }
 
 const char*
@@ -1292,7 +1328,8 @@ menu_quickload_detail( void )
   const char* path = "/Quick load";
 
   /* If no program is loaded or not savestate exist don't show for load */
-  if ( !check_if_savestate_possible() || !check_if_exist_current_savestate() ) {
+  if ( !check_if_savestate_possible() ||
+       !check_current_savestate_exist(settings_current.od_quicksave_slot) ) {
     ui_menu_item_set_active( path , 0);
     return NULL;
   }
@@ -1300,7 +1337,41 @@ menu_quickload_detail( void )
   /* Activate menú entry for load */
   ui_menu_item_set_active( path , 1);
 
-  return quicksave_get_label();
+  return quicksave_get_label(settings_current.od_quicksave_slot);
+}
+
+const char*
+menu_savestate_save_detail( void )
+{
+  const char* path = "/Save state...";
+
+  /* If no program is loaded don't show for save */
+  if ( !check_if_savestate_possible() ) {
+    ui_menu_item_set_active( path , 0);
+    return NULL;
+  }
+
+  /* Activate menú entry for save */
+  ui_menu_item_set_active( path , 1);
+
+  return NULL;
+}
+
+const char*
+menu_savestate_load_detail( void )
+{
+  const char* path = "/Load state...";
+
+  /* If no program is loaded or not savestate exist don't show for load */
+  if ( !check_if_savestate_possible() || !check_any_savestate_exist() ) {
+    ui_menu_item_set_active( path , 0);
+    return NULL;
+  }
+
+  /* Activate menú entry for load */
+  ui_menu_item_set_active( path , 1);
+
+  return NULL;
 }
 
 const char*

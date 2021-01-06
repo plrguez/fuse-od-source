@@ -301,6 +301,10 @@ extern widget_t widget_data[];
 #ifdef GCWZERO
 void widget_print_filetitle( int y, struct widget_dirent *current, int is_saving );
 int widget_control_mapping_finish( widget_finish_state finished );
+int widget_savestate_selector_load_draw( void* data );
+int widget_savestate_selector_save_draw( void* data );
+int widget_savestate_selector_finish( widget_finish_state finished );
+void widget_savestate_selector_keyhandler( input_key key );
 #endif
 
 #endif				/* #ifndef FUSE_WIDGET_INTERNALS_H */

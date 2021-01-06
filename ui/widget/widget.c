@@ -584,7 +584,8 @@ size_t widget_statusbar_update_info( float speed ) {
     snprintf(suffix, 5, " [%s]", "B");
     strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
   }
-  if ( settings_current.od_quicksave_show_slot_in_statusbar && check_if_savestate_possible() ) {
+  if ( settings_current.od_quicksave_show_slot_in_statusbar && 
+       check_if_savestate_possible() ) {
     snprintf(suffix, 6, " [%d]", settings_current.od_quicksave_slot);
     strlcat(&status_info[0], &suffix[0], WIDGET_MAX_INFO_LENGTH);
   }
@@ -847,6 +848,8 @@ widget_t widget_data[] = {
   { widget_control_mapping_draw, widget_control_mapping_finish, widget_control_mapping_keyhandler  },
   { widget_general_gcw0_draw,  widget_options_finish, widget_general_gcw0_keyhandler  },
   { widget_savestate_options_draw, widget_options_finish, widget_savestate_options_keyhandler  },
+  { widget_savestate_selector_load_draw, widget_savestate_selector_finish, widget_savestate_selector_keyhandler  },
+  { widget_savestate_selector_save_draw, widget_savestate_selector_finish, widget_savestate_selector_keyhandler  },
 #endif
 };
 
