@@ -460,14 +460,14 @@ widget_savestate_selector_keyhandler( input_key key )
        thing */
     if( new_current_savestate < top_savestate ) {
 
-      top_savestate = new_current_savestate & ~1;
+      top_savestate = new_current_savestate;
       widget_print_all_savestates( widget_savestates, widget_numsavestates,
 				  top_savestate, new_current_savestate );
 
     } else if( new_current_savestate >= top_savestate+ENTRIES_PER_SCREEN ) {
 
-      top_savestate = new_current_savestate & ~1;
-      top_savestate -= ENTRIES_PER_SCREEN - 2;
+      top_savestate = new_current_savestate;
+      top_savestate -= ENTRIES_PER_SCREEN - 1;
       widget_print_all_savestates( widget_savestates, widget_numsavestates,
 				  top_savestate, new_current_savestate );
 
@@ -482,7 +482,7 @@ widget_savestate_selector_keyhandler( input_key key )
       widget_print_savestate( widget_savestates[ new_current_savestate ],
 			     new_current_savestate - top_savestate, 1 );
 
-      widget_display_lines( 2, 21 );
+      widget_display_lines( DIALOG_Y_POSITION, DIALOG_HEIGHT - 1 );
     }
 
     /* Reset the current file marker */
