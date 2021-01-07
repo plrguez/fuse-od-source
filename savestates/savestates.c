@@ -30,6 +30,7 @@
 #include <mntent.h>
 #include <unistd.h>
 #include <libspectrum.h>
+#include <ctype.h>
 
 #include "fuse.h"
 #include "snapshot.h"
@@ -44,6 +45,9 @@
 static const char* re_expressions[] = {
     "(([[:space:]]|[-_])*)(([(]|[[])*[[:space:]]*)(disk|tape|side|part)(([[:space:]]|[[:punct:]])*)(([abcd1234])([[:space:]]*of[[:space:]]*[1234])*)([[:space:]]*([)]|[]])*)(([[:space:]]|[-_])*)",
     NULL };
+
+static char* last_check_directory = NULL;
+static int last_check_directory_result = 0;
 
 static int
 check_dir_exist(char* dir)
@@ -109,6 +113,89 @@ savestate_read_internal( int slot )
   libspectrum_free( filename );
 
   return error;
+}
+
+static int
+is_savestate_name( const char* name )
+{
+  char* filename;
+  char* extension;
+
+  if ( !name ) return 0;
+
+  /* Compare if name is valid */
+  filename = utils_last_filename( name, 0 );
+  if ( !filename ) return 0;
+
+  /* nn.xxx */
+  if ( strlen( filename ) != 6 ) {
+    libspectrum_free( filename );
+    return 0;
+  }
+
+  /* Verify that extension is the configured for savestates */
+  extension = strrchr( filename, '.' );
+  if ( extension ) {
+    if ( strncmp( extension, settings_current.od_quicksave_format, 4 ) ) {
+      libspectrum_free( filename );
+      return 0;
+    }
+  } else {
+    libspectrum_free( filename );
+    return 0;
+  }
+
+  /* Verify that the name are digits */
+  if ( !isdigit( filename[0] ) || !isdigit( filename[1]) ) {
+    libspectrum_free( filename );
+    return 0;
+  }
+
+  libspectrum_free( filename );
+
+  /* Name is OK */
+  return 1;
+}
+
+static int
+scan_directory_for_savestates( const char* dir, int (*check_fn)(const char*) )
+{
+  compat_dir directory;
+  int done = 0;
+  int exist = 0;
+
+  if ( !dir ) return 0;
+
+  directory = compat_opendir( dir );
+  if( !directory ) return 0;
+
+  while( !done ) {
+    char name[ PATH_MAX ];
+
+    compat_dir_result_t result = compat_readdir( directory, name, sizeof( name ) );
+
+    switch( result ) {
+    case COMPAT_DIR_RESULT_OK:
+      if ( check_fn( name ) ) {
+        exist = 1;
+        done = 1;
+      }
+      break;
+
+    case COMPAT_DIR_RESULT_END:
+      done = 1;
+      break;
+
+    case COMPAT_DIR_RESULT_ERROR:
+      compat_closedir( directory );
+      return 0;
+    }
+  }
+
+  if( compat_closedir( directory ) )
+    return 0;
+
+  return exist;
 }
 
 char*
@@ -232,31 +319,29 @@ check_current_savestate_exist_savename( char* savename )
 int
 check_any_savestate_exist(void)
 {
-  char* filename;
   char* savestate_dir;
-  int i;
-  int exist = 0;
 
   /* Can not determine savestate_dir */
   savestate_dir = quicksave_get_current_dir();
   if( !savestate_dir ) return 0;
 
-  if ( !check_dir_exist(savestate_dir) ) {
+  if ( !check_dir_exist( savestate_dir ) ) {
     libspectrum_free(savestate_dir);
     return 0;
   }
-  libspectrum_free(savestate_dir);
 
-  for ( i=0; i < 100; i++ ) {
-    filename = quicksave_get_filename(i);
-    if (filename) {
-      exist = compat_file_exists( filename ) ? 1 : 0;
-      libspectrum_free(filename);
-      if (exist) break;
-    }
+  /* Is directory previously checked? */
+  if ( !last_check_directory || strcmp( savestate_dir, last_check_directory ) ) {
+    last_check_directory = utils_safe_strdup( savestate_dir );
+    last_check_directory_result = 0;
+  /* If directory contain savestates previously */
+  } else if ( !last_check_directory_result ) {
+    last_check_directory_result = scan_directory_for_savestates( savestate_dir, is_savestate_name );
   }
 
-  return exist;
+  libspectrum_free( savestate_dir );
+
+  return last_check_directory_result;
 }
 
 int
