@@ -81,8 +81,11 @@ static void savestate_print_screenshot_back( struct widget_stateent *savestate )
 static char *widget_get_savestate( const char *title, int saving );
 static int widget_print_all_savestates( struct widget_stateent **savestates, int numsavestates,
 				       int top, int current );
+static inline void widget_get_position_detail( int position, int *x, int *y );
 static int widget_print_savestate( struct widget_stateent *savestate, int position,
                                    int inverted );
+static int widget_print_savestate_detail( struct widget_stateent *savestate, int position,
+                                          int inverted );
 static void widget_print_show_screenshot_label( struct widget_stateent *savestate );
 static void widget_scan_savestates( void );
 static int widget_scan_compare( const struct widget_stateent **a,
@@ -414,15 +417,37 @@ widget_print_all_savestates( struct widget_stateent **savestates, int numsavesta
   return 0;
 }
 
-/* Print a filename onto the dialog box */
+static inline void
+widget_get_position_detail( int position, int *x, int *y )
+{
+  *x = ( DIALOG_X_POSITION + 1 ) * 8;
+  *y = ( DIALOG_Y_POSITION + 2 ) * 8 + position * 8;
+}
+
+/* Print a savestate onto the dialog box */
 static int
 widget_print_savestate( struct widget_stateent *savestate, int position,
 				        int inverted )
 {
-  char name[4], info[26];
+  int x, y;
 
-  int x = ( DIALOG_X_POSITION + 1 ) * 8,
-      y = ( DIALOG_Y_POSITION + 2 ) * 8 + position * 8;
+  widget_print_savestate_detail( savestate, position, inverted );
+
+  widget_get_position_detail( position, &x, &y );
+  if ( savestate->has_screenshot )
+    widget_draw_submenu_arrow( x + 208, y+24, WIDGET_COLOUR_FOREGROUND );
+
+  return 0;
+}
+
+static int
+widget_print_savestate_detail( struct widget_stateent *savestate, int position,
+				               int inverted )
+{
+  char name[4], info[26];
+  int x, y;
+
+  widget_get_position_detail( position, &x, &y );
 
   int foreground = WIDGET_COLOUR_FOREGROUND,
 
@@ -440,9 +465,6 @@ widget_print_savestate( struct widget_stateent *savestate, int position,
   info[25] = '\0';
 
   widget_printstring( x + 24, y, foreground, info );
-
-  if ( savestate->has_screenshot )
-    widget_draw_submenu_arrow( x + 208, y+24, WIDGET_COLOUR_FOREGROUND );
 
   return 0;
 }
@@ -506,7 +528,13 @@ widget_savestate_selector_keyhandler( input_key key )
 
   case INPUT_KEY_Alt_L: /* B */
   case INPUT_JOYSTICK_FIRE_2:
-    widget_end_widget( WIDGET_FINISHED_CANCEL );
+    if ( showing_screenshot ) {
+      showing_screenshot = 0;
+      widget_print_all_savestates( widget_savestates, widget_numsavestates,
+				  top_savestate, current_savestate );
+    } else {
+      widget_end_widget( WIDGET_FINISHED_CANCEL );
+    }
     break;
 
   case INPUT_KEY_Down: /* Down */
@@ -575,8 +603,8 @@ widget_savestate_selector_keyhandler( input_key key )
         uidisplay_frame_save();
       showing_screenshot = 1;
       savestate_print_screenshot_back( widget_savestates[ current_savestate ] );
-      widget_print_savestate( widget_savestates[ current_savestate ], (ENTRIES_PER_SCREEN + 3), 0 );
-      widget_display_lines( (ENTRIES_PER_SCREEN + 3), 1 );
+      widget_print_savestate_detail( widget_savestates[ current_savestate ], (ENTRIES_PER_SCREEN + 2), 0 );
+      widget_display_lines( (ENTRIES_PER_SCREEN + 2), 1 );
     }
     break;
 
