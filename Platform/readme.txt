@@ -112,26 +112,20 @@ Savestate options
     * See section 'Hotkey combinations' for info about key combinations to
       savestates.
 
-  - Take screenshot with savestate
-    ------------------------------
+  - Show savestate screen as back image in menu
+    -------------------------------------------
     Default enabled.
 
-    When saving a savestate a screenshot is also saved in scr format.
+    In the menu for loading and saving states the screen for the savestate
+    selected is shown as back image.
 
-  - Show screenshot as back image in menu
-    -------------------------------------
-    Default enabled.
+    It can be fully viewed using Right cursor or the 'X' Button.
 
-    If exist, the screenshot for the savestate selected in the menu for
-    loading and saving states is shown as back image.
-
-    In the menu for load and save savestates the screenshot, if exist, can be
-    fully viewed using Right cursor or the 'X' Button.
     In the screenshot full view:
-      - 'A' Button load the state
-      - 'B' Button or Left cursor go back to the list of savestates
-      - Cursor Up and Down go back to the savestates list and select previous
-        or next savestate.
+      - 'A' Button to load the state
+      - 'B' Button or Left cursor to return to the list of savestates
+      - Cursor Up and Down to return to the savestates list and select
+        previous or next savestate.
 
 Options - General GCW0
 ----------------------

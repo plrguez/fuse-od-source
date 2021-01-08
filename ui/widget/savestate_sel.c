@@ -46,9 +46,7 @@
 typedef struct widget_stateent {
   char *name;
   char *info;
-  int size;
   int slot;
-  int has_screenshot;
 } widget_stateent;
 
 static struct widget_stateent **widget_savestates; /* Savestates in the current slot */
@@ -67,26 +65,24 @@ static int exit_all_widgets;
    display, that of the savestate which the `cursor' is on, and that
    which it will be on after this keypress */
 static size_t top_savestate, current_savestate, new_current_savestate;
-static size_t saved_top_savestate, saved_current_savestate;
-static int saved_position;
+
+typedef struct saved_position {
+  int saved_position;
+  size_t top_savestate, current_savestate;
+} saved_position_t;
+static saved_position_t saved_positions[2];
+
 static int showing_screenshot = 0;
 
 static char* last_program = NULL;
-
-static utils_file black_screen;
-static int previous_black_screen = 0;
 
 static void widget_savestate_init( void );
 static void savestate_print_screenshot_back( struct widget_stateent *savestate );
 static char *widget_get_savestate( const char *title, int saving );
 static int widget_print_all_savestates( struct widget_stateent **savestates, int numsavestates,
 				       int top, int current );
-static inline void widget_get_position_detail( int position, int *x, int *y );
 static int widget_print_savestate( struct widget_stateent *savestate, int position,
                                    int inverted );
-static int widget_print_savestate_detail( struct widget_stateent *savestate, int position,
-                                          int inverted );
-static void widget_print_show_screenshot_label( struct widget_stateent *savestate );
 static void widget_scan_savestates( void );
 static int widget_scan_compare( const struct widget_stateent **a,
 				                const struct widget_stateent **b );
@@ -99,40 +95,11 @@ static void
 savestate_print_screenshot_back( struct widget_stateent *savestate )
 {
   utils_file screen;
-  char* screenshot;
 
-  if ( savestate->has_screenshot ) {
-    previous_black_screen = 0;
-    screenshot = savestate_get_screen_filename( savestate->slot );
-    if ( !compat_file_exists( screenshot ) ) {
-      libspectrum_free( screenshot );
-      return;
-    }
-
-    if( utils_read_screen( screenshot, &screen ) ) {
-      libspectrum_free( screenshot );
-      return;
-    }
-
-    libspectrum_free( screenshot );
-
-  } else if ( previous_black_screen ) {
-    return;
-
-  } else {
-    if ( !black_screen.buffer ) {
-      black_screen.length = 6912;
-      black_screen.buffer = libspectrum_new( unsigned char, 6912 );
-      memset( black_screen.buffer, 0, black_screen.length );
-    }
-    screen = black_screen;
-    previous_black_screen = 1;
-  }
+  savestate_get_screen_for_slot( savestate->slot, &screen );
 
   uidisplay_spectrum_screen( screen.buffer, 0 );
   uidisplay_frame_end();
-
-  if ( savestate->has_screenshot ) libspectrum_free( screen.buffer );
 }
 
 static char *
@@ -248,15 +215,8 @@ widget_add_savestate( int *allocated, int index, int slot,
   memcpy( (*namelist)[index]->info, info, length_info - 1 );
   (*namelist)[index]->info[ length_info - 1 ] = 0;
 
-  char* screenshot = savestate_get_screen_filename( slot );
-  if ( compat_file_exists( screenshot ) )
-    (*namelist)[index]->has_screenshot = 1;
-  else
-    (*namelist)[index]->has_screenshot = 0;
-
   libspectrum_free( info );
   libspectrum_free( final_name );
-  libspectrum_free( screenshot );
 
   return 0;
 }
@@ -328,16 +288,16 @@ widget_savestate_init( void )
   if (!last_program || strcmp( program,last_program ) ) {
     if (last_program) libspectrum_free( last_program );
     last_program = utils_safe_strdup( program );
-    saved_position = 0;
-    previous_black_screen = 0;
+    saved_positions[0].saved_position = 0;
+    saved_positions[1].saved_position = 0;
   }
   libspectrum_free( program );
 
   /* Restore position and savestate selected for save */
-  if ( saved_position ) {
-    saved_position = 0;
-    top_savestate = saved_top_savestate;
-    new_current_savestate = current_savestate = saved_current_savestate;
+  if ( saved_positions[is_saving].saved_position ) {
+    saved_positions[is_saving].saved_position = 0;
+    top_savestate = saved_positions[is_saving].top_savestate;
+    new_current_savestate = current_savestate = saved_positions[is_saving].current_savestate;
   } else {
     if ( is_saving ) {
       top_savestate = new_current_savestate = current_savestate = settings_current.od_quicksave_slot;
@@ -358,9 +318,9 @@ widget_savestate_selector_draw( void *data )
   exit_all_widgets = filesel_data->exit_all_widgets;
   title = filesel_data->title;
 
-  widget_savestate_init();
-
   widget_scan_savestates();
+
+  widget_savestate_init();
 
   /* Create the dialog box */
   error = widget_dialog_with_border( DIALOG_X_POSITION, DIALOG_Y_POSITION, DIALOG_WIDTH, DIALOG_HEIGHT );
@@ -406,7 +366,8 @@ widget_print_all_savestates( struct widget_stateent **savestates, int numsavesta
   widget_printstring( DIALOG_X_POSITION * 8 + 4, (DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 3) * 8, WIDGET_COLOUR_FOREGROUND,
 				     "\012A\001 = select" );
 
-  widget_print_show_screenshot_label( savestates[ current ] );
+  widget_printstring( ( DIALOG_X_POSITION + 10 ) * 8 + 4, (DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 3) * 8, WIDGET_COLOUR_FOREGROUND,
+				        "\012X\001 = show screenshot" );
 
   if( i < numsavestates )
     widget_down_arrow( DIALOG_X_POSITION, DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 1, WIDGET_COLOUR_FOREGROUND );
@@ -417,37 +378,15 @@ widget_print_all_savestates( struct widget_stateent **savestates, int numsavesta
   return 0;
 }
 
-static inline void
-widget_get_position_detail( int position, int *x, int *y )
-{
-  *x = ( DIALOG_X_POSITION + 1 ) * 8;
-  *y = ( DIALOG_Y_POSITION + 2 ) * 8 + position * 8;
-}
-
 /* Print a savestate onto the dialog box */
 static int
 widget_print_savestate( struct widget_stateent *savestate, int position,
 				        int inverted )
 {
-  int x, y;
-
-  widget_print_savestate_detail( savestate, position, inverted );
-
-  widget_get_position_detail( position, &x, &y );
-  if ( savestate->has_screenshot )
-    widget_draw_submenu_arrow( x + 208, y+24, WIDGET_COLOUR_FOREGROUND );
-
-  return 0;
-}
-
-static int
-widget_print_savestate_detail( struct widget_stateent *savestate, int position,
-				               int inverted )
-{
   char name[4], info[26];
-  int x, y;
 
-  widget_get_position_detail( position, &x, &y );
+  int x = ( DIALOG_X_POSITION + 1 ) * 8,
+      y = ( DIALOG_Y_POSITION + 2 ) * 8 + position * 8;
 
   int foreground = WIDGET_COLOUR_FOREGROUND,
 
@@ -469,14 +408,6 @@ widget_print_savestate_detail( struct widget_stateent *savestate, int position,
   return 0;
 }
 
-static void
-widget_print_show_screenshot_label( struct widget_stateent *savestate )
-{
-  int col = savestate->has_screenshot ? WIDGET_COLOUR_FOREGROUND :  WIDGET_COLOUR_DISABLED;
-  widget_printstring( ( DIALOG_X_POSITION + 10 ) * 8 + 4, (DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 3) * 8, col,
-				        "\012X\001 = show screenshot" );
-}
-
 int
 widget_savestate_selector_finish( widget_finish_state finished )
 {
@@ -486,9 +417,9 @@ widget_savestate_selector_finish( widget_finish_state finished )
     widget_savestate_name = NULL;
   }
 
-  saved_position = 1;
-  saved_top_savestate = top_savestate;
-  saved_current_savestate = current_savestate;
+  saved_positions[is_saving].saved_position = 1;
+  saved_positions[is_saving].top_savestate = top_savestate;
+  saved_positions[is_saving].current_savestate = current_savestate;
 
   return 0;
 }
@@ -598,14 +529,12 @@ widget_savestate_selector_keyhandler( input_key key )
   case INPUT_KEY_Right: /* Right */
   case INPUT_JOYSTICK_RIGHT:
     /* widget show screenshot */
-    if ( widget_savestates[ current_savestate ]->has_screenshot ) {
-      if ( !settings_current.od_quicksave_show_back_preview )
-        uidisplay_frame_save();
-      showing_screenshot = 1;
-      savestate_print_screenshot_back( widget_savestates[ current_savestate ] );
-      widget_print_savestate_detail( widget_savestates[ current_savestate ], (ENTRIES_PER_SCREEN + 2), 0 );
-      widget_display_lines( (ENTRIES_PER_SCREEN + 2), 1 );
-    }
+    if ( !settings_current.od_quicksave_show_back_preview )
+      uidisplay_frame_save();
+    showing_screenshot = 1;
+    savestate_print_screenshot_back( widget_savestates[ current_savestate ] );
+    widget_print_savestate( widget_savestates[ current_savestate ], (ENTRIES_PER_SCREEN + 2), 0 );
+    widget_display_lines( (ENTRIES_PER_SCREEN + 2), 1 );
     break;
 
   default:	/* Keep gcc happy */
@@ -636,10 +565,7 @@ widget_savestate_selector_keyhandler( input_key key )
 
       /* Otherwise, print the current file uninverted and the
 	 new current file inverted */
-      if ( !widget_savestates[ new_current_savestate ]->has_screenshot && previous_black_screen )
-        showing_screenshot = 0;
-      else
-        showing_screenshot = 1;
+     showing_screenshot = 1;
 
       if ( showing_screenshot ) {
         showing_screenshot = 0;
@@ -651,8 +577,6 @@ widget_savestate_selector_keyhandler( input_key key )
 
         widget_print_savestate( widget_savestates[ new_current_savestate ],
 			       new_current_savestate - top_savestate, 1 );
-
-        widget_print_show_screenshot_label( widget_savestates[ new_current_savestate ] );
 
         widget_display_lines( DIALOG_Y_POSITION, DIALOG_HEIGHT );
       }

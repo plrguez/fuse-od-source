@@ -185,5 +185,4 @@ Entry, Current s(l)ot, od_quicksave_slot, INPUT_KEY_l, 2
 Checkbox, S(h)ow slot in status bar, od_quicksave_show_slot_in_statusbar, INPUT_KEY_h
 Combo, Savestates (f)ormat, od_quicksave_format, INPUT_KEY_f, *.szx|.z80|.sna
 Checkbox, Savestates per (m)achine model, od_quicksave_per_machine, INPUT_KEY_m
-Checkbox, Ta(k)e screenshot with savestate, od_quicksave_create_screenshot, INPUT_KEY_k
-Checkbox, Sho(w) screenshot as back image in menu, od_quicksave_show_back_preview, INPUT_KEY_w
+Checkbox, Sho(w) savestate screen as back image in menu, od_quicksave_show_back_preview, INPUT_KEY_w

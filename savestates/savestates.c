@@ -69,21 +69,6 @@ check_dir_exist(char* dir)
 }
 
 static int
-savestate_write_screen_internal( int slot )
-{
-  char* filename;
-
-  filename = savestate_get_screen_filename( slot );
-  if ( !filename ) return 1;
-
-  int error = screenshot_scr_write( filename );
-
-  libspectrum_free( filename );
-
-  return error;
-}
-
-static int
 savestate_write_internal( int slot )
 {
   char* filename;
@@ -100,9 +85,6 @@ savestate_write_internal( int slot )
     ui_widget_show_msg_update_info( "Saved to slot %02d (%s)", slot, get_savestate_last_change( slot ) );
 
   libspectrum_free( filename );
-
-  if ( settings_current.od_quicksave_create_screenshot && !error )
-    savestate_write_screen_internal( slot );
 
   return error;
 }
@@ -217,21 +199,82 @@ scan_directory_for_savestates( const char* dir, int (*check_fn)(const char*) )
   return exist;
 }
 
-char*
-savestate_get_screen_filename(int slot)
+static int
+savetate_read_snapshot( char* snapshot, libspectrum_snap *snap, utils_file* file )
 {
-  char *current_dir;
-  char buffer[ PATH_MAX ];
+  int error;
 
-  current_dir = quicksave_get_current_dir();
-  if ( !current_dir ) return NULL;
+  if ( !snapshot || !compat_file_exists( snapshot ))
+    return 1;
 
-  snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%02d.scr",
-            current_dir, slot );
+  error = utils_read_file( snapshot, file );
+  if( error )
+    return error;
 
-  libspectrum_free( current_dir );
+  error = libspectrum_snap_read( snap, file->buffer, file->length,
+				                 LIBSPECTRUM_ID_UNKNOWN, snapshot );
+  if( error ) {
+    utils_close_file( file );
+    return error;
+  }
 
-  return utils_safe_strdup( buffer );
+  utils_close_file( file );
+
+  return 0;
+}
+
+int
+savestate_get_screen_for_slot( int slot, utils_file* screen )
+{
+  utils_file file;
+  char* savestate;
+  int error;
+  libspectrum_snap *snap;
+  int page;
+
+  /* Initialize screenshot to black */
+  screen->length = 6912;
+  screen->buffer = libspectrum_new( unsigned char, screen->length );
+  memset( screen->buffer, 0, screen->length );
+
+  savestate = quicksave_get_filename( slot );
+
+  snap = libspectrum_snap_alloc();
+
+  error = savetate_read_snapshot( savestate, snap, &file );
+
+  libspectrum_free( savestate );
+
+  if( error ) {
+    libspectrum_snap_free( snap );
+    return error;
+  }
+
+  switch ( libspectrum_snap_machine( snap ) ) {
+  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
+  case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
+  case LIBSPECTRUM_MACHINE_PLUS2A:
+  case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS2:
+  case LIBSPECTRUM_MACHINE_128:
+  case LIBSPECTRUM_MACHINE_128E:
+  case LIBSPECTRUM_MACHINE_SE:
+    page = libspectrum_snap_out_128_memoryport( snap ) & 0x08 ? 7 : 5;
+    break;
+  default:
+    page = 5;
+    break;
+  }
+  memcpy(screen->buffer, libspectrum_snap_pages( snap, page ), screen->length);
+
+  error = libspectrum_snap_free( snap );
+  if( error )
+    return error;
+
+  return 0;
 }
 
 char*
