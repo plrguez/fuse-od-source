@@ -38,6 +38,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "ui/ui.h"
+#include "screenshot.h"
 #include "savestates/savestates.h"
 
 #ifdef GCWZERO
@@ -68,6 +69,21 @@ check_dir_exist(char* dir)
 }
 
 static int
+savestate_write_screen_internal( int slot )
+{
+  char* filename;
+
+  filename = savestate_get_screen_filename( slot );
+  if ( !filename ) return 1;
+
+  int error = screenshot_scr_write( filename );
+
+  libspectrum_free( filename );
+
+  return error;
+}
+
+static int
 savestate_write_internal( int slot )
 {
   char* filename;
@@ -84,6 +100,9 @@ savestate_write_internal( int slot )
     ui_widget_show_msg_update_info( "Saved to slot %02d (%s)", slot, get_savestate_last_change( slot ) );
 
   libspectrum_free( filename );
+
+  if ( settings_current.od_quicksave_create_screenshot && !error )
+    savestate_write_screen_internal( slot );
 
   return error;
 }
@@ -196,6 +215,23 @@ scan_directory_for_savestates( const char* dir, int (*check_fn)(const char*) )
     return 0;
 
   return exist;
+}
+
+char*
+savestate_get_screen_filename(int slot)
+{
+  char *current_dir;
+  char buffer[ PATH_MAX ];
+
+  current_dir = quicksave_get_current_dir();
+  if ( !current_dir ) return NULL;
+
+  snprintf( buffer, PATH_MAX, "%s"FUSE_DIR_SEP_STR"%02d.scr",
+            current_dir, slot );
+
+  libspectrum_free( current_dir );
+
+  return utils_safe_strdup( buffer );
 }
 
 char*

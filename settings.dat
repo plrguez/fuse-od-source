@@ -330,6 +330,8 @@ od_quicksave_format, string, ".szx"
 od_quicksave_slot, numeric, 0
 od_quicksave_per_machine, boolean, 1
 od_quicksave_show_slot_in_statusbar, boolean, 0
+od_quicksave_create_screenshot, boolean, 1
+od_quicksave_show_back_preview, boolean, 1
 
 od_auto_load_with_custom_roms, boolean, 0
 

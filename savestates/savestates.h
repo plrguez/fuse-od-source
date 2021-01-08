@@ -32,6 +32,7 @@
 
 int quicksave_create_dir(void);
 char* quicksave_get_filename(int slot);
+char* savestate_get_screen_filename(int slot);
 char* quicksave_get_current_program(void);
 char* quicksave_get_current_dir(void);
 char* quicksave_get_label(int slot);
