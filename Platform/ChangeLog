@@ -14,6 +14,7 @@
         · 100 slots per game
         · Format for savestates: SZX, Z80, SNA. Default is SZX.
         · Savestates per machine model. Enabled by default.
+        · Take screenshot and preview it in savestates widget selectors.
 
       * Some programs work for different models. By default the savestates use
         different locations for every model. This behaviour can be changed

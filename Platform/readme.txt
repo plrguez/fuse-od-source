@@ -65,8 +65,14 @@ Savestate options
 
     Number of slot used for quick saves and load states.
 
-  - Savestate format
-    ----------------
+  - Show slot in status bar
+    -----------------------
+    Default disabled.
+
+    Show the current selected slot for savestates in status bar info.
+
+  - Savestates format
+    -----------------
     SZX, Z80, SNA. Default SZX.
 
     Format used for the savestates.
@@ -105,6 +111,27 @@ Savestate options
 
     * See section 'Hotkey combinations' for info about key combinations to
       savestates.
+
+  - Take screenshot with savestate
+    ------------------------------
+    Default enabled.
+
+    When saving a savestate a screenshot is also saved in scr format.
+
+  - Show screenshot as back image in menu
+    -------------------------------------
+    Default enabled.
+
+    If exist, the screenshot for the savestate selected in the menu for
+    loading and saving states is shown as back image.
+
+    In the menu for load and save savestates the screenshot, if exist, can be
+    fully viewed using Right cursor or the 'X' Button.
+    In the screenshot full view:
+      - 'A' Button load the state
+      - 'B' Button or Left cursor go back to the list of savestates
+      - Cursor Up and Down go back to the savestates list and select previous
+        or next savestate.
 
 Options - General GCW0
 ----------------------
