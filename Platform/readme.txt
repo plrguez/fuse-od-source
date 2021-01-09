@@ -88,7 +88,7 @@ Hotkeys assigned for savestates:
 
   - Show slot in status bar
     -----------------------
-    Default disabled.
+    Default enabled.
 
     Show the current selected slot in status bar info.
 
@@ -100,6 +100,22 @@ Hotkeys assigned for savestates:
 
     The default SZX is the recommeneded format. For Z80 format a warning
     about loss of information will be emmited.
+
+    The Z80 format does not support all combinations for storing information
+    about the media and hardware used, this include same machine models.
+    Some examples:
+     · Pentagon 256 and 1024 are saved as Pentagon 128, so when you save
+       a savestate with this models the load change to Pentagon 128. If you
+       are using savestates per machine model then the path to access
+       savestates also change.
+     · If you are using interface 2 with cartridge this information is lost
+       when saved so the load of savestates will fail.
+    For a tipical media as tapes and disks with no extra hardware attached to
+    emulator you can go ahead with Z80 format, but for best cominations of
+    hardware and media it's best to stick with SZX format.
+
+    For Z80 format see https://worldofspectrum.org/faq/reference/z80format.htm
+    For SZF format see https://www.spectaculator.com/docs/zx-state/intro.shtml
 
   - Savestates per machine model
     ----------------------------

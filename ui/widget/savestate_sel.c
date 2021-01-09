@@ -75,6 +75,8 @@ static saved_position_t saved_positions[2];
 static int showing_screenshot = 0;
 
 static char* last_program = NULL;
+static char* last_format = NULL;
+libspectrum_machine last_machine = LIBSPECTRUM_MACHINE_UNKNOWN;
 
 static void widget_savestate_init( void );
 static void savestate_print_screenshot_back( struct widget_stateent *savestate );
@@ -283,15 +285,34 @@ static void
 widget_savestate_init( void )
 {
   char* program;
+  int reset_positions = 0;
+
+  if ( last_machine != machine_current->machine ) {
+    last_machine = machine_current->machine;
+    reset_positions = 1;
+  }
+
+  if ( !last_format || strcmp( last_format, settings_current.od_quicksave_format ) ) {
+    if ( last_format ) libspectrum_free( last_format );
+    last_format = utils_safe_strdup( settings_current.od_quicksave_format );
+    reset_positions = 1;
+  }
 
   program = quicksave_get_current_program();
-  if (!last_program || strcmp( program,last_program ) ) {
-    if (last_program) libspectrum_free( last_program );
+  if ( !last_program || strcmp( program, last_program ) ) {
+    if ( last_program ) libspectrum_free( last_program );
     last_program = utils_safe_strdup( program );
-    saved_positions[0].saved_position = 0;
-    saved_positions[1].saved_position = 0;
+    reset_positions = 1;
   }
   libspectrum_free( program );
+
+  if ( reset_positions ) {
+    saved_positions[0].saved_position = 0;
+    saved_positions[0].top_savestate = 0;
+    saved_positions[0].current_savestate = 0;
+
+    saved_positions[1] = saved_positions[0];
+  }
 
   /* Restore position and savestate selected for save */
   if ( saved_positions[is_saving].saved_position ) {
