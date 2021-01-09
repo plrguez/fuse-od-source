@@ -366,8 +366,8 @@ widget_print_all_savestates( struct widget_stateent **savestates, int numsavesta
   widget_printstring( DIALOG_X_POSITION * 8 + 4, (DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 3) * 8, WIDGET_COLOUR_FOREGROUND,
 				     "\012A\001 = select" );
 
-  widget_printstring( ( DIALOG_X_POSITION + 10 ) * 8 + 4, (DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 3) * 8, WIDGET_COLOUR_FOREGROUND,
-				        "\012X\001 = show screenshot" );
+  widget_printstring( ( DIALOG_X_POSITION + 13 ) * 8 + 2, (DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 3) * 8, WIDGET_COLOUR_FOREGROUND,
+				        "\012X\001 = show screen" );
 
   if( i < numsavestates )
     widget_down_arrow( DIALOG_X_POSITION, DIALOG_Y_POSITION + ENTRIES_PER_SCREEN + 1, WIDGET_COLOUR_FOREGROUND );
