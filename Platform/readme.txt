@@ -2,7 +2,7 @@ Using the Fuse emulator
 =======================
 
 This port of Fuse to OpenDingux and RetroFW is a compilation of Fuse
-1.5.7 for Opendingux/RetroFW with some additions to the SDL UI and
+1.6.0 for Opendingux/RetroFW with some additions to the SDL UI and
 some new options.
 
 So the thanks for this port are for Phillip Kendall and all the Fuse
@@ -516,6 +516,7 @@ These are no dependent of button mapping.
              Default name will be the name of the last loaded file
              name with its extension changed to default extension of
              media to save.
+             In Poke memory is used to add a new poke.
 
   `Select`   Enable/Disable filters in file dialogs if option
              `Filter known extensions` option is enabled.

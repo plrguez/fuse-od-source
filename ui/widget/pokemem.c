@@ -115,7 +115,9 @@ widget_pokemem_draw( void *data GCC_UNUSED )
 
 #ifdef GCWZERO
   widget_printstring( menu_left_edge_x * 8 + 8, ( page_size + 4 ) * 8,
-                      WIDGET_COLOUR_FOREGROUND, "\x0A" "X\x01" " Add" );
+                      WIDGET_COLOUR_FOREGROUND, "\x0A" "Y\x01" " Add" );
+  widget_printstring_right( menu_width * 8 - 8, ( page_size + 4 ) * 8,
+                      WIDGET_COLOUR_FOREGROUND, "\x0A" "X\x01" " Select" );
 #else
   widget_printstring( menu_left_edge_x * 8 + 8, ( page_size + 4 ) * 8,
                       WIDGET_COLOUR_FOREGROUND, "\x0A" "A\x01" "dd" );
@@ -286,7 +288,7 @@ widget_pokemem_keyhandler( input_key key )
     return;
 
 #ifdef GCWZERO
-  case INPUT_KEY_space:  /* X */
+  case INPUT_KEY_Shift_L:  /* Y */
 #endif
   case INPUT_KEY_a: /* Add poke */
     if( !widget_pokemem_add_custom_poke() ) new_selected = pokemem_count - 1;
@@ -337,9 +339,7 @@ widget_pokemem_keyhandler( input_key key )
     if( selected + 1 < pokemem_count ) new_selected = selected + 1;
     break;
 
-#ifndef GCWZERO
   case INPUT_KEY_space:
-#endif
   case INPUT_KEY_8:
   case INPUT_JOYSTICK_RIGHT:
     if( !widget_pokemem_trainer_click( selected ) )
