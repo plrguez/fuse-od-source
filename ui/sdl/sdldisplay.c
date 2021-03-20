@@ -22,14 +22,14 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <SDL.h>
 
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 #include "display.h"
 #include "fuse.h"
@@ -332,6 +332,7 @@ init_scalers( void )
     scaler_register( SCALER_TV4X );
     scaler_register( SCALER_PALTV2X );
     scaler_register( SCALER_PALTV3X );
+    scaler_register( SCALER_PALTV4X );
     scaler_register( SCALER_HQ3X );
     scaler_register( SCALER_HQ4X );
 #endif

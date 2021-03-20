@@ -23,7 +23,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 #include <tchar.h>
 
 #include "debugger/debugger.h"
@@ -787,7 +787,7 @@ win32ui_get_monospaced_font( HFONT *font )
   return 0;
 }
 
-int
+static int
 window_recommended_width( HWND hwndDlg, LPCTSTR title )
 {
   HDC dc;

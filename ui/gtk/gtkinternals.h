@@ -1,4 +1,4 @@
-/* gtkinternals.h: stuff internal to the GTK+ UI
+/* gtkinternals.h: stuff internal to the GTK UI
    Copyright (c) 2003-2015 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #define FUSE_GTKINTERNALS_H
 
 #include <gtk/gtk.h>
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 /*
  * Display routines (gtkdisplay.c)

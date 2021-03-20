@@ -21,13 +21,15 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
-#include <libspectrum.h>
+#include "libspectrum.h"
+
 #ifdef GCWZERO
 #include <stdlib.h>
 #include <string.h>
 #endif
+
 #include "event.h"
 #include "fuse.h"
 #include "menu.h"

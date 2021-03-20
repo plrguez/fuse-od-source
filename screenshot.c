@@ -21,13 +21,13 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
 
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 #include "display.h"
 #include "infrastructure/startup_manager.h"
@@ -376,7 +376,7 @@ screenshot_available_scalers( scaler_type scaler )
     case SCALER_2XSAI: case SCALER_SUPER2XSAI: case SCALER_SUPEREAGLE:
     case SCALER_ADVMAME2X: case SCALER_ADVMAME3X:
     case SCALER_TV2X: case SCALER_TV3X: case SCALER_TV4X: case SCALER_DOTMATRIX:
-    case SCALER_PALTV: case SCALER_PALTV2X: case SCALER_PALTV3X:
+    case SCALER_PALTV: case SCALER_PALTV2X: case SCALER_PALTV3X: case SCALER_PALTV4X:
     case SCALER_HQ2X: case SCALER_HQ3X: case SCALER_HQ4X:
       return 1;
     default:

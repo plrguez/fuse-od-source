@@ -1,4 +1,4 @@
-/* gtkui.c: GTK+ routines for dealing with the user interface
+/* gtkui.c: GTK routines for dealing with the user interface
    Copyright (c) 2000-2015 Philip Kendall, Russell Marks, Sergio Baldoví
 
    This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -31,7 +31,7 @@
 
 #include <glib.h>
 
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 #include "debugger/debugger.h"
 #include "fuse.h"

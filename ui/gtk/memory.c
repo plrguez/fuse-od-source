@@ -1,4 +1,4 @@
-/* memory.c: the GTK+ memory browser
+/* memory.c: the GTK memory browser
    Copyright (c) 2004-2005 Philip Kendall
    Copyright (c) 2015 Stuart Brady
 
@@ -22,7 +22,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <errno.h>
 #include <math.h>

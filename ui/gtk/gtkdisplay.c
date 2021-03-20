@@ -1,4 +1,4 @@
-/* gtkdisplay.c: GTK+ routines for dealing with the Speccy screen
+/* gtkdisplay.c: GTK routines for dealing with the Speccy screen
    Copyright (c) 2000-2005 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -312,6 +312,7 @@ register_scalers( int force_scaler )
     scaler_register( SCALER_TV4X );
     scaler_register( SCALER_PALTV2X );
     scaler_register( SCALER_PALTV3X );
+    scaler_register( SCALER_PALTV4X );
     scaler_register( SCALER_HQ2X );
     scaler_register( SCALER_HQ3X );
     scaler_register( SCALER_HQ4X );
@@ -544,7 +545,7 @@ gtkdisplay_expose( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
 }
 
 /* Called by gtkui_drawing_area on "configure_event".
-   On GTK+ 2 the drawing_area determines the size of the window */
+   On GTK 2 the drawing_area determines the size of the window */
 static gint
 drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
                               gpointer data GCC_UNUSED )
@@ -572,7 +573,7 @@ gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
 }
 
 /* Called by gtkui_window on "configure_event".
-   On GTK+ 3 the window determines the size of the drawing area */
+   On GTK 3 the window determines the size of the drawing area */
 static gint
 drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
                               gpointer data GCC_UNUSED )
@@ -602,7 +603,7 @@ gtkdisplay_update_geometry( void )
 
 #if GTK_CHECK_VERSION( 3, 0, 0 )
 
-  /* Since GTK+ 3.20 it is intended that gtk_window_set_geometry_hints
+  /* Since GTK 3.20 it is intended that gtk_window_set_geometry_hints
      don't set geometry of widgets. See [bugs:#344] */
   geometry_widget = NULL;
 

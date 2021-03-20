@@ -24,11 +24,11 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <string.h>
 
-#include <libspectrum.h>
+#include "libspectrum.h"
 
 #include "machine.h"
 #include "machines.h"
@@ -178,7 +178,7 @@ tc2068_reset( void )
   if( error ) {
     ui_error( UI_ERROR_INFO, "Ignoring Timex dock file '%s'",
             settings_current.dck_file );
-    settings_set_string( &settings_current.dck_file, NULL );
+    dck_eject();
   }
 
   return 0;

@@ -23,12 +23,12 @@
 
 */
 
-#include <config.h>
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 
-#include <libspectrum.h>
+#include "libspectrum.h"
   
 #include "debugger/debugger.h"
 #include "display.h"
@@ -152,7 +152,7 @@ int widget_debugger_draw( void *data )
 
   widget_printstring_right( LC(25) + 4, LR(16), 5, "PC" );
   sprintf( pbuf, "%04X", PC );
-  widget_printstring_fixed( LC(26) / 8, LR(16) / 8, 7, pbuf );
+  widget_printstring_fixed( LC(26), LR(16), 7, pbuf );
 
   widget_printstring_right( LR(35) + 4, LR(16), 5, "Bas\022e\021" );
   sprintf( pbuf, "%d", debugger_output_base );
@@ -296,7 +296,7 @@ static void show_register0( int x, int y, const char *label, int value )
 
   sprintf( pbuf, "%d", value );
   widget_printstring_right( x - 4, y, 5, label );
-  widget_printstring_fixed( x / 8, y / 8, 7, pbuf );
+  widget_printstring_fixed( x, y, 7, pbuf );
 }
 
 static void show_register1( int x, int y, const char *label, int value )
@@ -305,7 +305,7 @@ static void show_register1( int x, int y, const char *label, int value )
 
   sprintf( pbuf, format_8_bit(), value );
   widget_printstring_right( x - 4, y, 5, label );
-  widget_printstring_fixed( x / 8, y / 8, 7, pbuf );
+  widget_printstring_fixed( x, y, 7, pbuf );
 }
 
 static void show_register2( int x, int y, const char *label, int value )
@@ -314,7 +314,7 @@ static void show_register2( int x, int y, const char *label, int value )
 
   sprintf( pbuf, format_16_bit(), value );
   widget_printstring_right( x - 4, y, 5, label );
-  widget_printstring_fixed( x / 8, y / 8, 7, pbuf );
+  widget_printstring_fixed( x, y, 7, pbuf );
 }
 
 static void display_registers( void )
@@ -346,17 +346,17 @@ static void display_registers( void )
   show_register0( LC(36), LR(2), "IFF2", IFF2 );
   show_register2( LC(3),  LR(3), "HL",   HL );
   show_register2( LC(12), LR(3), "HL'",  HL_ );
-  widget_printstring_fixed( LC(20) / 8, LR(3) / 8, 5, "SZ5H3PNC" );
+  widget_printstring_fixed( LC(20), LR(3), 5, "SZ5H3PNC" );
   show_register0( LC(36), LR(3), "HALTED", z80.halted );
   show_register1( LC(36), LR(4), "ULA",  ula_last_byte() );
 
   sprintf( pbuf, "%d", tstates );
   widget_printstring_right( LC(12) - 4, LR(4), 5, "Tstates" );
-  widget_printstring_fixed( LC(12) / 8, LR(4) / 8, 7, pbuf );
+  widget_printstring_fixed( LC(12), LR(4), 7, pbuf );
   for( i = 0; i < 8; ++i )
     pbuf[i] = ( F & ( 0x80 >> i ) ) ? '1' : '0';
   pbuf[8] = 0;
-  widget_printstring_fixed( LC(20) / 8, LR(4) / 8, 7, pbuf );
+  widget_printstring_fixed( LC(20), LR(4), 7, pbuf );
 
   capabilities = libspectrum_machine_capabilities( machine_current->machine );
 
@@ -434,7 +434,7 @@ static void display_bytes( void )
     libspectrum_word addr = debugger_memaddr + y * 8;
 
     sprintf( pbuf, format_16_bit(), addr );
-    widget_printstring_fixed( LC(1) / 8, LR(y) / 8, 7, pbuf );
+    widget_printstring_fixed( LC(1), LR(y), 7, pbuf );
     widget_printstring( LC(6), LR(y), 5, ":" );
 
     for( x = 0; x < 8; ++x ) {
@@ -443,7 +443,7 @@ static void display_bytes( void )
       if( x < 7 )
 	strcat( pbuf, "  " );
     }
-    widget_printstring_fixed( LC(7) / 8, LR(y) / 8, 7, pbuf );
+    widget_printstring_fixed( LC(7), LR(y), 7, pbuf );
   }
 }
 
@@ -457,11 +457,11 @@ static void display_text( void )
     libspectrum_word addr = debugger_memaddr + y * 32;
 
     sprintf( pbuf, format_16_bit(), addr );
-    widget_printstring_fixed( LC(1) / 8, LR(y) / 8, 7, pbuf );
+    widget_printstring_fixed( LC(1), LR(y), 7, pbuf );
     widget_printstring( LC(6), LR(y), 5, ":" );
 
     for( x = 0; x < 32; ++x )
-      widget_printchar_fixed( LC(x + 8) / 8, LR(y) / 8, 7,
+      widget_printchar_fixed( LC(x + 8), LR(y), 7,
 			      readbyte_internal( addr + x ) );
   }
 }
@@ -478,7 +478,7 @@ static void display_disasm( void )
     char *spc;
 
     sprintf( pbuf, format_16_bit(), addr );
-    widget_printstring_fixed( LC(1) / 8, LR(y) / 8, 7, pbuf );
+    widget_printstring_fixed( LC(1), LR(y), 7, pbuf );
     widget_printstring( LC(6), LR(y), 5, ":" );
 
     debugger_disassemble( pbuf, sizeof( pbuf ), &length, addr );

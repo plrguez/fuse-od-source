@@ -19,18 +19,18 @@ dnl
 dnl E-mail: philip-fuse@shadowmagic.org.uk
 
 dnl Package version
-m4_define([fuse_version], [1.5.7])
+m4_define([fuse_version], [1.6.0])
 
 dnl Product full version
 m4_define([fuse_major_version], [1])
-m4_define([fuse_minor_version], [5])
-m4_define([fuse_micro_version], [7])
+m4_define([fuse_minor_version], [6])
+m4_define([fuse_micro_version], [0])
 m4_define([fuse_nano_version],  [0])
 m4_define([fuse_full_version], [fuse_major_version.fuse_minor_version.fuse_micro_version.fuse_nano_version])
 m4_define([fuse_rc_version], [fuse_major_version,fuse_minor_version,fuse_micro_version,fuse_nano_version])
 
 dnl Package info
-m4_define([fuse_copyright], ["(c) 1999-2018 Philip Kendall and others"])
+m4_define([fuse_copyright], ["(c) 1999-2021 Philip Kendall and others"])
 m4_define([fuse_url], [http://fuse-emulator.sourceforge.net/])
 m4_define([fuse_bugreport], [http://sourceforge.net/p/fuse-emulator/bugs/])
 
@@ -119,7 +119,7 @@ if test "$prefix" != "NONE"; then
 fi)
 
 dnl Check that libspectrum is available and that it is new enough
-PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.4.0])
+PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.5.0])
 
 dnl Check if supplied libspectrum has its own internal GLib replacement
 AC_MSG_CHECKING(whether libspectrum has its own internal GLib replacement)
@@ -198,25 +198,6 @@ if test "$win32" = yes; then
                   AC_MSG_ERROR([Win32 UI not found]))
 fi
 
-dnl Look for svgalib (default=no)
-if test -z "$UI"; then
-  AC_MSG_CHECKING(whether svgalib UI requested)
-  AC_ARG_WITH(svgalib,
-  [  --with-svgalib          use svgalib for user interface],
-  if test "$withval" = no; then svgalib=no; else svgalib=yes; fi,
-  svgalib=no)
-  AC_MSG_RESULT($svgalib)
-  if test "$svgalib" = yes; then
-    AC_CHECK_HEADER(vga.h,
-                    LIBS="$LIBS -lvga";
-                    AC_DEFINE([UI_SVGA], 1, [Defined if svgalib UI in use])
-                    AC_DEFINE([USE_WIDGET], 1,
-                              [Defined if we're using a widget-based UI])
-                    UI=svga; WIDGET=widget,
-                    AC_MSG_ERROR([svgalib not found]))
-  fi
-fi
-
 dnl Look for framebuffer interface for SA1110 (default=no)
 if test -z "$UI"; then
   AC_MSG_CHECKING(whether framebuffer UI requested)
@@ -277,26 +258,53 @@ if test -z "$UI"; then
   fi
 fi
 
-dnl Look for SDL (default=no)
-SDL_VERSION=1.2.4
-AM_PATH_SDL($SDL_VERSION, sdl_available=yes, sdl_available=no)
+dnl Check if the user wants the SDL UI
 if test -z "$UI"; then
   AC_MSG_CHECKING(whether SDL UI requested)
   AC_ARG_WITH(sdl,
   [  --with-sdl              use SDL for user interface],
-  if test "$withval" = no; then sdl=no; else sdl=yes; fi,
-  sdl=no)
-  AC_MSG_RESULT($sdl)
-  if test "$sdl" = yes; then
-    if test "$sdl_available" = yes; then
-      AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
-      AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
-      UI=sdl
-      WIDGET=widget
-      use_sdl=yes
-    else
-      AC_MSG_ERROR([SDL version $SDL_VERSION not found])
-    fi
+  if test "$withval" = no; then sdl_ui=no; else sdl_ui=yes; fi,
+  sdl_ui=no)
+  AC_MSG_RESULT($sdl_ui)
+fi
+
+dnl Check if the user prefers SDL 1 over SDL 2
+AC_ARG_ENABLE(sdl2,
+  AS_HELP_STRING([--disable-sdl2],[prefer SDL 1 to SDL 2]),
+  if test "$enableval" = yes; then sdl2=yes; else sdl2=no; fi,
+  sdl2=yes
+)
+
+dnl SDL 2 is not supported for the UI yet, so warn the user
+if test "$sdl_ui" = yes -a "$sdl2" = yes; then
+  AC_MSG_WARN([SDL 2 not supported for the UI, using SDL 1 instead])
+  sdl2=no
+fi
+
+dnl Look for SDL 2
+sdl_available=no
+if test "$sdl2" = yes; then
+  PKG_CHECK_MODULES([SDL], [sdl2], [sdl_available=yes], [
+                    AC_MSG_WARN([SDL 2 not found, looking for SDL 1])
+                    sdl2=no])
+fi
+
+dnl Look for SDL 1 if we don't have or want SDL 2
+SDL_VERSION=1.2.4
+if test "$sdl_available" = no; then
+  AM_PATH_SDL($SDL_VERSION, sdl_available=yes, sdl_available=no)
+fi
+
+dnl Enable the SDL UI if all conditions are met
+if test "$sdl_ui" = yes; then
+  if test "$sdl_available" = yes; then
+    AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
+    AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+    UI=sdl
+    WIDGET=widget
+    use_sdl=yes
+  else
+    AC_MSG_ERROR([SDL version $SDL_VERSION not found])
   fi
 fi
 
@@ -366,11 +374,11 @@ if test -z "$UI"; then
   fi
 fi
 
-dnl Look for GTK+ (default=yes)
+dnl Look for GTK (default=yes)
 if test -z "$UI"; then
-  AC_MSG_CHECKING(whether GTK+ UI requested)
+  AC_MSG_CHECKING(whether GTK UI requested)
   AC_ARG_WITH(gtk,
-  [  --without-gtk           don't use GTK+ for user interface],
+  [  --without-gtk           don't use GTK for user interface],
   if test "$withval" = no; then gtk=no; else gtk=yes; fi,
   if test "$fakeglib" = yes; then gtk=no; else gtk=yes; fi)
   AC_MSG_RESULT($gtk)
@@ -379,25 +387,25 @@ if test -z "$UI"; then
 
     if test "$fakeglib" = yes; then
       AC_MSG_ERROR([libspectrum is using its own internal GLib replacement
-GTK+ requires the real GLib library, so the GTK+ UI cannot be used with
+GTK requires the real GLib library, so the GTK UI cannot be used with
 the libspectrum that was found.  Rebuild libspectrum to use the real GLib
 library (i.e. do not pass --with-fake-glib) instead of its own replacement.])
     fi
 
     AC_ARG_ENABLE(gtk3,
-      AS_HELP_STRING([--disable-gtk3],[prefer GTK+ 2 to GTK+ 3]),
+      AS_HELP_STRING([--disable-gtk3],[prefer GTK 2 to GTK 3]),
       if test "$enableval" = yes; then gtk3=yes; else gtk3=no; fi,
       gtk3=auto
     )
 
     if test "$gtk3" = yes; then
       PKG_CHECK_MODULES(GTK, [gtk+-3.0],,
-        AC_MSG_ERROR([GTK+ not found])
+        AC_MSG_ERROR([GTK not found])
       )
 
     elif test "$gtk3" = no; then
       AM_PATH_GTK_2_0(2.18.0,,
-        AC_MSG_ERROR([GTK+ not found])
+        AC_MSG_ERROR([GTK not found])
       )
 
     elif test "$gtk3" = auto; then
@@ -406,7 +414,7 @@ library (i.e. do not pass --with-fake-glib) instead of its own replacement.])
       if test "$gtk3" = auto; then
         AM_PATH_GTK_2_0(2.18.0,
           gtk3=no,
-          AC_MSG_WARN([GTK+ not found. Reverting to Xlib])
+          AC_MSG_WARN([GTK not found. Reverting to Xlib])
           gtk3=no
           gtk=no
         )
@@ -416,9 +424,9 @@ library (i.e. do not pass --with-fake-glib) instead of its own replacement.])
   fi
 
   if test "$gtk" = yes; then
-    AC_DEFINE([UI_GTK], 1, [Defined if GTK+ UI is in use])
+    AC_DEFINE([UI_GTK], 1, [Defined if GTK UI is in use])
     UI=gtk;
-    AC_MSG_CHECKING(whether GTK+ supports x11 backend)
+    AC_MSG_CHECKING(whether GTK supports x11 backend)
     ac_save_CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$CPPFLAGS $GTK_CFLAGS"
     AC_COMPILE_IFELSE(
@@ -449,7 +457,7 @@ fi
 dnl Look for Xlib UI (default=yes)
 if test -z "$UI"; then
   if test "$with_x" = no; then
-    AC_MSG_ERROR([Please specify --with-svgalib or --with-fb, not --without-x.])
+    AC_MSG_ERROR([Please specify --with-fb, not --without-x.])
   fi
   AC_PATH_XTRA
   CFLAGS="$CFLAGS $X_CFLAGS";
@@ -487,7 +495,6 @@ AM_CONDITIONAL(UI_FB, test "$UI" = fb)
 AM_CONDITIONAL(UI_GTK, test "$UI" = gtk)
 AM_CONDITIONAL(UI_NULL, test "$UI" = null)
 AM_CONDITIONAL(UI_SDL, test "$UI" = sdl)
-AM_CONDITIONAL(UI_SVGA, test "$UI" = svga)
 AM_CONDITIONAL(UI_WII, test "$UI" = wii)
 AM_CONDITIONAL(UI_WIN32, test "$UI" = win32)
 AM_CONDITIONAL(UI_X, test "$UI" = xlib)
@@ -677,6 +684,16 @@ if test "$wii" = yes; then
   audio_driver_list="$audio_driver_list wii"
 fi
 
+dnl Check if pulseaudio is available (experimental)
+AC_CHECK_LIB( pulse-simple, pa_simple_new,
+  [AC_CHECK_HEADER(
+    pulse/simple.h,
+    [audio_driver_list="$audio_driver_list pulseaudio"],
+    [AC_MSG_WARN(pulse/simple.h not found - no pulseaudio output)]
+  )],
+  [AC_MSG_WARN(pa_simple_new not found - no pulseaudio output)]
+)
+
 dnl No audio driver - this is the last one of the list
 audio_driver_list="$audio_driver_list null"
 
@@ -744,6 +761,9 @@ case $audio_driver in
   wii)
     SOUND_LIBADD='sound/wiisound.$(OBJEXT)' SOUND_LIBS='' sound_fifo=yes
     ;;
+  pulseaudio)
+    SOUND_LIBADD='sound/pulsesound.$(OBJEXT)' SOUND_LIBS='-lpulse-simple -lpulse'
+    ;;
   null)
     SOUND_LIBADD='sound/nullsound.$(OBJEXT)' SOUND_LIBS=''
     AC_DEFINE([NO_SOUND], 1, [Defined if no sound code is present])
@@ -782,10 +802,9 @@ AC_MSG_RESULT($stick)
 if test "$stick" = yes; then
   dnl We prefer to use UI-specific joystick code. (Default.)
   dnl If there is none, or you override this here, we use libjsw.
-  dnl (svgalib appears to dislike switched joysticks on the parallel port...)
   case "$UI" in
-    svga|sdl|win32)
-      dnl Libraries such as svgalib provide their own joystick code.
+    sdl|win32)
+      dnl Libraries provide their own joystick code
       AC_MSG_CHECKING([whether to use $UI's joystick support])
       AC_ARG_ENABLE(ui-joystick,
       AS_HELP_STRING([--disable-ui-joystick], [use libjsw joystick code (where supported)]),
@@ -1105,7 +1124,10 @@ echo "********************"
 echo ""
 echo "User interface: ${UI}"
 if test "${UI}" = "gtk"; then
-   echo "Using GTK+ 3: ${gtk3}"
+   echo "Using GTK 3: ${gtk3}"
+fi
+if test "${use_sdl}" = "yes"; then
+   echo "Using SDL 2: ${sdl2}"
 fi
 if test x"${gpm}" != "x"; then
    echo "libgpm support: ${gpm}"
