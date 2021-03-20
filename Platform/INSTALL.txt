@@ -12,8 +12,8 @@ Toolchains tested:
 - For RetroFW this was tested with RetroFW 2.
 
 In the steps source code for Fuse and libspectrum was extracted in:
-  - $HOME/src/libspectrum-1.4.4
-  - $HOME/src/fuse-1.5.7
+  - $HOME/src/libspectrum-1.5.0
+  - $HOME/src/fuse-1.6.0
 
 In the steps the toolchain is installed in:
   - /opt/toolchain
@@ -33,7 +33,7 @@ $ export PATH=/opt/toolchain/usr/bin:$PATH
 
 2.- Configure, build and install libspectrum:
 
-$ cd $HOME/src/libspectrum-1.4.4
+$ cd $HOME/src/libspectrum-1.5.0
 
 Configure for 2014 OpenDingux and latest beta:
 
@@ -55,7 +55,7 @@ In $HOME/src/libspectrum-install must be installed libspectrum
 
 3.- Configure Fuse:
 
-$ cd $HOME/src/fuse-1.5.7
+$ cd $HOME/src/fuse-1.6.0
 
 Configure for 2014 OpenDingux:
 
@@ -63,7 +63,7 @@ $ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \
 LIBSPECTRUM_CFLAGS="-I$HOME/src/libspectrum-install/include" \
 LIBSPECTRUM_LIBS="-L$HOME/src/libspectrum-install/lib -l:libspectrum.a -lbz2" \
 CC=mipsel-gcw0-linux-uclibc-gcc CXX=mipsel-gcw0-linux-uclibc-g++ \
---host=mipsel-gcw0-linux-uclibc --with-gcw0 \
+--host=mipsel-gcw0-linux-uclibc --with-gcw0 --disable-sdl2 \
 --with-sdl-prefix=/opt/toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr \
 CFLAGS='-mips32r2 -O3'
 
@@ -73,7 +73,7 @@ $ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \
 LIBSPECTRUM_CFLAGS="-I$HOME/src/libspectrum-install/include" \
 LIBSPECTRUM_LIBS="-L$HOME/src/libspectrum-install/lib -l:libspectrum.a" \
 CC=mipsel-gcw0-linux-uclibc-gcc CXX=mipsel-gcw0-linux-uclibc-g++ \
---host=mipsel-gcw0-linux-uclibc --with-gcw0 \
+--host=mipsel-gcw0-linux-uclibc --with-gcw0 --disable-sdl2 \
 --with-sdl-prefix=/opt/toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr \
 CFLAGS='-mips32r2 -O3'
 
@@ -83,7 +83,7 @@ $ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \
 LIBSPECTRUM_CFLAGS="-I$HOME/src/libspectrum-install/include" \
 LIBSPECTRUM_LIBS="-L$HOME/src/libspectrum-install/lib -l:libspectrum.a -lbz2" \
 CC=mipsel-RetroFW-linux-uclibc-gcc CXX=mipsel-RetroFW-linux-uclibc-g++ \
---host=mipsel-RetroFW-linux-uclibc --with-retrofw \
+--host=mipsel-RetroFW-linux-uclibc --with-retrofw --disable-sdl2 \
 --with-sdl-prefix=/opt/toolchain/mipsel-RetroFW-linux-uclibc/sysroot/usr \
 CFLAGS='-mips32 -O3'
 
@@ -91,31 +91,30 @@ CFLAGS='-mips32 -O3'
 
 For 2014 OpenDingux:
 
-$ cd $HOME/src/fuse-1.5.7/Platform/GCW0
+$ cd $HOME/src/fuse-1.6.0/Platform/GCW0
 $ make
 
-fuse-1.5.7-od-v{version}.opk should be created in $HOME/src/fuse-1.5.7/Platform/GCW0/build
+fuse-1.6.0-od-v{version}.opk should be created in $HOME/src/fuse-1.6.0/Platform/GCW0/build
 
 For latest beta OpenDingux:
 
-$ cd $HOME/src/fuse-1.5.7/Platform/GCW0
+$ cd $HOME/src/fuse-1.6.0/Platform/GCW0
 $ make
 
-fuse-1.5.7-latest_od-v{version}.opk should be created in $HOME/src/fuse-1.5.7/Platform/GCW0/build
+fuse-1.6.0-latest_od-v{version}.opk should be created in $HOME/src/fuse-1.6.0/Platform/GCW0/build
 
 For RetroFW 2:
 
-$ cd $HOME/src/fuse-1.5.7/Platform/RETROFW2.0
+$ cd $HOME/src/fuse-1.6.0/Platform/RETROFW2.0
 $ make
 
-fuse-1.5.7-retrofw-v{version}.opk should be created in
-$HOME/src/fuse-1.5.7/Platform/RETROFW2.0/build
+fuse-1.6.0-retrofw-v{version}.opk should be created in $HOME/src/fuse-1.6.0/Platform/RETROFW2.0/build
 
 For RetroFW 1:
 
-$ cd $HOME/src/fuse-1.5.7/Platform/RETROFW1.0
+$ cd $HOME/src/fuse-1.6.0/Platform/RETROFW1.0
 $ make
 
-fuse-1.5.7-retrofw-v{version}.ipk $HOME/src/fuse-1.5.7/Platform/RETROFW1.0/build
+fuse-1.6.0-retrofw-v{version}.ipk $HOME/src/fuse-1.6.0/Platform/RETROFW1.0/build
 
 In all cases {version] is for OpenDingux/RetrFW version
