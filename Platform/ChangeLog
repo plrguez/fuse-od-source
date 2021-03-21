@@ -2,8 +2,10 @@
 
     * Update version to upstream 1.6.0
 
-    * Bugfix: Poke memory don't allow to select pokes becouse X button is
-      assigned to add new pokes. Change to use Y button to add pokes.
+    * Bugfix: Poke memory don't allow to select pokes because X button is
+      assigned to add new pokes. Changed to use Y button to add pokes.
+
+    * Bugfix: Don't try to load control mapping file when loading poke files.
 
 2021-01-09 Fuse 1.5.4 OpenDingux/RetroFW v0.0.6
 
