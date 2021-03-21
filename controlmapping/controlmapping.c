@@ -179,6 +179,10 @@ controlmapping_load_mapfile_with_class( const char *filename, libspectrum_class_
     else
       return controlmapping_eject_mapfile( class );
 
+  /* Don't load mapfile for auxiliary files */
+  case LIBSPECTRUM_CLASS_AUXILIARY:
+    return 0;
+
   default:
     return controlmapping_load_mapfile( NULL, class, 1 );
   }

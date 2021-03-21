@@ -250,8 +250,9 @@ utils_open_file( const char *filename, int autoload,
    * Dirty hack for savesstates.
    * autoload is set to 9 for load from loadstates and avoid changing last
    * loaded filename and controlmapping files
+   * Don't set last loaded file for POK files (don't load mapfile)
    */
-  if(autoload != 9)
+  if(autoload != 9 && type != LIBSPECTRUM_ID_AUX_POK )
     utils_set_last_loaded_file( filename, class, 0 );
 #endif
 
