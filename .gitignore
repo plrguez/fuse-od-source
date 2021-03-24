@@ -114,3 +114,6 @@ tags
 /Platform/RETROFW2.0/gdbinit*
 /controlmapping/controlmappingsettings.c
 /controlmapping/controlmappingsettings.h
+/cmake-build-debug
+/.idea
+/CMakeLists.txt

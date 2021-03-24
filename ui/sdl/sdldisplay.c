@@ -118,21 +118,21 @@ static int tmp_screen_width;
 static Uint32 colour_values[16];
 
 static SDL_Color colour_palette[] = {
-  {   0,   0,   0,   0 }, 
-  {   0,   0, 192,   0 }, 
-  { 192,   0,   0,   0 }, 
-  { 192,   0, 192,   0 }, 
-  {   0, 192,   0,   0 }, 
-  {   0, 192, 192,   0 }, 
-  { 192, 192,   0,   0 }, 
-  { 192, 192, 192,   0 }, 
-  {   0,   0,   0,   0 }, 
-  {   0,   0, 255,   0 }, 
-  { 255,   0,   0,   0 }, 
-  { 255,   0, 255,   0 }, 
-  {   0, 255,   0,   0 }, 
-  {   0, 255, 255,   0 }, 
-  { 255, 255,   0,   0 }, 
+  {   0,   0,   0,   0 },
+  {   0,   0, 192,   0 },
+  { 192,   0,   0,   0 },
+  { 192,   0, 192,   0 },
+  {   0, 192,   0,   0 },
+  {   0, 192, 192,   0 },
+  { 192, 192,   0,   0 },
+  { 192, 192, 192,   0 },
+  {   0,   0,   0,   0 },
+  {   0,   0, 255,   0 },
+  { 255,   0,   0,   0 },
+  { 255,   0, 255,   0 },
+  {   0, 255,   0,   0 },
+  {   0, 255, 255,   0 },
+  { 255, 255,   0,   0 },
   { 255, 255, 255,   0 }
 };
 
@@ -337,7 +337,7 @@ init_scalers( void )
     scaler_register( SCALER_HQ4X );
 #endif
   }
-  
+
   if( scaler_is_supported( current_scaler ) ) {
     scaler_select_scaler( current_scaler );
   } else {
@@ -442,16 +442,18 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
 #define OD_MODE320240 0x01
 #define OD_MODE640480 0x02
 
-#define OD_ADD_MODE( mode, width, height ) \
-  if ( add_mode & mode ) { \
-    modes[i] = malloc( sizeof (SDL_Rect) ); \
-    if ( modes[i] ) { \
-      modes[i]->x = modes[i]->y = 0; \
-      modes[i]->w = width; \
-      modes[i]->h = height; \
-    } \
-    i++; \
+static void
+od_add_mode(SDL_Rect **modes, unsigned char mode, int width, int height, int add_mode, int i) {
+  if (add_mode & mode) {
+    modes[i] = malloc(sizeof(SDL_Rect));
+    modes[i+1] = NULL;
+    if (modes[i]) {
+      modes[i]->x = modes[i]->y = 0;
+      modes[i]->w = width;
+      modes[i]->h = height;
+    }
   }
+}
 
 static int
 od_compare_rects( const void *r1, const void *r2 ) {
@@ -481,8 +483,8 @@ od_complete_modes( SDL_Rect **modes ) {
     }
   }
 
-  OD_ADD_MODE( OD_MODE640480, 640, 480 );
-  OD_ADD_MODE( OD_MODE320240, 320, 240 );
+    od_add_mode( modes, OD_MODE640480, 640, 480, add_mode, i++);
+    od_add_mode( modes, OD_MODE320240, 320, 240, add_mode, i);
 
   /* Sort if something was added */
   if ( add_mode )
@@ -876,7 +878,7 @@ sdldisplay_load_gfx_mode( void )
 #endif /* #ifdef OPENDINGUX_KMSDRM */
 #endif /* #ifndef RETROFW */
   sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
-  od_icon_position = od_icon_positions[sdldisplay_current_od_border];  
+  od_icon_position = od_icon_positions[sdldisplay_current_od_border];
 
   if ( ( sdldisplay_current_od_border && !sdldisplay_last_od_border ) ||
        ( !sdldisplay_current_od_border && sdldisplay_last_od_border ) ) {

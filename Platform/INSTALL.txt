@@ -57,6 +57,18 @@ In $HOME/src/libspectrum-install must be installed libspectrum
 
 $ cd $HOME/src/fuse-1.6.0
 
+You might want to run autogen.sh first.
+
+If you see
+Unescaped left brace in regex is illegal here in regex; marked by <-- HERE in m/${ <-- HERE ([^ \t=:+{}]+)}/ at /opt/gcw0-toolchain/usr/bin/automake line 3930.
+you can update the file (add backslashes before brackets):
+3930
+#$text =~ s/\${([^ \t=:+{}]+)}/substitute_ac_subst_variables_worker ($1)/ge;
+$text =~ s/\$\{([^ \t=:+{}]+)\}/substitute_ac_subst_variables_worker ($1)/ge;
+or change your Perl version.
+The error is with automake and perl v5.26.
+In perl v5.22, using a literal { in a regular expression was deprecated, and will emit a warning if it isn't escaped: \{. In v5.26, this won't just warn, it'll cause a syntax error.
+
 Configure for 2014 OpenDingux:
 
 $ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \
@@ -86,6 +98,9 @@ CC=mipsel-RetroFW-linux-uclibc-gcc CXX=mipsel-RetroFW-linux-uclibc-g++ \
 --host=mipsel-RetroFW-linux-uclibc --with-retrofw --disable-sdl2 \
 --with-sdl-prefix=/opt/toolchain/mipsel-RetroFW-linux-uclibc/sysroot/usr \
 CFLAGS='-mips32 -O3'
+
+Add -g -O0 to CFLAGS if you want to enable debugging.
+You may need to add --disable-sdl2 if it is set by default on your computer.
 
 4.- Build Fuse
 

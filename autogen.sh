@@ -25,4 +25,4 @@
 # Exit on errors
 set -e
 
-autoreconf -f -i -I m4
+autoreconf -f -i -I m4 -v
