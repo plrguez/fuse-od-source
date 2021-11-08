@@ -1,6 +1,6 @@
 title=Fuse FUSE_VERSION
 description=Fuse ZX Spectrum emulator FUSE_VERSION (vFUSE_OD_VERSION)
-exec=/home/retrofw/emus/fuse/fuse-retrofw
-icon=/home/retrofw/emus/fuse/fuse.png
+exec=/home/retrofw/emus/fuse_FUSE_VERSION/fuse-retrofw
+icon=/home/retrofw/emus/fuse_FUSE_VERSION/fuse.png
 selectordir=/home/retrofw/roms/zxspectrum
 clock=600

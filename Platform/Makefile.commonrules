@@ -26,11 +26,15 @@ DEFAULT_DESKTOP = $(BUILDDIR)/$(DEFAULT_DESKTOP_FILE)
 SYSTEM_DESKTOP = $(BUILDDIR)/$(SYSTEM_DESKTOP_FILE)
 
 CONTROL = control
-LNK = fuse.lnk
-LNK_SYSTEM = zxspectrum.fuse.lnk
+CONFFILES = conffiles
+LNK_BASE = fuse
+LNK_SYSTEM_BASE = zxspectrum.fuse
+LNK = $(LNK_BASE).lnk
+LNK_SYSTEM = $(LNK_SYSTEM_BASE).lnk
 CONTROL_FILE = $(TMP_BUILDDIR)/$(CONTROL)
-LNK_FILE = $(TMP_BUILDDIR)/$(LNK)
-LNK_SYSTEM_FILE = $(TMP_BUILDDIR)/$(LNK_SYSTEM)
+CONFFILES_FILE = $(TMP_BUILDDIR)/$(CONFFILES)
+LNK_FILE = $(TMP_BUILDDIR)/$(LNK_BASE)_$(FUSE_VERSION).lnk
+LNK_SYSTEM_FILE = $(TMP_BUILDDIR)/$(LNK_SYSTEM_BASE)_$(FUSE_VERSION).lnk
 
 $(BUILD): $(BASEDIR)/fuse
 	cp $^ $(BUILDDIR)/$@
@@ -63,6 +67,13 @@ $(CONTROL_FILE): $(CONTROL)
 	@sed -i "s/FUSE_VERSION/${FUSE_VERSION}/g" $(CONTROL_FILE)
 	@sed -i "s/FUSE_OD_VERSION/${FUSE_OD_VERSION}/g" $(CONTROL_FILE)
 	@sed -i "s/DATE_VERSION/$$(date +%Y%m%d)/g" $(CONTROL_FILE)
+	
+$(CONFFILES_FILE): $(CONFFILES)
+	@mkdir -p $(TMP_BUILDDIR)
+	@cp $(CONFFILES) $(CONFFILES_FILE)
+	@sed -i "s/FUSE_VERSION/${FUSE_VERSION}/g" $(CONFFILES_FILE)
+	@sed -i "s/FUSE_OD_VERSION/${FUSE_OD_VERSION}/g" $(CONFFILES_FILE)
+	@sed -i "s/DATE_VERSION/$$(date +%Y%m%d)/g" $(CONFFILES_FILE)
 
 $(LNK_FILE): $(LNK)
 	@mkdir -p $(TMP_BUILDDIR)
@@ -99,17 +110,18 @@ opk_package: $(BUILD) $(ICON) $(FONT) $(ROMS) $(LIBFILES) $(README) $(DEFAULT_DE
         $(BUILDDIR)/$(TARGET) \
 	-all-root -noappend -no-exports -no-xattrs
 
-ipk_package: $(BUILD) $(ICON) $(FONT) $(ROMS) $(LIBFILES) $(README) $(CONTROL_FILE) $(LNK_FILE) $(LNK_SYSTEM_FILE)
-	@rm -rf /tmp/.fuse-ipk/ && mkdir -p /tmp/.fuse-ipk/root/home/retrofw/emus/fuse \
+ipk_package: $(BUILD) $(ICON) $(FONT) $(ROMS) $(LIBFILES) $(README) $(CONTROL_FILE) $(LNK_FILE) $(LNK_SYSTEM_FILE) $(CONFFILES_FILE)
+	@rm -rf /tmp/.fuse-ipk/ && mkdir -p /tmp/.fuse-ipk/root/home/retrofw/emus/fuse_$(FUSE_VERSION) \
 	/tmp/.fuse-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators \
 	/tmp/.fuse-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators.systems
-	@cp -r $(BUILDDIR)/* /tmp/.fuse-ipk/root/home/retrofw/emus/fuse
-	@cp $(README) /tmp/.fuse-ipk/root/home/retrofw/emus/fuse/$(BUILD).man.txt
-	@rm -rf /tmp/.fuse-ipk/root/home/retrofw/emus/fuse/tmp
+	@cp -r $(BUILDDIR)/* /tmp/.fuse-ipk/root/home/retrofw/emus/fuse_$(FUSE_VERSION)
+	@cp $(README) /tmp/.fuse-ipk/root/home/retrofw/emus/fuse_$(FUSE_VERSION)/$(BUILD).man.txt
+	@rm -rf /tmp/.fuse-ipk/root/home/retrofw/emus/fuse_$(FUSE_VERSION)/tmp
 	@cp $(LNK_FILE) /tmp/.fuse-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators
 	@cp $(LNK_SYSTEM_FILE) /tmp/.fuse-ipk/root/home/retrofw/apps/gmenu2x/sections/emulators.systems
-	@cp $(CONTROL_FILE) /tmp/.fuse-ipk/control
-	@cp conffiles postinst /tmp/.fuse-ipk/
+	@cp $(CONTROL_FILE) /tmp/.fuse-ipk/$(CONTROL)
+	@cp $(CONFFILES_FILE) /tmp/.fuse-ipk/$(CONFFILES)
+	@cp postinst /tmp/.fuse-ipk/
 	@tar --owner=0 --group=0 -czvf /tmp/.fuse-ipk/control.tar.gz -C /tmp/.fuse-ipk/ control conffiles
 	@tar --owner=0 --group=0 -czvf /tmp/.fuse-ipk/data.tar.gz -C /tmp/.fuse-ipk/root/ .
 	@echo 2.0 > /tmp/.fuse-ipk/debian-binary

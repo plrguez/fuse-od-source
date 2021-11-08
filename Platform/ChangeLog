@@ -1,4 +1,4 @@
-2021-03-xx Fuse 1.6.0 OpenDingux/RetroFW v0.0.7-wip
+2021-11-xx Fuse 1.6.0 OpenDingux/RetroFW v0.0.7-wip
 
     * Update version to upstream 1.6.0
 
@@ -6,6 +6,8 @@
       assigned to add new pokes. Changed to use Y button to add pokes.
 
     * Bugfix: Don't try to load control mapping file when loading poke files.
+
+    * RetroFW: ipk install isolated by Fuse version.
 
 2021-01-09 Fuse 1.5.4 OpenDingux/RetroFW v0.0.6
 
