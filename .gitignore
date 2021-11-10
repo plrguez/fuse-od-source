@@ -107,9 +107,11 @@ tags
 /nbproject/
 /Platform/roms/*.rom
 /Platform/GCW0/build/
+/Platform/LEPUS/build/
 /Platform/RETROFW2.0/build/
 /Platform/RETROFW1.0/build/
 /Platform/GCW0/gdbinit*
+/Platform/LEPUS/gdbinit*
 /Platform/RETROFW1.0/gdbinit*
 /Platform/RETROFW2.0/gdbinit*
 /controlmapping/controlmappingsettings.c

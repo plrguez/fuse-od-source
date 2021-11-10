@@ -37,19 +37,19 @@ LNK_FILE = $(TMP_BUILDDIR)/$(LNK_BASE)_$(FUSE_VERSION).lnk
 LNK_SYSTEM_FILE = $(TMP_BUILDDIR)/$(LNK_SYSTEM_BASE)_$(FUSE_VERSION).lnk
 
 $(BUILD): $(BASEDIR)/fuse
-	cp $^ $(BUILDDIR)/$@
+	@cp $^ $(BUILDDIR)/$@
 
 $(ICON): $(BASEDIR)/data/icons/32x32/fuse.png
-	cp $^ $(BUILDDIR)/$@
+	@cp $^ $(BUILDDIR)/$@
 
 $(ROMS): $(BASEDIR)/roms/*.rom
-	mkdir -p $(ROMSDIR)
-	cp $(BASEROMSDIR)/*.rom $(ROMSDIR)
-	-cp $(EXTRAROMSDIR)/*.rom $(ROMSDIR)
+	@mkdir -p $(ROMSDIR)
+	@cp $(BASEROMSDIR)/*.rom $(ROMSDIR)
+	@-cp $(EXTRAROMSDIR)/*.rom $(ROMSDIR)
 
 $(FONT): $(BASEDIR)/ui/widget/fuse.font
-	mkdir -p $(UIDIR)/widget
-	cp $^ $(UIDIR)/widget/$@
+	@mkdir -p $(UIDIR)/widget
+	@cp $^ $(UIDIR)/widget/$@
 
 $(DEFAULT_DESKTOP): $(DEFAULT_DESKTOP_FILE)
 	@cp $(DEFAULT_DESKTOP_FILE) $(DEFAULT_DESKTOP)
@@ -90,12 +90,12 @@ $(LNK_SYSTEM_FILE): $(LNK_SYSTEM)
 $(LIBFILES): libfiles
 
 libfiles: $(BASEDIR)/lib/cassette.bmp $(BASEDIR)/lib/microdrive.bmp $(BASEDIR)/lib/plus3disk.bmp $(BASEDIR)/lib/keyboard.png $(BASEDIR)/lib/keyboard.scr
-	mkdir -p $(LIBDIR)
-	cp $^ $(LIBDIR)
+	@mkdir -p $(LIBDIR)
+	@cp $^ $(LIBDIR)
 
 buildfuse:
-	cd $(BASEDIR) && $(MAKE)
-	mkdir -p $(BUILDDIR)
+	@cd $(BASEDIR) && $(MAKE)
+	@mkdir -p $(BUILDDIR)
 
 opk_package: $(BUILD) $(ICON) $(FONT) $(ROMS) $(LIBFILES) $(README) $(DEFAULT_DESKTOP) $(SYSTEM_DESKTOP)
 	@mksquashfs \
@@ -131,5 +131,5 @@ package: $(TARGET)
 
 .PHONY: clean deploy debug all libfiles
 clean:
-	cd $(BASEDIR) && $(MAKE) clean
-	rm -rf $(BUILDDIR)
+	@cd $(BASEDIR) && $(MAKE) clean
+	@rm -rf $(BUILDDIR)

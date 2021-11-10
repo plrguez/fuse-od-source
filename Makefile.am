@@ -159,6 +159,9 @@ EXTRA_DIST += \
 	     Platform/GCW0/Makefile \
 	     Platform/GCW0/default.gcw0.desktop \
 	     Platform/GCW0/system.gcw0.desktop \
+	     Platform/LEPUS/Makefile \
+	     Platform/LEPUS/default.lepus.desktop \
+	     Platform/LEPUS/system.lepus.desktop \
 	     Platform/RETROFW2.0/Makefile \
 	     Platform/RETROFW2.0/default.retrofw.desktop \
 	     Platform/RETROFW2.0/system.retrofw.desktop \

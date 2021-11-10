@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Fuse FUSE_VERSION
+Comment=Fuse ZX Spectrum emulator FUSE_VERSION (vFUSE_OD_VERSION)
+Exec=fuse-lepus %f
+Icon=fuse
+Type=Application
+Categories=emulators;
+MimeType=application/zx-snapshot;application/zx-disk;application/zx-tape;
+X-OD-NeedsDownscaling=true
+X-OD-Manual=readme.txt
