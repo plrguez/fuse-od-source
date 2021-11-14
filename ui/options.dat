@@ -37,7 +37,7 @@ Combo, B(o)rder, od_border, INPUT_KEY_o, *Full|Large|Medium|Small|None
 Combo, P(a)nel type, od_panel_type, INPUT_KEY_a, *320x240|640x480|480x320
 #endif
 Checkbox, S(h)ow status bar with border, od_statusbar_with_border, INPUT_KEY_h
-Checkbox, Sho(w) FPS instead of speed percentaje, od_show_fps, INPUT_KEY_w
+Checkbox, Sho(w) FPS instead of speed percentage, od_show_fps, INPUT_KEY_w
 Checkbox, F(i)lter Known extensions, od_filter_known_extensions, INPUT_KEY_i
 Checkbox, I(n)dependent dir access for media types, od_independent_directory_access, INPUT_KEY_n
 Checkbox, Confir(m) overwrite files, od_confirm_overwrite_files, INPUT_KEY_m
