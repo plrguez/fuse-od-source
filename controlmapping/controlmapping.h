@@ -33,8 +33,8 @@ extern libspectrum_class_t mapfile_class;
 extern char *defaultmapfile;
 extern settings_info  settings_old;
 
-int controlmapping_load_default_mapfile( );
-int controlmapping_save_default_mapfile( );
+int controlmapping_load_default_mapfile( void );
+int controlmapping_save_default_mapfile( void );
 int controlmapping_eject_mapfile( libspectrum_class_t class );
 int controlmapping_load_mapfile( const char *filename, libspectrum_class_t class, int is_autoload );
 int controlmapping_load_mapfile_with_class( const char *filename, libspectrum_class_t class, int is_autoload );

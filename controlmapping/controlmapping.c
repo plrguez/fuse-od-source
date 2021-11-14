@@ -78,7 +78,7 @@ controlmapping_register_startup( void )
 }
 
 int
-controlmapping_load_default_mapfile( )
+controlmapping_load_default_mapfile( void )
 {
   if ( !control_mapping_read_config_file( &control_mapping_default, defaultmapfile ) ) {
     control_mapping_copy( &control_mapping_default_old, &control_mapping_default );
@@ -88,7 +88,7 @@ controlmapping_load_default_mapfile( )
 }
 
 int
-controlmapping_save_default_mapfile( )
+controlmapping_save_default_mapfile( void )
 {
   if ( !control_mapping_write_config( &control_mapping_default, defaultmapfile ) ) {
     control_mapping_copy( &control_mapping_default_old, &control_mapping_default );
