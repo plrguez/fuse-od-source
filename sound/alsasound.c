@@ -388,3 +388,15 @@ sound_lowlevel_frame( libspectrum_signed_word *data, int len )
     }
   }
 }
+
+#ifdef GCWZERO
+double
+sound_fill_level( void )
+{
+  snd_pcm_sframes_t  frames;
+  
+  frames = snd_pcm_avail(pcm_handle);
+  
+  return (double) ( exact_bsize - frames ) / exact_bsize;
+}
+#endif

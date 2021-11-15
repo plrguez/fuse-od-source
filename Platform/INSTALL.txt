@@ -99,6 +99,10 @@ CC=mipsel-lepus-linux-musl-gcc CXX=mipsel-lepus-linux-musl-g++ \
 --with-sdl-prefix=/opt/toolchain/usr/mipsel-lepus-linux-musl/sysroot/usr \
 CFLAGS='-mips32 -O3'
 
+  *Note: 
+  For OpenDingux Lepus do not use sdl sound driver (--with-audio-driver=sdl)
+  because it produces heap corruption and it need to be revised. 
+
 Configure for RetroFW:
 
 $ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \

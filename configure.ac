@@ -637,7 +637,7 @@ AC_CHECK_HEADER(
 dnl SDL audio
 if test "$sdl_available" = "yes"; then
   dnl Default to SDL audio if we're using the SDL UI
-  if test "$UI" = sdl; then
+  if test "$UI" = sdl -a "$host" != mipsel-lepus-linux-musl; then
     audio_driver_list="sdl $audio_driver_list"
   else
     audio_driver_list="$audio_driver_list sdl"

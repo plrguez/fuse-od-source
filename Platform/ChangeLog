@@ -11,6 +11,9 @@
 
     * Added OpenDingux Lepus build
 
+    * Lepus build use alsa sound driver (auto). Current SDL sound driver
+      produces heap corruption probably and it need to be revised. 
+
 2021-01-09 Fuse 1.5.4 OpenDingux/RetroFW v0.0.6
 
     * OpenDingux beta. Fixed L3 & R3 mappings.
