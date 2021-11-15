@@ -269,6 +269,8 @@ Options - General GCW0
     Default 320x240.
 
     Choose your panel type for correct border display with some filters.
+    This option is only available in OpenDingux legacy, for mainline
+    OpenDingux (current beta) the panel is auto detected.
 
   - Show status bar with border
     ---------------------------

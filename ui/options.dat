@@ -34,7 +34,9 @@ Checkbox, D(y)namic sound rate, od_dynamic_sound_rate, INPUT_KEY_y
 #endif
 Combo, B(o)rder, od_border, INPUT_KEY_o, *Full|Large|Medium|Small|None
 #ifndef RETROFW
+#ifndef OPENDINGUX_KMSDRM
 Combo, P(a)nel type, od_panel_type, INPUT_KEY_a, *320x240|640x480|480x320
+#endif
 #endif
 Checkbox, S(h)ow status bar with border, od_statusbar_with_border, INPUT_KEY_h
 Checkbox, Sho(w) FPS instead of speed percentage, od_show_fps, INPUT_KEY_w

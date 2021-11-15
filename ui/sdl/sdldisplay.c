@@ -488,6 +488,21 @@ od_complete_modes( SDL_Rect **modes ) {
   if ( add_mode )
     qsort( modes, i, sizeof modes[0], od_compare_rects);
 }
+
+static sdldisplay_t_od_panel_type
+od_get_panel_type( SDL_Rect **modes ) {
+  /* SDL in main OD firmware do not inform for other modes than native */
+  if ( modes[0]->h == 240 )
+      return P320240;
+  else if ( modes[0]->h == 480 ) {
+      if ( modes[0]->w == 320 )
+        return P480320;
+      else
+        return P640480;
+  }
+  
+  return P320240;
+}
 #endif /* #ifdef OPENDINGUX_KMSDRM */
 
 /* Initializations for OpenDingux/RetroFW */
@@ -573,6 +588,8 @@ uidisplay_od_init( SDL_Rect **modes )
     fclose( os_release );
   }
 #elif defined(OPENDINGUX_KMSDRM)
+  /* Call get panel type before adding modes */
+  sdl_od_panel_type = od_get_panel_type( modes );
   od_complete_modes( modes );
 #endif /* #ifdef RETROFW */
 }
@@ -862,7 +879,9 @@ sdldisplay_load_gfx_mode( void )
 
   int display_width, display_height;
 #ifndef RETROFW
+#ifndef OPENDINGUX_KMSDRM
   sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
+#endif
 #ifdef OPENDINGUX_KMSDRM
   int refresh_rate = 60;
   char crefresh_rate[3];
