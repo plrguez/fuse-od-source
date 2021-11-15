@@ -318,6 +318,9 @@ if test -z "$UI"; then
   gcw0=no)
   AC_MSG_RESULT($gcw0)
   if test "$gcw0" = yes; then
+    if test "$host" = mipsel-lepus-linux-musl; then
+      AC_DEFINE([OPENDINGUX_LEPUS], 1, [Defined if OpenDingux Lepus is in use])
+    fi
     if test "$sdl_available" = yes; then
       AC_DEFINE([GCWZERO], 1, [Defined if GCW ZERO is in use])
       UI=sdl
