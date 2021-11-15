@@ -9,4 +9,4 @@ include ../Makefile.commonrules
 $(TARGET): opk_package
 
 deploy: $(BUILDDIR)/$(TARGET)
-	scp $^ root@10.1.1.4:/media/sdcard/apps/
+	scp $^ od@10.1.1.4:/media/sdcard/apps/

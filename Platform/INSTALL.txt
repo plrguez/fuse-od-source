@@ -8,8 +8,8 @@ autoconf, make, git, squashfs-tools, flex, bison, perl, libtool, etc...).
 squashfs-tools package is needed for creating opk files.
 
 Toolchains tested:
-- For OpenDingux the GCW0, RG350 and latest beta OpenDingux toolchains
-- For RetroFW this was tested with RetroFW 2.
+- OpenDingux: tested with GCW0, RG350 and latest beta OpenDingux (lepus and gcw0) toolchains
+- RetroFW: this was tested with RetroFW 2 toolchain.
 
 In the steps source code for Fuse and libspectrum was extracted in:
   - $HOME/src/libspectrum-1.5.0
@@ -20,10 +20,10 @@ In the steps the toolchain is installed in:
 
 To build Fuse we need first build and install libspectrum:
   - In the steps is used $HOME/src/libspectrum-install
-  - libspectrum will be builded without libaudio and libgcrypt,
-  - For RetroFW is configured to use internal replacement for GLib.
+  - libspectrum will be builded without libaudio and libgcrypt
+  - For RetroFW is configured to use internal replacement for GLib
 
-You must adapt this for your OS, toolchains and paths.
+You must adapt this steps for your OS, toolchains and paths.
 
 Steps:
 ======
@@ -34,20 +34,31 @@ $ export PATH=/opt/toolchain/usr/bin:$PATH
 2.- Configure, build and install libspectrum:
 
 $ cd $HOME/src/libspectrum-1.5.0
+$ ./autogen.sh
 
-Configure for 2014 OpenDingux and latest beta:
+Configure for 2014 OpenDingux and latest beta (Non Lepus):
 
 $ ./configure CC=mipsel-gcw0-linux-uclibc-gcc \
 CXX=mipsel-gcw0-linux-uclibc-g++ --host=mipsel-gcw0-linux-uclibc \
 --without-libaudiofile --without-libgcrypt \
---prefix="$HOME/src/libspectrum-install" CFLAGS='-mips32r2 -O3'
+--prefix="$HOME/src/libspectrum-install" CFLAGS='-mips32r2 -O3' \
+--disable-shared
+
+Configure for latest beta for Lepus:
+
+$ ./configure CC=mipsel-lepus-linux-musl-gcc \
+CXX=mipsel-lepus-linux-musl-g++ --host=mipsel-lepus-linux-musl \
+--without-libaudiofile --without-libgcrypt \
+--prefix="$HOME/src/libspectrum-install" CFLAGS='-mips32 -O3' \
+--disable-shared
 
 Configure for RetroFW:
 
 $ ./configure CC=mipsel-RetroFW-linux-uclibc-gcc \
 CXX=mipsel-RetroFW-linux-uclibc-g++ --host=mipsel-RetroFW-linux-uclibc \
 --without-libaudiofile --without-libgcrypt --with-fake-glib \
---prefix="$HOME/src/libspectrum-install" CFLAGS='-mips32 -O3'
+--prefix="$HOME/src/libspectrum-install" CFLAGS='-mips32 -O3' \
+--disable-shared
 
 $ make && make install
 
@@ -56,6 +67,7 @@ In $HOME/src/libspectrum-install must be installed libspectrum
 3.- Configure Fuse:
 
 $ cd $HOME/src/fuse-1.6.0
+$ ./autogen.sh
 
 Configure for 2014 OpenDingux:
 
@@ -67,7 +79,7 @@ CC=mipsel-gcw0-linux-uclibc-gcc CXX=mipsel-gcw0-linux-uclibc-g++ \
 --with-sdl-prefix=/opt/toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr \
 CFLAGS='-mips32r2 -O3'
 
-Configure for latest beta OpenDingux:
+Configure for latest beta OpenDingux (Non Lepus):
 
 $ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \
 LIBSPECTRUM_CFLAGS="-I$HOME/src/libspectrum-install/include" \
@@ -76,6 +88,16 @@ CC=mipsel-gcw0-linux-uclibc-gcc CXX=mipsel-gcw0-linux-uclibc-g++ \
 --host=mipsel-gcw0-linux-uclibc --with-gcw0 --disable-sdl2 \
 --with-sdl-prefix=/opt/toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr \
 CFLAGS='-mips32r2 -O3'
+
+Configure for latest beta OpenDingux for Lepus:
+
+$ ./configure PKG_CONFIG_PATH="$HOME/src/libspectrum-install/lib/pkgconfig" \
+LIBSPECTRUM_CFLAGS="-I$HOME/src/libspectrum-install/include" \
+LIBSPECTRUM_LIBS="-L$HOME/src/libspectrum-install/lib -l:libspectrum.a" \
+CC=mipsel-lepus-linux-musl-gcc CXX=mipsel-lepus-linux-musl-g++ \
+--host=mipsel-lepus-linux-musl --with-gcw0 --disable-sdl2 \
+--with-sdl-prefix=/opt/toolchain/usr/mipsel-lepus-linux-musl/sysroot/usr \
+CFLAGS='-mips32 -O3'
 
 Configure for RetroFW:
 
@@ -96,12 +118,19 @@ $ make
 
 fuse-1.6.0-od-v{version}.opk should be created in $HOME/src/fuse-1.6.0/Platform/GCW0/build
 
-For latest beta OpenDingux:
+For latest beta OpenDingux non Lepus:
 
 $ cd $HOME/src/fuse-1.6.0/Platform/GCW0
 $ make
 
 fuse-1.6.0-latest_od-v{version}.opk should be created in $HOME/src/fuse-1.6.0/Platform/GCW0/build
+
+For latest beta OpenDingux for Lepus:
+
+$ cd $HOME/src/fuse-1.6.0/Platform/LEPUS
+$ make
+
+fuse-1.6.0-lepus-v{version}.opk should be created in $HOME/src/fuse-1.6.0/Platform/LEPUS/build
 
 For RetroFW 2:
 
@@ -117,4 +146,4 @@ $ make
 
 fuse-1.6.0-retrofw-v{version}.ipk $HOME/src/fuse-1.6.0/Platform/RETROFW1.0/build
 
-In all cases {version] is for OpenDingux/RetrFW version
+In all cases {version} is for OpenDingux/RetroFW version not for Fuse version.
