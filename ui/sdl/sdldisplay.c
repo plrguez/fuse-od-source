@@ -232,6 +232,18 @@ typedef enum sdldisplay_od_panel_types {
       P480320
 } sdldisplay_t_od_panel_type;
 static sdldisplay_t_od_panel_type sdl_od_panel_type = P320240;
+
+typedef enum sdldisplay_od_video_filter {
+    VIDEO_FILTER_NEAREST,
+    VIDEO_FILTER_BILINEAR,
+    VIDEO_FILTER_BICUBIC,
+} sdldisplay_t_od_video_filter;
+static  sdldisplay_t_od_video_filter sdl_od_video_filter = VIDEO_FILTER_BICUBIC;
+
+#ifndef OPENDINGUX_KMSDRM
+#define OD_DOWNSCALE_FILE "/sys/devices/platform/jz-lcd.0/sharpness_downscaling"
+#define OD_UPSCALE_FILE   "/sys/devices/platform/jz-lcd.0/sharpness_upscaling"
+#endif
 #endif
 
 typedef struct od_s_icon_positions {
@@ -881,8 +893,7 @@ sdldisplay_load_gfx_mode( void )
 #ifndef RETROFW
 #ifndef OPENDINGUX_KMSDRM
   sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
-#endif
-#ifdef OPENDINGUX_KMSDRM
+#else
   int refresh_rate = 60;
   char crefresh_rate[3];
 
@@ -892,6 +903,45 @@ sdldisplay_load_gfx_mode( void )
   }
   snprintf(crefresh_rate, 3, "%2d", refresh_rate);
   setenv("SDL_VIDEO_REFRESHRATE", &crefresh_rate[0], 1);
+#endif /* #ifndef OPENDINGUX_KMSDRM */
+  
+  /* Filter and sharpness level 
+   * - "0" is nearest-neighbour
+   * - "1" is bilinear
+   * - 2-32 is bicubic
+   */
+  int sdl_od_sharpness = settings_current.od_bicubic_level;
+  char sdl_od_sharpness_c[3] = "2";
+
+  sdl_od_video_filter = option_enumerate_general_gcw0_od_video_filter();
+  switch (sdl_od_video_filter) {
+      case VIDEO_FILTER_BICUBIC:
+          if (sdl_od_sharpness < 2)
+              sdl_od_sharpness = 2;
+          else if (sdl_od_sharpness > 32)
+              sdl_od_sharpness = 32;
+          break;
+      case VIDEO_FILTER_BILINEAR:
+      case VIDEO_FILTER_NEAREST:
+          sdl_od_sharpness = sdl_od_video_filter;
+      default:
+          break;
+  };
+  sprintf(sdl_od_sharpness_c,"%d",sdl_od_sharpness);
+#ifdef OPENDINGUX_KMSDRM
+  setenv("SDL_VIDEO_KMSDRM_SCALING_SHARPNESS", sdl_od_sharpness_c, 1);
+#else
+  FILE *suf = fopen(OD_UPSCALE_FILE, "wb");
+  if (suf) {
+    fputs(sdl_od_sharpness_c, suf);
+    fclose(suf);
+   }
+
+   FILE *sdf = fopen(OD_DOWNSCALE_FILE, "wb");
+   if (sdf) {
+     fputs(sdl_od_sharpness_c, sdf);
+     fclose(sdf);
+   }
 #endif /* #ifdef OPENDINGUX_KMSDRM */
 #endif /* #ifndef RETROFW */
   sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();

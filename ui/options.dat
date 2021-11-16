@@ -37,6 +37,8 @@ Combo, B(o)rder, od_border, INPUT_KEY_o, *Full|Large|Medium|Small|None
 #ifndef OPENDINGUX_KMSDRM
 Combo, P(a)nel type, od_panel_type, INPUT_KEY_a, *320x240|640x480|480x320
 #endif
+Combo, Video fil(t)er, od_video_filter, INPUT_KEY_t, Nearest|Bilinear|*Bicubic
+Entry, Bicu(b)ic sharpness level (2-32), od_bicubic_level, INPUT_KEY_b, 2
 #endif
 Checkbox, S(h)ow status bar with border, od_statusbar_with_border, INPUT_KEY_h
 Checkbox, Sho(w) FPS instead of speed percentage, od_show_fps, INPUT_KEY_w
