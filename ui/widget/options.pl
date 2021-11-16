@@ -503,16 +503,41 @@ widget_$widget->{value}_slideup( void )
 
     for (i=0;i<$widget->{data1};i++)
       max_value += 9*pow(10,i);
+CODE
 
+	if(my ($min_value_allowed, $max_value_allowed) =  $widget->{text} =~ m/(\s*[[:digit:]]{1,2})\s*-\s*([[:digit:]]{1,2})\s*\)$/ ) {
+	    print << "CODE";
+    if (widget_options_settings.$widget->{value} < $max_value_allowed && widget_options_settings.$widget->{value} < max_value)
+      widget_options_settings.$widget->{value}++;
+CODE
+	} else {
+
+	    print << "CODE";
     if (widget_options_settings.$widget->{value} < max_value)
       widget_options_settings.$widget->{value}++;
+CODE
+	}
+	    print << "CODE";
 \}
 
 static void
 widget_$widget->{value}_slidedown( void )
 \{
+CODE
+
+	if(my ($min_value_allowed, $max_value_allowed) =  $widget->{text} =~ m/(\s*[[:digit:]]{1,2})\s*-\s*([[:digit:]]{1,2})\s*\)$/ ) {
+	    print << "CODE";
+    if (widget_options_settings.$widget->{value} > $min_value_allowed)
+      widget_options_settings.$widget->{value}--;
+CODE
+	} else {
+
+	    print << "CODE";
     if (widget_options_settings.$widget->{value})
       widget_options_settings.$widget->{value}--;
+CODE
+	}
+	    print << "CODE";
 \}
 #endif
 
@@ -548,6 +573,19 @@ widget_$widget->{value}_click( void )
 
   if( widget_text_text ) \{
     widget_options_settings.$widget->{value} = atoi( widget_text_text );
+CODE
+
+	    if(my ($min_value_allowed, $max_value_allowed) =  $widget->{text} =~ m/(\s*[[:digit:]]{1,2})\s*-\s*([[:digit:]]{1,2})\s*\)$/ ) {
+                print << "CODE";
+#ifdef GCWZERO
+    if ( widget_options_settings.$widget->{value} > $max_value_allowed )
+      widget_options_settings.$widget->{value} = $max_value_allowed;
+    else if ( widget_options_settings.$widget->{value} < $min_value_allowed )
+      widget_options_settings.$widget->{value} = $min_value_allowed;
+#endif
+CODE
+	    }
+	    print << "CODE";
   \}
 \}
 
