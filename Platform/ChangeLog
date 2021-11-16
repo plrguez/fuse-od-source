@@ -11,11 +11,16 @@
 
     * Added OpenDingux Lepus build
 
-    * Lepus build use alsa sound driver (auto). Current SDL sound driver
-      produces heap corruption probably and it need to be revised.
+    * OpenDingux beta Lepus: use alsa sound driver (auto). Current SDL
+      sound driver produces heap corruption probably and it need to be
+      revised.
 
-    * Auto detect panel type in mainline OpenDingux (current beta). This is
-      used to calculate the screen resolution for the different border sizes.
+    * OpenDingux beta: Auto detect panel type in mainline. This is used
+      to calculate the screen resolution for the different border sizes.
+
+    * OpenDingux: added two new options
+        - Video filter: Bicubic (default), Bilinear, Nearest
+        - Bicubic sharpness level: default value is 2, minimun 2, maximun 32
 
 2021-01-09 Fuse 1.5.4 OpenDingux/RetroFW v0.0.6
 

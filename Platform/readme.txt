@@ -272,13 +272,23 @@ Options - General GCW0
     This option is only available in OpenDingux legacy, for mainline
     OpenDingux (current beta) the panel is auto detected.
 
+  - Video filter
+    ------------
+    Default Bicubic.
+
+    Video filter to apply when scaling if border is not full.
+
+  - Bicubic sharpness level
+    -----------------------
+    Default 2. Minimun 2, maximum value 32.
+
   - Show status bar with border
     ---------------------------
     Default enabled.
 
     Show status bar also when border is not Full.
 
-  - Show FSP instead of speed percentaje
+  - Show FSP instead of speed percentage
     ------------------------------------
     Default disbled.
 
