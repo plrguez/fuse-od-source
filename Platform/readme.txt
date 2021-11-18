@@ -1,16 +1,19 @@
-Using the Fuse emulator
-=======================
+=================================
+Fuse 1.6.0 for OpenDingux/RetroFW
+=================================
 
-This port of Fuse to OpenDingux and RetroFW is a compilation of Fuse
-1.6.0 for Opendingux/RetroFW with some additions to the SDL UI and
-some new options.
+This port is a compilation of Fuse 1.6.0 for Opendingux/RetroFW with some
+additions to the Fuse SDL UI and some new options for this devices.
 
-So the thanks for this port are for Phillip Kendall and all the Fuse
-team. And also to the GCW0/OpenDingux and RetroFW community for all
-documentation, development threads, and all opensource ports.
+So the thanks for this port are for Phillip Kendall and the Fuse team. 
+And also to the GCW0/OpenDingux and RetroFW community for all documentation,
+development threads, and all the opensource ports.
 
 At the end of this doc is the man page of Fuse 1.6.0 for a complete
 reference.
+
+Using the Fuse emulator
+=======================
 
 ------------------------
 ### Opening the Menu ###

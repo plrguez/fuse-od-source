@@ -1,4 +1,4 @@
-2021-11-xx Fuse 1.6.0 OpenDingux/RetroFW v0.0.7-wip
+2021-11-18 Fuse 1.6.0 OpenDingux/RetroFW v0.0.7
 
     * Update version to upstream 1.6.0
 
@@ -12,11 +12,11 @@
     * Added OpenDingux Lepus build
 
     * OpenDingux beta Lepus: use alsa sound driver (auto). Current SDL
-      sound driver produces heap corruption probably and it need to be
-      revised.
+      sound driver produces heap corruption and it need to be revised.
 
-    * OpenDingux beta: Auto detect panel type in mainline. This is used
-      to calculate the screen resolution for the different border sizes.
+    * OpenDingux beta: Auto detect panel type. Panel type is used to
+      determine the valid screen resolutions to be used for the different
+      border sizes.
 
     * OpenDingux: added two new options
         - Video filter: Bicubic (default), Bilinear, Nearest

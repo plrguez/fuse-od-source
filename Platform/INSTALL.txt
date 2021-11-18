@@ -9,7 +9,7 @@ squashfs-tools package is needed for creating opk files.
 
 Toolchains tested:
 - OpenDingux: tested with GCW0, RG350 and latest beta OpenDingux (lepus and gcw0) toolchains
-- RetroFW: this was tested with RetroFW 2 toolchain.
+- RetroFW: tested with RetroFW 2 toolchain.
 
 In the steps source code for Fuse and libspectrum was extracted in:
   - $HOME/src/libspectrum-1.5.0
@@ -63,6 +63,8 @@ CXX=mipsel-RetroFW-linux-uclibc-g++ --host=mipsel-RetroFW-linux-uclibc \
 $ make && make install
 
 In $HOME/src/libspectrum-install must be installed libspectrum
+
+You can use --disable-shared option with configure to speed up the build.
 
 3.- Configure Fuse:
 
