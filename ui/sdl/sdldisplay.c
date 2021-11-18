@@ -244,7 +244,7 @@ static  sdldisplay_t_od_video_filter sdl_od_video_filter = VIDEO_FILTER_BICUBIC;
 #define OD_DOWNSCALE_FILE "/sys/devices/platform/jz-lcd.0/sharpness_downscaling"
 #define OD_UPSCALE_FILE   "/sys/devices/platform/jz-lcd.0/sharpness_upscaling"
 #endif
-#endif
+#endif /* #ifndef RETROFW */
 
 typedef struct od_s_icon_positions {
   sdldisplay_t_od_border border_type;
@@ -275,7 +275,7 @@ static od_t_icon_positions od_icon_positions_640480[] = {
 static od_t_icon_positions od_icon_position;
 
 int od_show_msg_info = 0;
-#endif
+#endif /* #ifdef GCWZERO */
 
 static int image_width;
 static int image_height;
@@ -515,6 +515,20 @@ od_get_panel_type( SDL_Rect **modes ) {
   
   return P320240;
 }
+
+static void
+uidisplay_od_set_refresh_rate( void )
+{
+  int refresh_rate = 60;
+  char crefresh_rate[3];
+
+  if ( settings_current.od_adjust_refresh_rate ) {
+    refresh_rate = machine_current->timings.processor_speed /
+        machine_current->timings.tstates_per_frame;
+  }
+  snprintf(crefresh_rate, 3, "%2d", refresh_rate);
+  setenv("SDL_VIDEO_REFRESHRATE", &crefresh_rate[0], 1);
+}
 #endif /* #ifdef OPENDINGUX_KMSDRM */
 
 /* Initializations for OpenDingux/RetroFW */
@@ -604,6 +618,148 @@ uidisplay_od_init( SDL_Rect **modes )
   sdl_od_panel_type = od_get_panel_type( modes );
   od_complete_modes( modes );
 #endif /* #ifdef RETROFW */
+}
+
+/* Determine SDL video flags to use */
+static Uint32
+uidisplay_od_determine_flags( void )
+{
+  Uint32 flags;
+  if (settings_current.od_triple_buffer) {
+#ifdef RETROFW
+    sdldisplay_flips_triple_buffer = 1;
+#elif !defined(OPENDINGUX_KMSDRM)
+    sdldisplay_flips_triple_buffer = 0;
+#endif /* #ifdef RETROFW */
+    flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
+    : (SDL_HWSURFACE | SDL_TRIPLEBUF);
+  } else {
+#ifndef OPENDINGUX_KMSDRM
+    while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
+      SDL_Flip( sdldisplay_gc );
+#endif /* #ifndef OPENDINGUX_KMSDRM */
+    flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
+    : SDL_HWSURFACE;
+  }
+  
+  return flags;
+}
+
+#ifndef RETROFW
+/* Filter and sharpness level 
+* - "0" is nearest-neighbour
+* - "1" is bilinear
+* - 2-32 is bicubic
+*/
+static void
+uidisplay_od_set_ipu_video_scaler( void )
+{
+  int sdl_od_sharpness = settings_current.od_bicubic_level;
+  char sdl_od_sharpness_c[3] = "2";
+
+  sdl_od_video_filter = option_enumerate_general_gcw0_od_video_filter();
+  switch (sdl_od_video_filter) {
+      case VIDEO_FILTER_BICUBIC:
+          if (sdl_od_sharpness < 2)
+              sdl_od_sharpness = 2;
+          else if (sdl_od_sharpness > 32)
+              sdl_od_sharpness = 32;
+          break;
+      case VIDEO_FILTER_BILINEAR:
+      case VIDEO_FILTER_NEAREST:
+          sdl_od_sharpness = sdl_od_video_filter;
+      default:
+          break;
+  };
+  sprintf(sdl_od_sharpness_c,"%d",sdl_od_sharpness);
+#ifdef OPENDINGUX_KMSDRM
+  setenv("SDL_VIDEO_KMSDRM_SCALING_SHARPNESS", sdl_od_sharpness_c, 1);
+#else
+  FILE *sharpness_upscaling_file = fopen(OD_UPSCALE_FILE, "wb");
+  if (sharpness_upscaling_file) {
+    fputs(sdl_od_sharpness_c, sharpness_upscaling_file);
+    fclose(sharpness_upscaling_file);
+   }
+
+   FILE *sharpness_downscaling_file = fopen(OD_DOWNSCALE_FILE, "wb");
+   if (sharpness_downscaling_file) {
+     fputs(sdl_od_sharpness_c, sharpness_downscaling_file);
+     fclose(sharpness_downscaling_file);
+   }
+#endif
+}
+#endif /* #ifndef RETROFW */
+
+static od_t_icon_positions
+uidisplay_od_get_icon_positions( )
+{
+#ifdef OPENDINGUX_KMSDRM
+  if ( sdldisplay_current_od_border && sdldisplay_current_size <= 1 && sdl_od_panel_type == P640480 )
+    return od_icon_positions_640480[sdldisplay_current_od_border];
+  else
+#endif
+  return od_icon_positions[sdldisplay_current_od_border];  
+}
+
+static void
+uidisplay_od_get_display_dimensions( int *width, int *height, SDL_Rect *clip_area )
+{
+  if ( sdldisplay_current_od_border ) {
+    int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
+    od_t_screen_scaling *ssc = &od_screen_scalings_2x[0];
+
+#ifndef RETROFW
+    if ( sdldisplay_current_size <= 1 )
+      switch (sdl_od_panel_type) {
+      case P640480:
+        ssc = &od_screen_scalings_1x_640[0];
+        break;
+      case P480320:
+        ssc = &od_screen_scalings_1x_480[0];
+	FILE* integer_scaling_file = fopen("/sys/class/graphics/fb0/device/integer_scaling", "w");
+	if (integer_scaling_file) {
+	    fwrite("N", 1, 1, integer_scaling_file);
+	    fclose(integer_scaling_file);
+	}
+        break;
+      default:
+        break;
+      }
+#endif /* ifndef RETROFW */
+
+    clip_area->x = ( DISPLAY_ASPECT_WIDTH - ssc[sdldisplay_current_od_border].w ) * scale / 2;
+    clip_area->y = ( DISPLAY_SCREEN_HEIGHT - ssc[sdldisplay_current_od_border].h ) * scale / 2;
+
+    clip_area->w = ssc[sdldisplay_current_od_border].w * scale;
+    clip_area->h = ssc[sdldisplay_current_od_border].h * scale;
+
+    *width = clip_area->w * sdldisplay_current_size;
+    *height = clip_area->h * sdldisplay_current_size;
+
+  /* Full Border */
+  } else {
+    *width =  settings_current.full_screen && fullscreen_width
+        ? fullscreen_width
+        : image_width * sdldisplay_current_size;
+    *height = settings_current.full_screen && fullscreen_width
+        ? max_fullscreen_height
+        : image_height * sdldisplay_current_size;
+  }
+}
+
+static void
+uidisplay_od_swap_icons( void )
+{
+  if ( ( sdldisplay_current_od_border && !sdldisplay_last_od_border ) ||
+       ( !sdldisplay_current_od_border && sdldisplay_last_od_border ) ) {
+    SDL_Surface *swap;
+    SWAP_ICONS( red_cassette, swap );
+    SWAP_ICONS( green_cassette, swap );
+    SWAP_ICONS( red_mdr, swap );
+    SWAP_ICONS( green_mdr, swap );
+    SWAP_ICONS( red_disk, swap );
+    SWAP_ICONS( green_disk, swap );
+  }
 }
 #endif /* #ifdef GCWZERO */
 
@@ -871,136 +1027,28 @@ sdldisplay_load_gfx_mode( void )
 
   /* Create the surface that contains the scaled graphics in 16 bit mode */
 #ifdef GCWZERO
-  Uint32 flags;
-  if (settings_current.od_triple_buffer) {
-#ifdef RETROFW
-    sdldisplay_flips_triple_buffer = 1;
-#elif !defined(OPENDINGUX_KMSDRM)
-    sdldisplay_flips_triple_buffer = 0;
-#endif /* #ifdef RETROFW */
-    flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE | SDL_TRIPLEBUF)
-    : (SDL_HWSURFACE | SDL_TRIPLEBUF);
-  } else {
-#ifndef OPENDINGUX_KMSDRM
-    while ( sdldisplay_is_triple_buffer && ++sdldisplay_flips_triple_buffer < 3 )
-      SDL_Flip( sdldisplay_gc );
-#endif /* #ifndef OPENDINGUX_KMSDRM */
-    flags = settings_current.full_screen ? (SDL_FULLSCREEN | SDL_HWSURFACE)
-    : SDL_HWSURFACE;
-  }
+  Uint32 flags = uidisplay_od_determine_flags();
+  
+#if !defined(RETROFW) && !defined(OPENDINGUX_KMSDRM)
+  sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
+#endif
+
+#ifdef OPENDINGUX_KMSDRM
+  uidisplay_od_set_refresh_rate();
+#endif
+
+#ifndef RETROFW
+  uidisplay_od_set_ipu_video_scaler();
+#endif
+
+  sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
+  od_icon_position = uidisplay_od_get_icon_positions();  
+
+  uidisplay_od_swap_icons();
 
   int display_width, display_height;
-#ifndef RETROFW
-#ifndef OPENDINGUX_KMSDRM
-  sdl_od_panel_type = option_enumerate_general_gcw0_od_panel_type();
-#else
-  int refresh_rate = 60;
-  char crefresh_rate[3];
+  uidisplay_od_get_display_dimensions( &display_width, &display_height, &clip_area );
 
-  if ( settings_current.od_adjust_refresh_rate ) {
-    refresh_rate = machine_current->timings.processor_speed /
-        machine_current->timings.tstates_per_frame;
-  }
-  snprintf(crefresh_rate, 3, "%2d", refresh_rate);
-  setenv("SDL_VIDEO_REFRESHRATE", &crefresh_rate[0], 1);
-#endif /* #ifndef OPENDINGUX_KMSDRM */
-  
-  /* Filter and sharpness level 
-   * - "0" is nearest-neighbour
-   * - "1" is bilinear
-   * - 2-32 is bicubic
-   */
-  int sdl_od_sharpness = settings_current.od_bicubic_level;
-  char sdl_od_sharpness_c[3] = "2";
-
-  sdl_od_video_filter = option_enumerate_general_gcw0_od_video_filter();
-  switch (sdl_od_video_filter) {
-      case VIDEO_FILTER_BICUBIC:
-          if (sdl_od_sharpness < 2)
-              sdl_od_sharpness = 2;
-          else if (sdl_od_sharpness > 32)
-              sdl_od_sharpness = 32;
-          break;
-      case VIDEO_FILTER_BILINEAR:
-      case VIDEO_FILTER_NEAREST:
-          sdl_od_sharpness = sdl_od_video_filter;
-      default:
-          break;
-  };
-  sprintf(sdl_od_sharpness_c,"%d",sdl_od_sharpness);
-#ifdef OPENDINGUX_KMSDRM
-  setenv("SDL_VIDEO_KMSDRM_SCALING_SHARPNESS", sdl_od_sharpness_c, 1);
-#else
-  FILE *suf = fopen(OD_UPSCALE_FILE, "wb");
-  if (suf) {
-    fputs(sdl_od_sharpness_c, suf);
-    fclose(suf);
-   }
-
-   FILE *sdf = fopen(OD_DOWNSCALE_FILE, "wb");
-   if (sdf) {
-     fputs(sdl_od_sharpness_c, sdf);
-     fclose(sdf);
-   }
-#endif /* #ifdef OPENDINGUX_KMSDRM */
-#endif /* #ifndef RETROFW */
-  sdldisplay_current_od_border = option_enumerate_general_gcw0_od_border();
-  od_icon_position = od_icon_positions[sdldisplay_current_od_border];  
-
-  if ( ( sdldisplay_current_od_border && !sdldisplay_last_od_border ) ||
-       ( !sdldisplay_current_od_border && sdldisplay_last_od_border ) ) {
-    SDL_Surface *swap;
-    SWAP_ICONS( red_cassette, swap );
-    SWAP_ICONS( green_cassette, swap );
-    SWAP_ICONS( red_mdr, swap );
-    SWAP_ICONS( green_mdr, swap );
-    SWAP_ICONS( red_disk, swap );
-    SWAP_ICONS( green_disk, swap );
-  }
-  if ( sdldisplay_current_od_border ) {
-    int scale = ( libspectrum_machine_capabilities( machine_current->machine ) & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) ? 2 : 1;
-    od_t_screen_scaling *ssc = &od_screen_scalings_2x[0];
-
-#ifndef RETROFW
-    if ( sdldisplay_current_size <= 1 )
-      switch (sdl_od_panel_type) {
-      case P640480:
-        ssc = &od_screen_scalings_1x_640[0];
-#ifdef OPENDINGUX_KMSDRM
-        od_icon_position = od_icon_positions_640480[sdldisplay_current_od_border];
-#endif
-        break;
-      case P480320:
-        ssc = &od_screen_scalings_1x_480[0];
-		FILE* integer_scaling_file = fopen("/sys/class/graphics/fb0/device/integer_scaling", "w");
-		if (integer_scaling_file) {
-			fwrite("N", 1, 1, integer_scaling_file);
-			fclose(integer_scaling_file);
-		}
-        break;
-      default:
-        break;
-      }
-#endif /* ifndef RETROFW */
-
-    clip_area.x = ( DISPLAY_ASPECT_WIDTH - ssc[sdldisplay_current_od_border].w ) * scale / 2;
-    clip_area.y = ( DISPLAY_SCREEN_HEIGHT - ssc[sdldisplay_current_od_border].h ) * scale / 2;
-
-    clip_area.w = ssc[sdldisplay_current_od_border].w * scale;
-    clip_area.h = ssc[sdldisplay_current_od_border].h * scale;
-
-    display_width = clip_area.w * sdldisplay_current_size;
-    display_height = clip_area.h * sdldisplay_current_size;
-
-  /* Full Border */
-  } else {
-    display_width =  settings_current.full_screen && fullscreen_width
-        ? fullscreen_width
-        : image_width * sdldisplay_current_size;
-    display_height = settings_current.full_screen && fullscreen_width
-        ? max_fullscreen_height
-        : image_height * sdldisplay_current_size;
-  }
   sdldisplay_gc = SDL_SetVideoMode( display_width, display_height, 16, flags );
 #else
   sdldisplay_gc = SDL_SetVideoMode(
